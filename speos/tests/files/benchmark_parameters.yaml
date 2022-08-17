@@ -1,0 +1,17 @@
+name: test_benchmark
+
+metrics: 
+  - mrr_filtered
+  - mean_rank_filtered
+  - auroc
+  - auprc
+
+parameters:
+  - name: gcn
+    model:
+      mp:
+        n_layers: 1
+  - name: mlp
+    model:
+      mp:
+        n_layers: 0

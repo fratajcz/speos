@@ -1,0 +1,122 @@
+name: None            # Choose a name or set to None and have a hash generated as name
+cuda: auto            # True, False, "auto", list of cuda devices
+timestamp: None
+
+crossval:
+  mode: kfold         # None, kfold, holdoneout (not implemented)
+  n_folds: 4
+  seed: 1
+  positive_only: False
+  suffix: _fold_{}
+  outer_suffix: _outer_{}
+
+input:
+  adjacency: BioPlex30293T
+  adjacency_field: name
+  adjacency_mappings: coregenes/adjacencies.json
+  randomize_adjacency_percent: 0        # int, to which percentage the adjacency should be x-swapped, 100 makes sure that each edge will have a different tail node
+  force_multigraph: False               # if multigraph dataset should be constructed for e.g. rgcn or film, even though we have only 1 adjacency
+  gene_sets: ./data/mendelian_gene_sets
+  use_gwas: True                        # if gwas features should be used
+  gwas: ./data/gwas
+  gwas_mappings: ./coregenes/mapping.json
+  use_expression: True                  # if tissue wise gene expression values should be used
+  log_expression: False                 # if tissue wise gene expression values should be log transformed before robust scaling
+  use_embeddings: False
+  tag: Immune_Dysregulation
+  field: ground_truth
+  holdout_size: 0.1
+  holdout_positive_only: True
+  save_data: True
+  save_dir: ./data/
+
+model:
+  model: SimpleModel   # SimpleModel or AdversarialModel
+  architecture: GeneNetwork
+  args: []
+  kwargs: {}
+  loss: bce
+  regularization_lambda: 0.01           # only relevant in LINKX
+  save: True
+  save_dir: ./models/
+  plot: True
+  plot_dir: ./plots/
+  skip: False       # boolean, use skip connections
+  skip_mp: False    # boolean, use skip connections that skip message passing
+  concat_after_mp: False  # boolean, concatenate pre_mp and mp features and feed them both into post_mp
+  pre_mp:
+    type: fc
+    dim: 50
+    n_layers: 5        # resulting number of layers will be n_layers + 1 for the input layer
+    normalize: None
+    dropout: None
+    act:  elu
+  mp:
+    type: gcn       # gcn, gin, gat, gcn2
+    dim: 50
+    n_layers: 2  
+    normalize: instance   # instance, graph, layer      
+    nheads: None          # only relevant if type: gat is selected
+    k: 3                  # only relevant if type: tag is selected
+    kwargs: {}
+  post_mp:
+    type: fc
+    dim_hid: 50
+    n_layers: 5        # resulting number of layers will be n_layers + 1 for the output layer
+    normalize: None
+    dropout: None
+    act:  elu
+  
+optim:
+  lr: 1e-3
+  target: val
+  measure: loss
+
+es:
+  mode: min
+  patience: 100
+  metric: mean_rank_filtered
+
+scheduler:
+  factor: 0.33
+  patience: 25
+  limit: 1e-4
+  mode: max         # min or max
+
+training:
+  switch: on        # on, off, True, False
+  max_epochs: 1000
+  pos_weight: 2
+  dilution: 10      # max or factor (int) of how many more negatives should be sampled
+
+eval:
+  target: [train, val]  # train, val, test, all or list of multiples.
+  cutoff: 0.7
+  log_prob_every: 50
+
+logging:
+  dir: ./logs/
+  level: 20
+  file: auto
+
+inference:
+  switch: on                  # on, off, True, False
+  target: all
+  cutoff_value: 0.7
+  save: True
+  save_dir: ./results/
+  save_sorted: False
+  save_tsv: False
+  gnn_explain: False
+  input_explain: False
+
+pp:                           # postprocessing
+  switch: on                  # on, off, True, False
+  tasks: [overlap_analysis, dge, pathway, hpo_enrichment, go_enrichment, drugtarget, druggable, mouseKO, lof_intolerance]   # this is the full set of postprocessing options
+  consensus: top_down                # either int specifying the min bin for consensus or bottom_up, or top_down for p-val search starting from 0 up or from 10 down
+  cutoff_value: 0.7           # float in case of cutoff_type split, else int
+  cutoff_type: split          # split, top or bottom
+  save: True
+  save_dir: ./results/
+  plot: True
+  plot_dir: ./plots/

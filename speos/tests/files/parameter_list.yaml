@@ -1,0 +1,12 @@
+name: testlist
+
+metrics:
+  - mrr_filtered
+  - mean_rank_filtered
+  - auroc
+
+parameters:
+- name: bar
+  bezel: heck
+- name: bar2
+  bezel: what

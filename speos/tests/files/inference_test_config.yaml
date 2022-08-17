@@ -1,0 +1,90 @@
+crossval:
+  mode: kfold
+  n_folds: 10
+  outer_suffix: _outer_{}
+  positive_only: true
+  seed: 1
+  suffix: _fold_{}
+cuda: auto
+eval:
+  cutoff: 0.7
+  log_prob_every: 50
+  target:
+  - train
+  - val
+inference:
+  cutoff_value: 0.7
+  gnn_explain: false
+  input_explain: true
+  save: true
+  save_dir: ./tests/
+  save_sorted: true
+  switch: true
+  target: all
+input:
+  field: ground_truth
+  gene_sets: ./data/mendelian_gene_sets
+  gwas: ./data/gwas
+  holdout_positive_only: true
+  holdout_size: 0.1
+  key: Insulin_Disorder
+  tag: Insulin_Disorder
+key: insulin_disorder
+logging:
+  dir: ./logs/
+  file: auto
+  level: 20
+model:
+  architecture: GeneNetwork
+  model: SimpleModel
+  mp:
+    dim: 50
+    n_layers: 2
+    nheads: null
+    normalize: instance
+    type: gcn
+  plot: true
+  plot_dir: ./tests/
+  post_mp:
+    dim_hid: 50
+    n_layers: 5
+    normalize: null
+    type: fc
+  pre_mp:
+    dim: 50
+    n_layers: 5
+    normalize: null
+    type: fc
+  save: true
+  save_dir: ./tests/
+  skip: false
+name: inference_test
+optim:
+  lr: 0.001
+  measure: loss
+  target: val
+pp:
+  consensus: bottom_up
+  cutoff_type: split
+  cutoff_value: 0.7
+  plot: true
+  plot_dir: ./tests/
+  save: true
+  save_dir: ./tests/
+  switch: off
+  tasks:
+  - overlap_analysis
+  - drugtarget
+  - druggable
+  - mouseKO
+scheduler:
+  factor: 0.33
+  limit: 0.0001
+  mode: min
+  patience: 50
+timestamp: 1644247649.293581
+training:
+  dilution: 10
+  max_epochs: 1000
+  pos_weight: 2
+  switch: off

@@ -1,0 +1,7 @@
+[ {"name": "dummy",
+    "ground_truth": "dummy_mendelian.bed",
+    "phenotype": "dummy",
+    "features_file": "dummy_mendelian.out",
+    "match_type": "perfect",
+    "significant": "True"}
+]

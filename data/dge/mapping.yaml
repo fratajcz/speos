@@ -1,0 +1,50 @@
+"cardiovascular_disease":
+    "Coronary Artery Disease":
+        file: "./data/dge/cad.gemma"
+    "Atrial Fibrillation":
+        file: "./data/dge/af.gemma"
+    "Aortic Aneurysm":
+        file: "./data/dge/aa.gemma"
+    "Ischemia":
+        file: "./data/dge/is.gemma"
+    "Hypertension":
+        file: "./data/dge/hy.gemma"
+    "Artherosclerosis":
+        file: "./data/dge/ar.gemma"
+"immune_dysregulation":
+    "Crohn's Disease":
+        file: "./data/dge/cro.gemma"
+    "Ulcerative Colitis":
+        file: "./data/dge/ulc.gemma"
+    "Lupus Erythematosus":
+        file: "./data/dge/lup.gemma"
+    "Rheumatoid Arthritis":
+        file: "./data/dge/rhe.gemma"
+    "Multiple Sklerosis":
+        file: "./data/dge/ms.gemma"
+"body_mass_disorder":
+    "Obesity":
+        file: "./data/dge/obe.gemma"
+    "Decreased Body Weight":
+        file: "./data/dge/dec.gemma"
+    "Increased Body Weight":
+        file: "./data/dge/inc.gemma"
+    "Abdominal Symptom":
+        file: "./data/dge/abd.gemma"
+"monogenic_diabetes":
+    "Diabetes Mellitus":
+        file: "./data/dge/dia.gemma"
+    "Hyperglycemia":
+        file: "./data/dge/gly.gemma"
+"insulin_disorder":
+    "Obesity":
+        file: "./data/dge/obe.gemma"
+    "Decreased Body Weight":
+        file: "./data/dge/dec.gemma"
+    "Increased Body Weight":
+        file: "./data/dge/inc.gemma"
+    "Artherosclerosis":
+        file: "./data/dge/ar.gemma"
+    "Coronary Artery Disease":
+        file: "./data/dge/cad.gemma"
+
