@@ -18,7 +18,7 @@ setup(
     license='MIT',
     packages=find_packages(
         where='.',
-        include=['speos', 'speos/utils'],
+        include=['speos', 'speos/utils', 'speos/preprocessing'],
         #exclude=['scripts', "tests"]
         ),
     #package_dir={"": "coregenes"},
