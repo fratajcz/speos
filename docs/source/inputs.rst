@@ -15,7 +15,7 @@ GWAS Data
 
 The mapping of phenotypes to appropriate GWAS traits is done by the ``speos.preprocessing.mappers.GWASMapper`` :
 
-.. autoclass:: speos.preprocessing.mappers.GWASMapper
+.. automodule:: speos.preprocessing.mappers
     :members:
 
 For example:
