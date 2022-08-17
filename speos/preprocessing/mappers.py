@@ -38,11 +38,21 @@ class Mapper:
 
 
 class GWASMapper(Mapper):
-    """handles the mapping of y labels to feature files"""
+    r"""Handles the mapping of y labels to GWAS feature files.
+
+    Enables simple matching of multiple GWAS to individual Phenotypes via its :obj:`get_mappings()` method.
+
+    Args:
+        ground_truth_path (int): The path to the directory where the ground truth (label) files are stored, as defined in the :obj:`mapping_file`.
+            It can be set to "" if the path is included in the file name of defined in the :obj:`mapping_file`.
+        features_file_path (str): The path to the directory where the features (GWAS) files are stored, as defined in the :obj:`mapping_file`.
+            It can be set to "" if the path is included in the file name of defined in the :obj:`mapping_file`.
+        mapping_file (str): The path to the file that maps ground truths (labels) to sets of feature (GWAS) files. (default: :obj:`./speos/mapping.json`)
+    """
     def __init__(self,
                  ground_truth_path: str,
                  features_file_path: str,
-                 mapping_file: str = "./coregenes/mapping.json",):
+                 mapping_file: str = "./speos/mapping.json",):
 
         self.features_file_path = features_file_path
         self.ground_truth_path = ground_truth_path

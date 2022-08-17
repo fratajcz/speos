@@ -14,6 +14,7 @@ The mapping of phenotypes to appropriate GWAS traits is done by the ``speos.prep
 
 .. autoclass:: speos.preprocessing.mappers.GWASMapper
     :members:
+    :inherited-members:
 
 For example:
 
