@@ -42,4 +42,4 @@ For example:
 >>>
 >>> # returns empty list if requested mapping can not be found
 >>> mapper.get_mappings(tags="xyz", fields="name")
-[{'name': 'foo', 'ground_truth': 'ground_truth_dir/bar.txt', 'phenotype': 'bar', 'features_file': 'feature_file_dir/foo.genes.out'}]
+[]
