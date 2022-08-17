@@ -9,6 +9,7 @@ Welcome to Speos's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+   Inputs
 
 
 
