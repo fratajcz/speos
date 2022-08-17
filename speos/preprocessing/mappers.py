@@ -44,9 +44,9 @@ class GWASMapper(Mapper):
 
     Args:
         ground_truth_path (int): The path to the directory where the ground truth (label) files are stored, as defined in the :obj:`mapping_file`.
-            It can be set to "" if the path is included in the file name of defined in the :obj:`mapping_file`.
+            It can be set to :obj:`""` if the path is included in the file name as defined in the :obj:`mapping_file`.
         features_file_path (str): The path to the directory where the features (GWAS) files are stored, as defined in the :obj:`mapping_file`.
-            It can be set to "" if the path is included in the file name of defined in the :obj:`mapping_file`.
+            It can be set to :obj:`""` if the path is included in the file name as defined in the :obj:`mapping_file`.
         mapping_file (str): The path to the file that maps ground truths (labels) to sets of feature (GWAS) files. (default: :obj:`./speos/mapping.json`)
     """
     def __init__(self,
@@ -76,9 +76,15 @@ class GWASMapper(Mapper):
             
 
 class AdjacencyMapper(Mapper):
-    """handles the mapping of y labels to feature files"""
+    r"""Handles the mapping of names and network types to their respective files.
+
+    Enables simple matching of multiple Networks to individual queries via its :obj:`get_mappings()` method.
+
+    Args:
+        mapping_file (str): The path to the file that describes the networks and where they are stored. (default: :obj:`./speos/adjacencies.json`)
+    """
     def __init__(self,
-                 mapping_file: str = "coregenes/adjacencies.json",):
+                 mapping_file: str = "speos/adjacencies.json",):
 
         with open(mapping_file, "r") as file:
             content = file.read()
@@ -105,6 +111,9 @@ class AdjacencyMapper(Mapper):
         return re.sub('[^A-Za-z0-9]+', '', string)
 
     def get_mappings(self, tags: str = "", fields: str = "name"):
+        '''goes through the mapping list and returns all mappings that include the provided tag in the provided field (default is name field)
+
+          If called without arguments, returns all mappings (tag = "") '''
         if type(tags) == str:
             tags = [tags]
         if type(fields) == str:
