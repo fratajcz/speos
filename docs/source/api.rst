@@ -99,16 +99,16 @@ Let's have a closer look at the default values for our postprocessing routine (a
 
 .. code-block:: text
 
-pp:                           # postprocessing
-  switch: on                  # on, off, True, False
-  tasks: [overlap_analysis, dge, pathway, hpo_enrichment, go_enrichment, drugtarget, druggable, mouseKO, lof_intolerance]   # this is the full set of postprocessing options
-  consensus: top_down                # either int specifying the min bin for consensus or bottom_up, or top_down for p-val search starting from 0 up or from 10 down
-  cutoff_value: 0.7           # float in case of cutoff_type split, else int
-  cutoff_type: split          # split, top or bottom
-  save: True
-  save_dir: ./results/
-  plot: True
-  plot_dir: ./plots/
+    pp:                           # postprocessing
+    switch: on                  # on, off, True, False
+    tasks: [overlap_analysis, dge, pathway, hpo_enrichment, go_enrichment, drugtarget, druggable, mouseKO, lof_intolerance]   # this is the full set of postprocessing options
+    consensus: top_down                # either int specifying the min bin for consensus or bottom_up, or top_down for p-val search starting from 0 up or from 10 down
+    cutoff_value: 0.7           # float in case of cutoff_type split, else int
+    cutoff_type: split          # split, top or bottom
+    save: True
+    save_dir: ./results/
+    plot: True
+    plot_dir: ./plots/
 
 Let us walk through the keys one by one.
 
