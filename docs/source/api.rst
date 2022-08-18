@@ -9,6 +9,7 @@ Let's first come up with an example config file. The whole list of settings that
 Lets write a config file like the following:
 
 .. code-block:: text
+
     name: myrun
 
     input:
@@ -41,6 +42,7 @@ Let's say you just ran the training command above but you can't find the directo
 We can modify the config from above to explicitely tell Speos to save inference results to a specific directory by adding the following lines:
 
 .. code-block:: text
+
     inference:
         save_dir: ~/my_results/
 
