@@ -31,12 +31,12 @@ class TrainingPipeline(Pipeline):
 
         self.experiment = Experiment(self.config)
         self.inference_engine = InferenceEngine(self.config)
-        self.postprocessor = PostProcessor(self.config)
+        #self.postprocessor = PostProcessor(self.config)
 
     def run(self):
         self.experiment.run()
         self.inference_engine.infer()
-        self.postprocessor.run()
+        #self.postprocessor.run()
 
 
 class CVPipeline(Pipeline):
@@ -81,11 +81,11 @@ class InferencePipeline(Pipeline):
         super(InferencePipeline, self).__init__(config_path)
 
         self.inference_engine = InferenceEngine(self.config, self.logger)
-        self.postprocessor = PostProcessor(self.config)
+        #self.postprocessor = PostProcessor(self.config)
 
     def run(self):
         self.inference_engine.infer()
-        self.postprocessor.run()
+        #self.postprocessor.run()
 
 
 class CVTrainingPipeline(Pipeline):

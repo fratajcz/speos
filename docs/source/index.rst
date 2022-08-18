@@ -10,6 +10,7 @@ Welcome to Speos's documentation!
    :maxdepth: 2
    :caption: Contents:
    
+   api
    inputs
 
 
