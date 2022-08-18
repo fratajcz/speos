@@ -8,7 +8,7 @@ Let's first come up with an example config file. The whole list of settings that
 
 Lets write a config file like the following:
 
-::
+.. code-block:: text
     name: myrun
 
     input:
@@ -26,7 +26,7 @@ Training
 
 If we just want to trigger a single training run, say, to check if our config does what we want, we can pass it to the high-level training script.
 
->>>python training.py -c my_config.yaml
+>>> python training.py -c my_config.yaml
 
 This will trigger a training run using the Mendelian genes for Cardiovascular Disease as ground truth labels, BioPlex 3.0 293T as adjacency and a vanilla GCN as graph convolution.
 The rest of the settings will be default. 
@@ -40,13 +40,13 @@ Inference Only
 Let's say you just ran the training command above but you can't find the directory where the results are saved, or the results have been deleted.
 We can modify the config from above to explicitely tell Speos to save inference results to a specific directory by adding the following lines:
 
-::
+.. code-block:: text
     inference:
         save_dir: ~/my_results/
 
 and re-run only the inference:
 
->>>python inference.py -c my_config.yaml
+>>> python inference.py -c my_config.yaml
 
 which will save all the results of the inference to :obj:`~/my_results/` without training the model again.
 This assumes that the model has not been moved/deleted since it has been trained and that the config settings for the model save path are the same like when it was trained.
