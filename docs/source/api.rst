@@ -145,7 +145,7 @@ Let us walk through the keys one by one.
 :obj:`save: True`
 :obj:`save_dir: ./results/`
 :obj:`plot: True`
-:obj:`plot_dir: ./plots/`
+:obj:`plot_dir: ./plots/`:
     These keys are pretty self-explanatory. So, if you have lost your results or ask yourself where the plots went, this is where you should look.
 
 
