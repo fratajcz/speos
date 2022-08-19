@@ -5,7 +5,7 @@ import os
 
 
 class GOEA_Study:
-    def __init__(self, base_path="./data/genescf/geneSCF-master-source-v1.1-p2/class/lib/db/goa_human/",
+    def __init__(self, base_path="./data/goa_human/",
                 filename_scheme = "GO_{}_sym.txt",
                 task_dict = None):
         self.base_path = base_path
