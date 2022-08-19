@@ -3,7 +3,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Run Post Processing Pipeline.')
 
-parser.add_argument('--config', "-c", type=str, default="config_cardiovascular.yaml",
+parser.add_argument('--config', "-c", type=str, default="",
                     help='Path to the config that should be used for the run.')
 
 args = parser.parse_args()
