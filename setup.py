@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='speos',
-    version='0.2.1',
+    version='0.2.2',
     author='Florin Ratajczak',
     author_email='florin.ratajczak@helmholtz-muenchen.de',
     description='We good to go',
@@ -16,11 +16,7 @@ setup(
         "Bug Tracker": "https://github.com/fratajcz/speos/issues"
     },
     license='MIT',
-    packages=find_packages(
-        where='.',
-        include=['speos', 'speos/utils', 'speos/preprocessing'],
-        #exclude=['scripts', "tests"]
-        ),
+    packages=find_packages(exclude=["speos.scripts","speos.tests"]),
     #package_dir={"": "coregenes"},
     install_requires=[],
 )
