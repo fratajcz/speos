@@ -1,6 +1,6 @@
-[submodule "coregenes/visualization/graphdiagnostic"]
-	path = coregenes/visualization/graphdiagnostic
+[submodule "speos/visualization/graphdiagnostic"]
+	path = speos/visualization/graphdiagnostic
 	url = git@github.com:fratajcz/graphdiagnostic.git
-[submodule "coregenes/losses"]
-	path = coregenes/losses
+[submodule "speos/losses"]
+	path = speos/losses
 	url = git@github.com:fratajcz/losses.git
