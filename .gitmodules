@@ -4,3 +4,6 @@
 [submodule "speos/losses"]
 	path = speos/losses
 	url = git@github.com:fratajcz/losses.git
+[submodule "speos/postprocessing/lightgoea"]
+	path = speos/postprocessing/lightgoea
+	url = git@github.com:fratajcz/lightgoea.git
