@@ -3,11 +3,11 @@ FROM --platform=linux/amd64 ubuntu:20.04
 RUN apt-get update && apt-get install -y apt-transport-https ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get install -y --no-install-recommends apt-utils gnupg2 curl build-essential
+RUN apt-get update && apt-get install -y --no-install-recommends apt-utils gnupg2 curl build-essential git openssh-client
 
 # Create a working directory.
-RUN mkdir /app
-WORKDIR /app
+RUN mkdir app
+WORKDIR app
 
 # Create a non-root user and switch to it.
 RUN adduser --disabled-password --gecos '' --shell /bin/bash user \
@@ -41,10 +41,25 @@ RUN conda install pip
 
 RUN curl -so torch_scatter-2.0.8-cp37-cp37m-linux_x86_64.whl https://data.pyg.org/whl/torch-1.8.0%2Bcpu/torch_scatter-2.0.6-cp37-cp37m-linux_x86_64.whl
 RUN pip install torch_scatter-2.0.8-cp37-cp37m-linux_x86_64.whl
+run rm torch_scatter-2.0.8-cp37-cp37m-linux_x86_64.whl
 
 RUN curl -so torch_sparse-0.6.12-cp37-cp37m-linux_x86_64.whl https://data.pyg.org/whl/torch-1.8.0%2Bcpu/torch_sparse-0.6.12-cp37-cp37m-linux_x86_64.whl
 RUN pip install torch_sparse-0.6.12-cp37-cp37m-linux_x86_64.whl
-RUN pip install torch-geometric
+RUN rm torch_sparse-0.6.12-cp37-cp37m-linux_x86_64.whl
 
+RUN pip install torch-geometric
+RUN mkdir tmp
+
+COPY ./requirements.yaml .
+RUN  export TMPDIR="tmp"; python3 -m pip install -r requirements.yaml
+
+RUN git clone -q https://github.com/fratajcz/speos.git
+RUN cd speos/speos && git clone -q https://github.com/fratajcz/losses.git
+RUN cd speos/speos/postprocessing && git clone -q https://github.com/fratajcz/lightgoea.git
+RUN cd speos/speos/visualization && git clone -q https://github.com/fratajcz/graphdiagnostic.git
+RUN cd speos && pip install .
+
+RUN conda clean -a -y
+#RUN rm -rf tmp
 
 CMD ["/bin/bash"]
