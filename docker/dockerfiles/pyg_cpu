@@ -3,7 +3,7 @@ FROM --platform=linux/amd64 ubuntu:20.04
 RUN apt-get update && apt-get install -y apt-transport-https ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get install -y --no-install-recommends apt-utils gnupg2 curl build-essential git openssh-client
+RUN apt-get update && apt-get install -y --no-install-recommends apt-utils gnupg2 curl build-essential git openssh-client wget
 
 # Create a working directory.
 RUN mkdir app
@@ -47,7 +47,7 @@ RUN curl -so torch_sparse-0.6.12-cp37-cp37m-linux_x86_64.whl https://data.pyg.or
 RUN pip install torch_sparse-0.6.12-cp37-cp37m-linux_x86_64.whl
 RUN rm torch_sparse-0.6.12-cp37-cp37m-linux_x86_64.whl
 
-RUN pip install torch-geometric
+RUN pip install torch-geometric==2.0.1
 RUN mkdir tmp
 
 COPY ./requirements.yaml .
