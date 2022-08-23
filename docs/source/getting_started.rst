@@ -1,5 +1,5 @@
 Getting Started
-======
+===============
 
 Speos is fully implemented in python with some sidearms in R. To use Speos, either as a full end-to-end framework or just parts of it for visualization or preprocessing, 
 follow the upcoming sections to get started.
