@@ -53,12 +53,12 @@ Next, you might want to create a new conda env.
 
 Speos is built on Pytorch Geometric which in turn is built on Pytorch. To make sure Speos runs correctly, you must first install Pytorch and Pytorch geometric.
 Note that these following lines install the CPU version of the packages. Since the GPU version depend very much on the hardware configuration of the system, 
-please see X and Y on how to install Pytorch and Pytorch Geoemtric GPU versions for your hardware stack. 
+please see how to install `Pytorch<https://pytorch.org/get-started/locally/>` and `Pytorch Geoemtric<https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html>` GPU versions for your hardware stack. 
 
 .. code-block:: console
 
     $ conda install pytorch torchvision torchaudio cpuonly -c pytorch-lts -y
-    $ conda install pyg -c pyg -y
+    $ conda install pyg==2.0.1 -c pyg -y
 
 Then, install the remaining requirements with pip:
 
