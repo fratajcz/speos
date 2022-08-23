@@ -102,4 +102,4 @@ If everything has gone right, the following command should start preprocessing d
 
   $ python training.py
 
-Congratulations, you can now proceed to the :ref:`api<API>`` section to see how you can customize Speos to your needs!
+Congratulations, you can now proceed to the API section to see how you can customize Speos to your needs!
