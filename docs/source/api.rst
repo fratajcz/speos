@@ -4,7 +4,7 @@ High-Level API
 Speos has a high-level API that lets you run jobs, do postprocessing and even hyperparameter search with only a config file and a call to the respective pipeline.
 For convenience, we have packaged the pipelines in command-line scripts so that you don't have to get your fingers dirty at all.
 
-Let's first come up with an example config file. The whole list of settings that you can manage and their default values in your config file is shown in the :obj:`config_default.yaml <https://github.com/fratajcz/speos/blob/master/speos/utils/config_default.yaml>`_
+Let's first come up with an example config file. The whole list of settings that you can manage and their default values in your config file is shown in the `config_default.yaml <https://github.com/fratajcz/speos/blob/master/speos/utils/config_default.yaml>`_
 
 Lets write a config file like the following:
 

@@ -32,7 +32,7 @@ Note that this takes a while. Then you can run the image with the following comm
 
 >>>import speos
 
-If this runs without error, you can now skip to the :ref:`Obtain Data<Obtain Data>` section.
+If this runs without error, you can now skip to the :ref:`Obtain Data` section.
 
 Installation
 ------------
@@ -102,4 +102,4 @@ If everything has gone right, the following command should start preprocessing d
 
   $ python training.py
 
-Congratulations, you can now proceed to the API section to see how you can customize Speos to your needs!
+Congratulations, you can now proceed to the :ref:`api<API>`` section to see how you can customize Speos to your needs!
