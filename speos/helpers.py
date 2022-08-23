@@ -120,7 +120,10 @@ class CheckPointer(Companion):
         if path is None:
             path = self.path
         if torch.cuda.is_available():
-            state_dict = torch.load(path)
+            try:
+                state_dict = torch.load(path)
+            except RuntimeError:
+                state_dict = torch.load(path, map_location=torch.device('cpu'))
         else:
             # in case there is no cuda available, always load to cpu
             state_dict = torch.load(path, map_location=torch.device('cpu'))
