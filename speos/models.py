@@ -59,6 +59,9 @@ class BaseModel:
             layers.extend(_layers)
         return layers
 
+    def modules(self):
+        return [architecture.modules() for architecture in self.architectures]
+
     def parameters(self):
         return [architecture.parameters() for architecture in self.architectures]
 
