@@ -340,7 +340,7 @@ class AdversarialModel(BaseModel):
 
 
 class ModelBootstrapper:
-    def __init__(self, config, dim, num_adjacencies):
+    def __init__(self, config, dim, num_adjacencies=1):
         if config.model.model == "AdversarialModel":
             self.model = AdversarialModel(config, dim)
         elif config.model.model == "SimpleModel":
