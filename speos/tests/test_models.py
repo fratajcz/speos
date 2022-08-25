@@ -44,6 +44,25 @@ class SimpleModelTest(unittest.TestCase):
         layers = [module for module in model.architectures[0].mp.modules() if not isinstance(module, nn.Sequential)]
         self.assertEqual("GCNConv", str(layers[1].__class__.__name__))
 
+    def test_repackage_into_one_sequential(self):
+        model = ModelBootstrapper(self.config, 90, 1).get_model()
+
+        pre_mp_layers = [module for module in model.architectures[0].pre_mp.modules() if not isinstance(module, nn.Sequential)]
+        mp_layers = [module for module in model.architectures[0].mp.modules() if not isinstance(module, nn.Sequential)]
+        post_mp_layers = [module for module in model.architectures[0].post_mp.modules() if not isinstance(module, nn.Sequential)]
+
+        repackaged = model.architectures[0].repackage_into_one_sequential()
+
+        repackaged_layers = [module for module in repackaged.modules() if not isinstance(module, nn.Sequential)]
+
+        # see if we have gotten all layers or if some were lost
+        self.assertEqual(len(pre_mp_layers) + len(mp_layers) + len(post_mp_layers), len(repackaged_layers))
+
+        old_layers = torch.nn.Sequential(*pre_mp_layers, *mp_layers, *post_mp_layers)
+        # see if their weights are identical
+        for old_param, new_param in zip(old_layers.parameters(), repackaged.parameters()):
+            self.assertTrue(torch.eq(old_param, new_param).all())
+
     def test_forward(self):
         mappings = GWASMapper(self.config.input.gene_sets, self.config.input.gwas).get_mappings(
             self.config.input.tag, fields=self.config.input.field)

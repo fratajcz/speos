@@ -295,16 +295,6 @@ class GeneNetwork(nn.Module):
         x_pre = self.pre_mp(x)
 
         # apply graph convolutions
-        """
-        x_0 = x.clone()
-        for i in range(len(self.gcnconv)):
-            x = self.norm[i](x)
-            try:
-                x = self.gcnconv[i](x, edge_index)
-            except TypeError:
-                x = self.gcnconv[i](x, x_0, edge_index)
-            x = F.elu(x)
-        """
         if self.mp is not None:
             x = self.mp(x_pre, edge_index)
             self.final_conv_acts = x
@@ -343,6 +333,31 @@ class GeneNetwork(nn.Module):
 
     def input_activations_hook(self, grad):
         self.input_grads = grad
+
+    def repackage_into_one_sequential(self):
+        """Takes Pre-MP, MP and Post-MP and packages them into one continuous pyg.nn.Sequential module.
+            This way we can use the captum explanation methods from `here<https://github.com/pyg-team/pytorch_geometric/blob/master/examples/captum_explainability.py>`_ without errors.
+            """
+        flow_list = []
+        layer_list = []
+
+        for layer in self.pre_mp:
+            flow_list.append('x -> x')
+            layer_list.append(layer)
+
+        every_n_th = len(self.mp._modules) / self.config.model.mp.n_layers
+        for i, layer in enumerate(self.mp._modules.values()):
+            layer_list.append(layer)
+            if i % every_n_th == 0:
+                flow_list.append('x, edge_index -> x')
+            else:
+                flow_list.append('x -> x')
+
+        for layer in self.post_mp:
+            flow_list.append('x -> x')
+            layer_list.append(layer)
+
+        return pyg_nn.Sequential('x, edge_index', [(layer, flow) for layer, flow in zip(layer_list, flow_list)])
 
 
 class RelationalGeneNetwork(GeneNetwork):
