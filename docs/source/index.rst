@@ -12,6 +12,7 @@ Welcome to Speos's documentation!
    
    getting_started
    api
+   extension
    inputs
 
 
