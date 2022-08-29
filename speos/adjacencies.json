@@ -71,7 +71,7 @@
     "weight": "None",
     "directed": true},
 {"name": "GRNDB-adipose_tissue",
-    "type": "ppi",
+    "type": "grn",
     "file_path": "data/grndb/adipose_tissue.txt",
     "source": "TF",
     "target": "gene",
