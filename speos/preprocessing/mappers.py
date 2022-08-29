@@ -1,7 +1,7 @@
 import os
 import json
 import re
-
+from speos.utils.logger import setup_logger
 
 class Mapper:
     """Abstract Mapper Class"""
@@ -52,14 +52,18 @@ class GWASMapper(Mapper):
     def __init__(self,
                  ground_truth_path: str,
                  features_file_path: str,
-                 mapping_file: str = "./speos/mapping.json",):
+                 mapping_file: str = "./speos/mapping.json",
+                 extension_mappings: str = "./extensions/mapping.json"):
 
         self.features_file_path = features_file_path
         self.ground_truth_path = ground_truth_path
 
-        with open(mapping_file, "r") as file:
-            content = file.read()
-            self.mapping_list = json.loads(content)
+        self.mapping_list = []
+
+        for mapping in mapping_file, extension_mappings:
+            with open(mapping, "r") as file:
+                content = file.read()
+                self.mapping_list.extend(json.loads(content))
 
         mappings_to_delete = []
         for mapping in self.mapping_list:
@@ -84,11 +88,15 @@ class AdjacencyMapper(Mapper):
         mapping_file (str): The path to the file that describes the networks and where they are stored. (default: :obj:`./speos/adjacencies.json`)
     """
     def __init__(self,
-                 mapping_file: str = "speos/adjacencies.json",):
+                 mapping_file: str = "speos/adjacencies.json",
+                 extension_mappings: str = "./extensions/adjacencies.json"):
 
-        with open(mapping_file, "r") as file:
-            content = file.read()
-            self.mapping_list = json.loads(content)
+        self.mapping_list = []
+
+        for mapping in mapping_file, extension_mappings:
+            with open(mapping, "r") as file:
+                content = file.read()
+                self.mapping_list.extend(json.loads(content))
 
         mappings_to_delete = []
         for mapping in self.mapping_list:

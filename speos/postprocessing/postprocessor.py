@@ -167,35 +167,35 @@ class PostProcessor:
 
         valid_union_genes = set()
         unknown_union_genes = set()
-        all_union = set()
+        dge_genes_union = set()
 
         for subtype, values in zip(phenotypes, value_list):
             
             if subtype != "Union":
-                all = set(pd.read_csv(values["file"], header=0, comment='#', index_col=False, sep="\t")["Symbol"].to_list())
-                all_union.update(all)
-                unknown_group_genes = self.return_only_valid(all, unknown_genes)
-                unknown_union_genes.update(unknown_group_genes)
-                valid_group_genes = self.return_only_valid(all, all_genes)
-                valid_union_genes.update(valid_group_genes)
+                dge_genes = set(pd.read_csv(values["file"], header=0, comment='#', index_col=False, sep="\t")["Symbol"].to_list())
+                dge_genes_union.update(dge_genes)
+                valid_dge_genes = self.return_only_valid(dge_genes, all_genes)
+                valid_union_genes.update(valid_dge_genes)
+                unknown_dge_genes = self.return_only_valid(dge_genes, unknown_genes)
+                unknown_union_genes.update(unknown_dge_genes)
             else:
-                unknown_group_genes = unknown_union_genes
-                valid_group_genes = valid_union_genes
-                all = all_union
+                dge_genes = dge_genes_union
+                unknown_dge_genes = unknown_union_genes
+                valid_dge_genes = valid_union_genes
 
-            array = self.make_contingency_table(all_genes, positive_genes, valid_group_genes)
+            array = self.make_contingency_table(all_genes, positive_genes, valid_dge_genes)
             is_enriched_result = fisher_exact(array)
 
-            self.logger.info("Total of {} {} DE genes, {} of them match with our translation table.".format(len(all), subtype, len(valid_group_genes)))
+            self.logger.info("Total of {} {} DE genes, {} of them match with our translation table.".format(len(dge_genes), subtype, len(valid_dge_genes)))
             self.logger.info("Found {} {} DE genes among the {} known positive genes (p: {:.2e}, OR: {}), leaving {} in {} Unknowns".format(
-                    len(valid_group_genes.intersection(positive_genes)), subtype, len(positive_genes), is_enriched_result[1], round(is_enriched_result[0], 3), len(unknown_group_genes), len(unknown_genes)))
+                    len(valid_dge_genes.intersection(positive_genes)), subtype, len(positive_genes), is_enriched_result[1], round(is_enriched_result[0], 3), len(unknown_dge_genes), len(unknown_genes)))
 
             mendelian_odds_ratios.append(is_enriched_result[0])
             mendelian_pvals.append(is_enriched_result[1])
 
             predicted_genes = set(self.outer_result[0].keys())
 
-            array = self.make_contingency_table(unknown_genes, predicted_genes, valid_group_genes)
+            array = self.make_contingency_table(unknown_genes, predicted_genes, unknown_dge_genes)
 
             is_enriched_result = fisher_exact(array)
 

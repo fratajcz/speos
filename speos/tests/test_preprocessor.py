@@ -112,18 +112,58 @@ class AdjacencyMapperTest(unittest.TestCase):
         self.assertEqual(len(read_mappings), len(self.mapping))
 
     def test_fetch_by_type(self):
-
         with open("coregenes/adjacencies.json", "r") as file:
             content = file.read()
             mappings = json.loads(content)
 
         self.config.input.adjacency_field = "type"
 
-        for type in ["grn", "ppi", "evo"]:
-            good_mappings = [mapping for mapping in mappings if mapping["type"] == type]
-            read_mappings = self.mapper.get_mappings(tags=type, fields=self.config.input.adjacency_field)
+        for _type in ["grn", "ppi", "evo"]:
+            good_mappings = [mapping for mapping in mappings if mapping["type"] == _type]
+            read_mappings = self.mapper.get_mappings(tags=_type, fields=self.config.input.adjacency_field)
             self.assertEqual(len(good_mappings), len(read_mappings))
 
+    def test_fetch_extensions(self):
+        extension = [{"name": "ExtensionAdjacency",
+                      "type": "ext",
+                      "file_path": "no/such/thing",
+                      "source": "SymbolA",
+                      "target": "SymbolB",
+                      "sep": "\t",
+                      "symbol": "hgnc",
+                      "weight": "None",
+                      "directed": False}]
+
+        mapping_file_path = "speos/tests/files/adjacencies_extension.json"
+        with open(mapping_file_path, "w") as file:
+            json.dump(extension, file)
+
+        mapper = AdjacencyMapper(extension_mappings=mapping_file_path)
+
+        read_mappings = mapper.get_mappings(tags="ext", fields="type")
+        self.assertEqual(1, len(read_mappings))
+
+        extension_ppi = [{"name": "ExtensionAdjacency",
+                          "type": "ppi",
+                          "file_path": "no/such/thing",
+                          "source": "SymbolA",
+                          "target": "SymbolB",
+                          "sep": "\t",
+                          "symbol": "hgnc",
+                          "weight": "None",
+                          "directed": False}]
+
+        before_mappings = mapper.get_mappings(tags="ppi", fields="type")
+
+        mapping_file_path = "speos/tests/files/adjacencies_extension.json"
+        with open(mapping_file_path, "w") as file:
+            json.dump(extension_ppi, file)
+
+        mapper = AdjacencyMapper(extension_mappings=mapping_file_path)
+        after_mappings = mapper.get_mappings(tags="ppi", fields="type")
+        self.assertEqual(len(before_mappings) + 1, len(after_mappings))
+
+        os.remove(mapping_file_path)
 
 class PreprocessorTest(unittest.TestCase):
     def setUp(self):
