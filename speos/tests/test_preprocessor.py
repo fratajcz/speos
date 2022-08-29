@@ -31,7 +31,7 @@ class GWASMapperTest(unittest.TestCase):
                          "features_file": "FOO.genes.out",
                          "match_type": "perfect",
                          "significant": "True"}]
-        self.mapping_file_path = "coregenes/tests/files/mappings.json"
+        self.mapping_file_path = "speos/tests/files/mappings.json"
         with open(self.mapping_file_path, "w") as file:
             json.dump(self.mapping, file)
         self.mapping = [{"name": "UC-immune_dysregulation",
@@ -82,6 +82,26 @@ class GWASMapperTest(unittest.TestCase):
         read_mappings = self.mapper.get_mappings(tags="immune_dysregulation", fields="name")
         self.assertEqual(read_mappings[0]["ground_truth"], os.path.join(self.config.input.gene_sets, self.mapping[0]["ground_truth"]))
         self.assertEqual(read_mappings[0]["features_file"], os.path.join(self.config.input.gwas, self.mapping[0]["features_file"]))
+
+    def test_extension(self):
+        extension = [{"name": "EXT-immune_dysregulation",
+                      "ground_truth": "Immune_Dysregulation_genes.bed",
+                      "features_file": "EXT.genes.out",
+                      "match_type": "perfect",
+                      "significant": "False"}]
+        mapping_file_path = "speos/tests/files/mappings_extension.json"
+        with open(mapping_file_path, "w") as file:
+            json.dump(extension, file)
+
+        before_mappings = self.mapper.get_mappings(tags="immune_dysregulation", fields="name")
+
+        mapper = GWASMapper(self.config.input.gene_sets, self.config.input.gwas, mapping_file=self.mapping_file_path, extension_mappings=mapping_file_path)
+
+        after_mappings = mapper.get_mappings(tags="immune_dysregulation", fields="name")
+
+        self.assertEqual(len(before_mappings) + 1, len(after_mappings))
+
+        os.remove(mapping_file_path)
 
 
 class AdjacencyMapperTest(unittest.TestCase):
@@ -164,6 +184,7 @@ class AdjacencyMapperTest(unittest.TestCase):
         self.assertEqual(len(before_mappings) + 1, len(after_mappings))
 
         os.remove(mapping_file_path)
+
 
 class PreprocessorTest(unittest.TestCase):
     def setUp(self):
