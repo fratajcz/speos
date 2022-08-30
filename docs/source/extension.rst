@@ -247,7 +247,7 @@ Now, lets write the following config file and save it to ``my_config.yaml``:
         tag: Immune_Dysregulation
         field: ground_truth
 
-This setting is also the default, but we define it anyway so that you know what to change if you want to run it for a differend ground truth. This settings means that it will look for the substring ``Immune_Dysregulation``in the field ``ground_truth``of all GWAS-to-disease-gene mappings and select all those that match.
+This setting is also the default, but we define it anyway so that you know what to change if you want to run it for a differend ground truth. This settings means that it will look for the substring ``Immune_Dysregulation`` in the field ``ground_truth`` of all GWAS-to-disease-gene mappings and select all those that match.
 
 Look what happens if we start a training run now after we have registered our FOO GWAS trait in ``extensions/mapping.json``:
 
