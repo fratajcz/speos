@@ -50,13 +50,8 @@ class GWASMapper(Mapper):
         mapping_file (str): The path to the file that maps ground truths (labels) to sets of feature (GWAS) files. (default: :obj:`./speos/mapping.json`)
     """
     def __init__(self,
-                 ground_truth_path: str,
-                 features_file_path: str,
                  mapping_file: str = "./speos/mapping.json",
                  extension_mappings: str = "./extensions/mapping.json"):
-
-        self.features_file_path = features_file_path
-        self.ground_truth_path = ground_truth_path
 
         self.mapping_list = []
 
@@ -67,12 +62,7 @@ class GWASMapper(Mapper):
 
         mappings_to_delete = []
         for mapping in self.mapping_list:
-            if mapping["features_file"] != "":
-                mapping["ground_truth"] = os.path.join(
-                    self.ground_truth_path, mapping["ground_truth"])
-                mapping["features_file"] = os.path.join(
-                    self.features_file_path, mapping["features_file"])
-            else:
+            if mapping["features_file"] == "":
                 mappings_to_delete.append(mapping)
 
         for mapping in mappings_to_delete:

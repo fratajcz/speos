@@ -37,7 +37,7 @@ class Experiment:
         logger.info("Starting run {}".format(self.name))
         logger.info("Using device(s): {}".format(self.devices))
 
-        mappings = GWASMapper(config.input.gene_sets, config.input.gwas).get_mappings(
+        mappings = GWASMapper().get_mappings(
             config.input.tag, fields=config.input.field)
 
         tag = "" if config.input.adjacency == "all" else config.input.adjacency
