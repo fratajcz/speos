@@ -109,7 +109,7 @@ Adapt ``my_config.yaml`` to:
         adjacency: ppi
         adjacency_field: type
 
-and run it, which results in a different Output:
+and run it, which results in a different output:
 
 .. code-block:: console
 
@@ -227,7 +227,7 @@ To add a GWAS trait, simply modify ``extensions/mapping.json`` as follows:
 Using your GWAS Study
 ~~~~~~~~~~~~~~~~~~~~~
 
-Now that you have added your GWAS study to ``extensions/mapping.json``, you can start using it. Note that we have specified the Immune Dysregulatin as ground truth and phenotype. If you look above in the Using your Network subsection, you will find the following line in the logging output:
+Now that you have added your GWAS study to ``extensions/mapping.json``, you can start using it. Note that we have specified the Immune Dysregulatin as ground truth and phenotype. If you look above in the :ref:`Using your Network` subsection, you will find the following line in the logging output:
 
 .. code-block:: console
 
@@ -269,7 +269,7 @@ Look what happens if we start a training run now after we have registered our FO
     Average out degree:   1.0000
     test_gwas 2022-08-30 11:42:19,344 [INFO] speos.preprocessing.preprocessor: Number of positives in ground truth data/mendelian_gene_sets/Immune_Dysregulation_genes.bed: 2
 
-You see that this logging output is drastically different to the ones in the chapers above. First, it says ``Using 9 mappings`` instead of 8, so the additional trait FOO is being used. 
+You see that this logging output is drastically different to the ones in the chapters above. First, it says ``Using 9 mappings`` instead of 8, so the additional trait FOO is being used. 
 But then, our graph has only 18 nodes, even though we fed in GWAS data for 21 nodes for the trait FOO. This is because the remaining three nodes have either missing data for one of the other 8 traits, or there is no median gene expression data for these three.
 In the last line, you can see that among these 18 nodes, only 2 positives (Mendelians) have been found. This is of course too few to construct a meaningful train, validation and test set, which is why the training run crashes soon after. 
 
@@ -278,3 +278,149 @@ This example should have shown you 1. how to add you own GWAS trait data and 2. 
 .. note::
    Of course you can go ahead and simply impute p-value, Z-value and the number of SNPs for all the genes that have no information for your trait. In this case, just add the imputed values to ``data/mygwas/FOO.genes.out`` and re-run the analysis, now the number of used genes should be much larger.
    Since it is not clear how to impute such values, however, we will not advise to do so.
+
+Additonal Node Features
+-----------------------
+
+In addition to GWAS trait data, Speos uses median gene expression per tissue as node level features. We are aware that there are plenty of other node feautures that can be used instead or in addition to those that are already implemented. The following example will lead you through the process of adding your own node data.
+
+Adding your node feautures
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Say you have some features that you can add to every node. For the sake of simplicity, let's assume we have three additional features for every gene, and each of those features are just the same three integers. This is pointless of course, but we don't want to get distracted by complicated examples.
+The following is your data file that is stored in :obj:`"data/mydata/mydata.tsv"`:
+
+.. code-block:: text
+
+    hgnc	Feat1	Feat2	Feat3
+    A1BG	1	2	3
+    A1CF	1	2	3
+    A2M	1	2	3
+    A2ML1	1	2	3
+    A3GALT2	1	2	3
+    A4GALT	1	2	3
+    A4GNT	1	2	3
+    AAAS	1	2	3
+    AACS	1	2	3
+    AADAC	1	2	3
+    AADACL2	1	2	3
+    AADACL3	1	2	3
+    ...
+
+And so on, the same three features for every gene, preceded by the HGNC gene symbol.
+
+next, we need to write a function that processes this file and returns it as a pandas DataFrame. We are aware that the preprocessing in this case is trivial, but since there can be arbitrary types of input, we want to give the user the chance to use any input by not making any assumptions.
+You can write any preprocessing function that you want, as long as it returns a pandas DataFrame where the row index is either the HGNC, Entrez or Ensembl identifiers.
+
+For the file shown above, we write this simple preprocessing script and place it in :obj:`"extensions/preprocessing.py"`:
+
+.. code-block:: python
+
+    def preprocess_mydata(path):
+    import pandas as pd
+
+    df = pd.read_csv(path, sep="\t", header=0, index_col=0)
+
+    return df
+
+which, when run with the path to the file, returns the dataframe in the proper format:
+
+.. code-block:: console
+
+    $ python
+    Python 3.7.12 | packaged by conda-forge | (default, Oct 26 2021, 06:08:21) 
+    [GCC 9.4.0] on linux
+    Type "help", "copyright", "credits" or "license" for more information.
+    >>> from extensions.preprocessing import preprocess_mydata
+    >>> preprocess_mydata("data/mydata/mydata.tsv")
+            Feat1  Feat2  Feat3
+    hgnc                        
+    A1BG         1      2      3
+    A1CF         1      2      3
+    A2M          1      2      3
+    A2ML1        1      2      3
+    A3GALT2      1      2      3
+    ...        ...    ...    ...
+    ZYG11A       1      2      3
+    ZYG11B       1      2      3
+    ZYX          1      2      3
+    ZZEF1        1      2      3
+    ZZZ3         1      2      3
+
+    [19220 rows x 3 columns]
+    >>> exit()
+
+Now, all that is left to do is tell Speos to use the data. To do that, we add some descriptive keys to :obj:`"extensions/datasets.json.py"`.
+
+Before manipulation, :obj:`"extensions/datasets.json.py"` looks like this:
+
+.. code-block:: json
+
+    []
+
+Now, to add or dataset, we have to make the following additions:
+
+
+.. code-block:: json
+
+    [{"name": "MyData",
+      "identifier": "hgnc",
+      "function": "preprocess_mydata",
+      "args": [],
+      "kwargs": {"path": "data/mydata/mydata.tsv"}
+      }]
+
+* :obj:`"name"`: This key specifies the name of the dataset. It is only used for logging, so use something descriptive.
+* :obj:`"identifier"` : The identifier that is used in the dataset file. It is allowed to use "hgnc", "entrez" or "ensembl".
+* :obj:`"function"`: The name of the function that has been placed in :obj:`"extensions/preprocessing.py"` and that should be used to preprocess the data.
+* :obj:`"args"` and :obj:`"kwargs"`: These keys are the arguments and keyword arguments for the preprocessing function chosen in the :obj:`"function"` key. Here, we need to pass only the path, but you can use any degree of customization in your preprocessing.
+
+
+Using Your Node Feautures
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Now that we have successfully registered the additional Dataset, it is used automatically. To demonstrate, let's start a simple training run.
+Write a config and store it under ``my_config.yaml``, containing the following lines:
+
+.. code-block:: text
+
+    name: test_input
+
+    input:
+        adjacency: ppi
+        adjacency_field: type
+
+And now we run it:
+
+.. code-block:: console
+
+    $ python training.py -c my_config.yaml
+    test_input 2022-08-30 14:28:32,149 [INFO] speos.experiment: Starting run test_input
+    test_input 2022-08-30 14:28:32,149 [INFO] speos.experiment: Cuda is available: True
+    test_input 2022-08-30 14:28:32,149 [INFO] speos.experiment: Using device(s): ['cuda:0']
+    test_input 2022-08-30 14:28:32,152 [INFO] speos.preprocessing.preprocessor: Using Adjacency matrices: ['BioPlex30293T']
+    test_input 2022-08-30 14:28:32,152 [INFO] speos.preprocessing.preprocessor: Using 8 mappings with ground truth data/mendelian_gene_sets/Immune_Dysregulation_genes.bed 
+    Processing...
+    Done!
+    test_input 2022-08-30 14:28:32,152 [INFO] speos.preprocessing.preprocessor: Using 1 additional node data sources: ['MyData']
+    test_input 2022-08-30 14:28:58,192 [INFO] speos.preprocessing.preprocessor: Name: 
+    Type: MultiDiGraph
+    Number of nodes: 16852
+    Number of edges: 158962
+    Average in degree:   9.4328
+    Average out degree:   9.4328
+    test_input 2022-08-30 14:28:58,593 [INFO] speos.preprocessing.preprocessor: Number of positives in ground truth data/mendelian_gene_sets/Immune_Dysregulation_genes.bed: 523
+    ...
+    test_input 2022-08-30 14:28:59,330 [INFO] speos.datasets: Data(x=[16852, 99], edge_index=[2, 158962], y=[16852], train_mask=[16852], test_mask=[16852], val_mask=[16852])
+    ...
+
+You can see the line ``Using 1 additional node data sources: ['MyData']`` indicating that it finds the definition of your dataset. 
+Further down you can see the dimension of the feature matrix: ``Data(x=[16852, 99], ...`` indicating that we have 16852 genes which each has 99 features. 
+
+If we delete our description from :obj:`"extensions/datasets.json.py"` (i.e. turn it into an empty list again), and leave everything else as it is, the corresponding line in the output will change to:
+
+.. code-block:: console
+
+    test_input 2022-08-30 14:58:46,339 [INFO] speos.datasets: Data(x=[16852, 96], edge_index=[2, 158962], y=[16852], train_mask=[16852], test_mask=[16852], val_mask=[16852])
+
+And the part ``Data(x=[16852, 96], ...`` indicates that, without our "MyDataset", we have only 96 features. So, adding the 3 features beforehand was a success!

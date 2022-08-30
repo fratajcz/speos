@@ -5,6 +5,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import json
+import extensions.preprocessing as hooks
 
 
 class PreProcessor:
@@ -15,7 +17,8 @@ class PreProcessor:
                  translation_table: str = "data/hgnc_official_list.tsv",
                  expression_files=["./data/GTEx_Analysis_2016-01-15_v7_RNASeQCv1.1.8_gene_median_tpm.gct",
                                    "./data/human_protein_atlas_rna_blood_cell.tsv"],
-                 name: str = "RBC"):
+                 name: str = "RBC",
+                 extension_inputs: str = "./extensions/datasets.json"):
 
         self.name = name
         self.config = config
@@ -38,6 +41,7 @@ class PreProcessor:
         self.hgnc2id = None
         self.assign_new_adjacencies(adjacency_list, compile=False)
         self.assign_new_ground_truth(mapping_list, compile=False)
+        self.read_extension_inputs(extension_inputs)
 
     def build_graph(self, features=True, use_embeddings=None):
 
@@ -293,7 +297,15 @@ class PreProcessor:
             wv = KeyedVectors.load(
                 "~/ppi-core-genes/data/misc/walking_all.output", mmap='r')
 
-        if self.config.input.use_gwas or self.config.input.use_expression or use_embeddings:
+        if len(self.additional_inputs) > 0:
+            addtl_dfs = [getattr(hooks, addtl_input["function"])(*addtl_input["args"], **addtl_input["kwargs"]) for addtl_input in self.additional_inputs]
+            addtl_dfs_identifiers = [addtl_input["identifier"].lower() for addtl_input in self.additional_inputs]
+            
+            for identifier in addtl_dfs_identifiers:
+                if identifier not in [self.hgnc_key, self.ensembl_key, self.entrez_key]:
+                    raise ValueError("The identifier Key of additional inputs has to be one of {}".format([self.hgnc_key, self.ensembl_key, self.entrez_key]))
+
+        if self.config.input.use_gwas or self.config.input.use_expression or use_embeddings or len(self.additional_inputs) > 0:
             random_run = False
         else:
             # if we neither use gwas, nor expression nor embedding features, use random features instead
@@ -320,6 +332,9 @@ class PreProcessor:
                         node[1]["x"].extend(embedding)
                     if random_run:
                         node[1]["x"].extend(random_features[i, :].tolist())
+                    if len(self.additional_inputs) > 0:
+                        for df, identifier in zip(addtl_dfs, addtl_dfs_identifiers):
+                            node[1]["x"].extend(df.loc[node[1][identifier]].tolist())
 
                 except ValueError:
                     # if there is no entrez id (it is set to nan) of a node, remove it since we can't add features to it
@@ -543,3 +558,21 @@ class PreProcessor:
         results = {"Diameter": diameter, "Average Shortest Path Length": average_shortest_path_length}
 
         return results
+
+    def read_extension_inputs(self, path):
+        self.additional_inputs = []
+
+        with open(path, "r") as file:
+            content = file.read()
+            additional_inputs = json.loads(content)
+
+        for addtl_input in additional_inputs:
+            logger = setup_logger(self.config, __name__)
+
+            try:
+                assert hasattr(hooks, addtl_input["function"])
+                self.additional_inputs.append(addtl_input)
+            except AssertionError:
+                logger.warning("Could not find function {} for additional input {} in extensions/preprocessing.py".format(addtl_input["function"], addtl_input["name"]))    
+
+            logger.info("Using {} additional node data sources: {}".format(len(self.additional_inputs), [input["name"] for input in self.additional_inputs]))
