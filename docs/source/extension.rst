@@ -3,8 +3,15 @@ Extending Speos
 
 The strength of Speos lies in its ability to be customized and extended. See the following sections on how to add your own network, additional GWAS data and new phenotype labels!
 
+Additonal Networks
+------------------
+
+Although Speos already has a wide variety of networks that you can choose from, the field of Biology is so flexible and wide that it can be very handy to extend Speos so you can use additional networks.
+You can add a network and use it in single or multi network training runs by simply adhering to a minimal header structure. The following example will guide you through the process.
+
+
 Adding A Network
-----------------
+~~~~~~~~~~~~~~~~
 
 Say you have an adjacency that you want to add to Speos to run some experiments on. For the sake of simplicity, lets say your edgelist contains only one edge and looks like this:
 
@@ -48,7 +55,7 @@ To add a network, simply modify ``extensions/adjacencies.json`` as follows:
 * :obj:`"directed"`: This key contains a boolean (false/true) and tells Speos if the edges are directed or undirected.
 
 Using your Network
-------------------
+~~~~~~~~~~~~~~~~~~
 
 To use the network that we just have added to ``extensions/adjacencies.json``, you can simply set according values in a config file and try to run a training run using that config file.
 
@@ -88,7 +95,7 @@ We can see that the network has been processed by looking at the logging output 
 This means that the edge can be traversed in both ways. Since we want to be able to both model directed and undirected edges without additional metadata, we have added 2 edges for our one undirected edge: One from MTOR to IL1B and one from IL1B to MTOR!
 
 Using your Network together with others
----------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We can use the :obj:`"type"` keyword in the description of the network to trigger a multi-network run. The :obj:`"type"` of our little netork is set to :obj:`"ppi"`, so we can blend it with other PPIs by using the folling config:
 
