@@ -12,7 +12,7 @@ class GraphDiagnosticWrapper:
     def __init__(self, preprocessor=None, config=None, gwasmapper=None, adjacencymapper=None, phenotype_tag="", adjacency_tag="", phenotype_fields="name", adjacency_fields="name", merge=False):
 
         self.config = Config() if config is None else config
-        self.gwasmapper = GWASMapper(config.input.gene_sets, config.input.gwas, config.input.gwas_mappings) if gwasmapper is None else gwasmapper
+        self.gwasmapper = GWASMapper() if gwasmapper is None else gwasmapper
         self.adjacencymapper = AdjacencyMapper(mapping_file=config.input.adjacency_mappings) if adjacencymapper is None else adjacencymapper
 
         self.gwasmappings = self.gwasmapper.get_mappings(tags=phenotype_tag, fields=phenotype_fields)

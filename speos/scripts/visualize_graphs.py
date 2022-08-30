@@ -133,11 +133,16 @@ diagnostic = GraphDiagnosticWrapper(config=config, phenotype_tag=["cardiovascula
 fig, ax = diagnostic.get_diagnostics("metrics", save=False)
 plt.savefig(os.path.join(config.model.plot_dir, "metrics_all_cardio.png"))
 """
-
+"""
 diagnostic = GraphDiagnosticWrapper(config=config, phenotype_tag=["cardiovascular_disease"], adjacency_tag="Recon3D")
 fig, ax = diagnostic.get_diagnostics("metrics", save=False)
 plt.savefig(os.path.join(config.model.plot_dir, "metrics_recon3d_cardio.png"))
-
+"""
+"""
 diagnostic = GraphDiagnosticWrapper(config=config, phenotype_tag=["immune_dysregulation"], adjacency_tag="Recon3D")
 fig, ax = diagnostic.get_diagnostics("metrics", save=False)
 plt.savefig(os.path.join(config.model.plot_dir, "metrics_recon3d_immune.png"))
+"""
+diagnostic = GraphDiagnosticWrapper(config=config, phenotype_tag=["immune_dysregulation"], adjacency_tag="STRING")
+fig, ax = diagnostic.get_diagnostics("", save=False)
+plt.savefig(os.path.join(config.model.plot_dir, "all_string_pa_immune.png"))
