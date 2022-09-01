@@ -79,10 +79,11 @@ class AdjacencyMapper(Mapper):
     """
     def __init__(self,
                  mapping_file: str = "speos/adjacencies.json",
-                 extension_mappings: str = "./extensions/adjacencies.json"):
+                 extension_mappings: str = "./extensions/adjacencies.json",
+                 blacklist: list = []):
 
         self.mapping_list = []
-
+        self.blacklist = blacklist
         for mapping in mapping_file, extension_mappings:
             with open(mapping, "r") as file:
                 content = file.read()
@@ -127,5 +128,24 @@ class AdjacencyMapper(Mapper):
                 if fields[0] == "name":
                     tags[i] = self._format_name(tags[i])
 
-        return super().get_mappings(tags, fields)
+        mappings = super().get_mappings(tags, fields)
 
+        blacklisted_mappings = []
+        for banned_mapping in self.blacklist:
+            for tag in tags:
+                # skip removing blacklisted adjacencies if they are explicitely requested
+                if banned_mapping in tag.lower():
+                    skip_mapping = True
+                else: 
+                    skip_mapping = False
+            if skip_mapping:
+                continue
+
+            for mapping in mappings:
+                if banned_mapping in mapping["name"].lower():
+                    blacklisted_mappings.append(mapping)
+
+        for banned_mapping in blacklisted_mappings:
+            mappings.remove(banned_mapping)
+
+        return mappings

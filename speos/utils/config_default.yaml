@@ -13,6 +13,7 @@ crossval:
 input:
   adjacency: BioPlex30293T
   adjacency_field: name
+  adjacency_blacklist: [recon3d, string]
   adjacency_mappings: speos/adjacencies.json
   randomize_adjacency_percent: 0        # int, to which percentage the adjacency should be x-swapped, 100 makes sure that each edge will have a different tail node
   force_multigraph: False               # if multigraph dataset should be constructed for e.g. rgcn or film, even though we have only 1 adjacency

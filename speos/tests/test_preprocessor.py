@@ -185,6 +185,15 @@ class AdjacencyMapperTest(unittest.TestCase):
 
         os.remove(mapping_file_path)
 
+    def test_blacklist(self):
+
+        other_mapper = AdjacencyMapper(blacklist=self.config.input.adjacency_blacklist)
+
+        full_mappings = self.mapper.get_mappings()
+        less_mappings = other_mapper.get_mappings()
+
+        self.assertLess(len(less_mappings), len(full_mappings))
+
 
 class PreprocessorTest(unittest.TestCase):
     def setUp(self):
