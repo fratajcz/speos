@@ -194,6 +194,12 @@ class AdjacencyMapperTest(unittest.TestCase):
 
         self.assertLess(len(less_mappings), len(full_mappings))
 
+    def test_all_or_empty_string(self):
+        full_mappings = self.mapper.get_mappings("")
+        also_full_mappings = self.mapper.get_mappings("all")
+
+        self.assertEqual(len(full_mappings), len(also_full_mappings))
+
 
 class PreprocessorTest(unittest.TestCase):
     def setUp(self):

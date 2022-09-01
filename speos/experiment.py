@@ -40,8 +40,7 @@ class Experiment:
         mappings = GWASMapper().get_mappings(
             config.input.tag, fields=config.input.field)
 
-        tag = "" if config.input.adjacency == "all" else config.input.adjacency
-        adjacencies = AdjacencyMapper(config.input.adjacency_mappings, blacklist=self.config.input.adjacency_blacklist).get_mappings(tag, fields=config.input.adjacency_field)
+        adjacencies = AdjacencyMapper(config.input.adjacency_mappings, blacklist=self.config.input.adjacency_blacklist).get_mappings(config.input.adjacency, fields=config.input.adjacency_field)
 
         self.dataset = DatasetBootstrapper(
             mappings, adjacencies, holdout_size=config.input.holdout_size, name=self.name, config=self.config).get_dataset()

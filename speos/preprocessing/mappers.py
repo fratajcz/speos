@@ -118,6 +118,8 @@ class AdjacencyMapper(Mapper):
         if type(fields) == str:
             fields = [fields]
 
+        tags = ["" if tag == "all" else tag for tag in tags]
+
         assert len(tags) == len(fields) or len(fields) == 1
 
         for i in range(len(tags)):
