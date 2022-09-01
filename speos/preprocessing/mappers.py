@@ -1,10 +1,11 @@
-import os
 import json
 import re
-from speos.utils.logger import setup_logger
+
 
 class Mapper:
     """Abstract Mapper Class"""
+    def __init__(self, blacklist: list = []):
+        self.blacklist = blacklist
 
     def get_mappings(self, tags: str = "", fields: str = "name"):
         '''goes through the mapping list and returns all mappings that include the provided tag in the provided field (default is name field)
@@ -36,6 +37,27 @@ class Mapper:
 
         return mappings
 
+    def remove_blacklisted_mappings(self, tags, mappings):
+        blacklisted_mappings = []
+        for banned_mapping in self.blacklist:
+            for tag in tags:
+                # skip removing blacklisted adjacencies if they are explicitely requested
+                if banned_mapping in tag.lower():
+                    skip_mapping = True
+                else: 
+                    skip_mapping = False
+            if skip_mapping:
+                continue
+
+            for mapping in mappings:
+                if banned_mapping in mapping["name"].lower():
+                    blacklisted_mappings.append(mapping)
+
+        for banned_mapping in blacklisted_mappings:
+            mappings.remove(banned_mapping)
+
+        return mappings
+
 
 class GWASMapper(Mapper):
     r"""Handles the mapping of y labels to GWAS feature files.
@@ -51,7 +73,9 @@ class GWASMapper(Mapper):
     """
     def __init__(self,
                  mapping_file: str = "./speos/mapping.json",
-                 extension_mappings: str = "./extensions/mapping.json"):
+                 extension_mappings: str = "./extensions/mapping.json",
+                 **kwargs):
+        super().__init__(**kwargs)
 
         self.mapping_list = []
 
@@ -80,10 +104,10 @@ class AdjacencyMapper(Mapper):
     def __init__(self,
                  mapping_file: str = "speos/adjacencies.json",
                  extension_mappings: str = "./extensions/adjacencies.json",
-                 blacklist: list = []):
+                 **kwargs):
+        super().__init__(**kwargs)
 
         self.mapping_list = []
-        self.blacklist = blacklist
         for mapping in mapping_file, extension_mappings:
             with open(mapping, "r") as file:
                 content = file.read()
@@ -130,24 +154,6 @@ class AdjacencyMapper(Mapper):
                 if fields[0] == "name":
                     tags[i] = self._format_name(tags[i])
 
-        mappings = super().get_mappings(tags, fields)
+        return super().get_mappings(tags, fields)
 
-        blacklisted_mappings = []
-        for banned_mapping in self.blacklist:
-            for tag in tags:
-                # skip removing blacklisted adjacencies if they are explicitely requested
-                if banned_mapping in tag.lower():
-                    skip_mapping = True
-                else: 
-                    skip_mapping = False
-            if skip_mapping:
-                continue
 
-            for mapping in mappings:
-                if banned_mapping in mapping["name"].lower():
-                    blacklisted_mappings.append(mapping)
-
-        for banned_mapping in blacklisted_mappings:
-            mappings.remove(banned_mapping)
-
-        return mappings
