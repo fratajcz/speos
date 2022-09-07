@@ -359,7 +359,7 @@ class PreprocessorTest(unittest.TestCase):
         import pandas as pd
         import numpy as np
         adjacency = pd.DataFrame(data=np.array([list(range(0, 10)), list(range(10, 20))]).reshape(10, 2))
-        
+
         adjacency_swapped = PreProcessor.xswap(adjacency, 0.4)
 
         is_identical = 0
@@ -379,7 +379,6 @@ class PreprocessorTest(unittest.TestCase):
 
         self.assertAlmostEqual(is_identical/len(adjacency), 1 - 0.8)
 
-
         adjacency_swapped = PreProcessor.xswap(adjacency, 1)
 
         is_identical = 0
@@ -393,7 +392,7 @@ class PreprocessorTest(unittest.TestCase):
         import pandas as pd
         import numpy as np
         adjacency = pd.DataFrame(data=np.array([list(range(0, 11)), list(range(10, 21))]).reshape(11, 2))
-        
+
         adjacency_swapped = PreProcessor.xswap(adjacency, 0.4)
 
         is_identical = 0
@@ -403,7 +402,6 @@ class PreprocessorTest(unittest.TestCase):
 
         self.assertAlmostEqual(is_identical/len(adjacency), 1 - (4/11))
 
-
         adjacency_swapped = PreProcessor.xswap(adjacency, 0.8)
 
         is_identical = 0
@@ -412,7 +410,6 @@ class PreprocessorTest(unittest.TestCase):
                 is_identical += 1
 
         self.assertAlmostEqual(is_identical/len(adjacency), 1 - (8/11))
-
 
         adjacency_swapped = PreProcessor.xswap(adjacency, 1)
 
@@ -424,7 +421,6 @@ class PreprocessorTest(unittest.TestCase):
         self.assertAlmostEqual(is_identical/len(adjacency), 1 - (10/11))
 
     def test_xswap_runs_real_data(self):
-        import numpy as np
         gwasmappings = self.gwasmapper.get_mappings(tags="immune_dysregulation", fields="name")
         adjacencies = self.adjacencymapper.get_mappings(tags="BioPlex 3.0 293T", fields="name")
         config = self.config.deepcopy()
@@ -440,21 +436,16 @@ class PreprocessorTest(unittest.TestCase):
         # same head nodes
         adj = list(adj.values())[0]
         adj2 = list(adj2.values())[0]
-        #self.assertTrue(np.equal(adj[0, :], adj2[0, :]).all())
-        #equal_tail_nodes = np.equal(adj[1, :], adj2[1, :]).sum()
-        #percentage_equal_tail_nodes = equal_tail_nodes / adj.shape[0]
-        #self.assertAlmostEqual(percentage_equal_tail_nodes, 0.1)
 
     def test_metrics(self):
         gwasmappings = self.gwasmapper.get_mappings(tags="immune_dysregulation", fields="name")
         adjacencies = self.adjacencymapper.get_mappings(tags="BioPlex 3.0 293T", fields="name")
         preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
         preprocessor.build_graph()
-        
+
         metrics = preprocessor.get_metrics()
 
         print(metrics)
-
 
 
 class DummyPreProcessorTest(unittest.TestCase):
@@ -584,10 +575,11 @@ class DummyPreProcessorTest(unittest.TestCase):
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyDirectedGraph", fields="name")
         preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
         preprocessor.build_graph()
-        
+
         metrics = preprocessor.get_metrics()
 
         print(metrics)
+
 
 if __name__ == '__main__':
     unittest.main(warnings='ignore')
