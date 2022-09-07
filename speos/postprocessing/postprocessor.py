@@ -789,6 +789,7 @@ class PostProcessor:
 
         count_counters = {}
         gene_counters = {}
+        total_gene_set_sizes = {}
 
         for criterion in ["Unknown", "Test Positive"]:
             if self.config.pp.cutoff_type in ["top", "bottom"]:
@@ -809,6 +810,7 @@ class PostProcessor:
                 raise ValueError
 
             # self.logger.info("Criterion: {}, Eligible Genes: {}, Kept Genes: {}".format(criterion,len(eligible_genes),len(kept_genes)))
+            total_gene_set_sizes[criterion] = [len(eligible_gene_set) for eligible_gene_set in eligible_genes]
 
             random_genes = {iteration: [total_genes[np.array(random.sample(range(len(total_genes)), len(nonrandom_genes)))].tolist() if len(nonrandom_genes) > 0 else [] for total_genes, nonrandom_genes in zip(eligible_genes, kept_genes)] for iteration in range(self.num_runs_for_random_experiments)}
 
@@ -823,7 +825,7 @@ class PostProcessor:
         if plot:
             plot_title = "Overlap in predicted disease genes between {} runs, type {} {}".format(len(results_paths), cutoff_type, cutoff_value)
             plot_name = self.longest_common_string(results_paths[0].split("/")[-1], results_paths[1].split("/")[-1]) + "_overlap.png"
-            pos_test_pvals = self.plot_overlap(count_counters, plot_title, plot_name)
+            pos_test_pvals = self.plot_overlap(count_counters, total_gene_set_sizes, plot_title, plot_name)
 
         return gene_counters["Unknown"], count_counters["Unknown"], pos_test_pvals
 
@@ -875,9 +877,15 @@ class PostProcessor:
 
             return gene_counter, count_counter
 
-    def plot_overlap(self, count_counters, plot_title, plot_name) -> list:
+    def plot_overlap(self, count_counters, total_gene_set_sizes, plot_title, plot_name, percentage=True) -> list:
         from scipy.stats import t
         from speos.scripts.utils import fdr
+
+        red = '#fd151b'
+        orange = '#ffb30f'
+        darkblue = '#01295f'
+        lightblue = '#437f97'
+        background_grey = '#e2e3e4'
 
         unknown_labels, unknown_values = zip(*sorted(count_counters["Unknown"].items()))
         _, unknown_random_mean_values = zip(*sorted(count_counters["Unknown Random Mean"].items()))
@@ -885,6 +893,9 @@ class PostProcessor:
         pos_val_labels, pos_val_values = zip(*sorted(count_counters["Test Positive"].items()))
         _, pos_val_random_mean_values = zip(*sorted(count_counters["Test Positive Random Mean"].items()))
         _, pos_val_random_sd_values = zip(*sorted(count_counters["Test Positive Random SD"].items()))
+        
+        num_unknown = total_gene_set_sizes["Unknown"]
+        num_test_pos = total_gene_set_sizes["Test Positive"]
 
         # if there are no predicted genes and no random genes in a bin, just count it as significant
         pvals_unknown = [t.sf(unknown_value, self.num_runs_for_random_experiments, random_mean, random_sd + 1e-16) if random_mean > 0.1 else 0 for unknown_value, random_mean, random_sd in zip(unknown_values, unknown_random_mean_values, unknown_random_sd_values)]
@@ -895,35 +906,56 @@ class PostProcessor:
         pvals_pos_val = pvals_adjusted[len(pvals_unknown):]
 
         indexes = np.arange(max(unknown_labels))
-        width = 0.2
-        cutoff_at = 1000
+        width = 0.22
 
         fig, ax = plt.subplots()
-        rects1 = ax.bar(indexes - width * 3 / 2, unknown_values, width, label='Unknown', color="blue")
-        rects2 = ax.bar(indexes - width * 1 / 2, unknown_random_mean_values, width, yerr=unknown_random_sd_values, label='Unknown Rand Ctrl', color="lightblue")
-        rects3 = ax.bar(indexes + width * 1 / 2, pos_val_values, width, label='Test Positive', color="red")
-        rects4 = ax.bar(indexes + width * 3 / 2, pos_val_random_mean_values, width, yerr=pos_val_random_sd_values, label='Test Positive Rand Ctrl', color="orange")
-        ax.set_ylabel('# Genes')
-        ax.set_title(plot_title)
+
+        if percentage:
+            unknown_values = [(unknown_value / total_num_unknown) * 100 for unknown_value, total_num_unknown in zip(unknown_values, num_unknown)]
+            unknown_random_mean_values = [(unknown_random_mean_value / total_num_unknown) * 100 for unknown_random_mean_value, total_num_unknown in zip(unknown_random_mean_values, num_unknown)]
+            unknown_random_sd_values =[(unknown_random_sd_value / total_num_unknown) * 100 for unknown_random_sd_value, total_num_unknown in zip(unknown_random_sd_values, num_unknown)]
+            pos_val_values = [(pos_val_value / total_num_test_pos) * 100 for pos_val_value, total_num_test_pos in zip(pos_val_values, num_test_pos)]
+            pos_val_random_mean_values = [(pos_val_random_mean_value / total_num_test_pos) * 100 for pos_val_random_mean_value, total_num_test_pos in zip(pos_val_random_mean_values, num_test_pos)]
+            pos_val_random_sd_values = [(pos_val_random_sd_value / total_num_test_pos) * 100 for pos_val_random_sd_value, total_num_test_pos in zip(pos_val_random_sd_values, num_test_pos)]
+
+        if percentage:
+            ax.set_ylabel('% of Genes')
+            global_max = np.max([*unknown_values, *unknown_random_mean_values, *pos_val_values, *pos_val_random_mean_values])
+            cutoff_at = global_max + 5
+        else:
+            ax.set_ylabel('# Genes')
+            cutoff_at = 1000
+
+        _ = ax.bar([index for index in indexes if index % 2 == 1], cutoff_at, 1, color=background_grey, zorder=-5)
+        ax.yaxis.grid(color="lightgrey", linestyle=':', linewidth=1, zorder=-1)
+        rects1 = ax.bar(indexes - width * 3 / 2, unknown_values, width, label='Unknown (n={})'.format(num_unknown[0]).format(), color=darkblue, zorder = 5)
+        rects2 = ax.bar(indexes - width * 1 / 2, unknown_random_mean_values, width, yerr=unknown_random_sd_values, label='Unknown Rand Ctrl', color=lightblue, zorder = 5)
+        rects3 = ax.bar(indexes + width * 1 / 2, pos_val_values, width, label='Test Positive (n={})'.format(num_test_pos[0]), color=red, zorder = 5)
+        rects4 = ax.bar(indexes + width * 3 / 2, pos_val_random_mean_values, width, yerr=pos_val_random_sd_values, label='Test Positive Rand Ctrl', color=orange, zorder = 5)
+        
+        #ax.set_title(plot_title)
         ax.set_xticks(indexes, unknown_labels)
+        
         ax.set_ylim(0, cutoff_at)
         ax.legend()
 
         for rects in [rects1, rects2, rects3, rects4]:
             for rect in rects:
                 height = rect.get_height()
-                plt.text(rect.get_x() + rect.get_width() / 2.0, height + 3 if height < cutoff_at else cutoff_at - 30, round(height, 1), ha='center', va='bottom')
+                if not percentage:
+                    plt.text(rect.get_x() + rect.get_width() / 2.25, height + (0.003*cutoff_at) if height < cutoff_at else cutoff_at - 30, round(height, 1), ha='center', va='bottom')
         for i, rect in enumerate(rects1):
             height = rect.get_height()
-            plt.text(rect.get_x() + rect.get_width() / 2.0, height + 20 if height < cutoff_at else cutoff_at - 10, "*" if pvals_unknown[i] < 0.05 else "", ha='center', va='bottom')
+            plt.text(rect.get_x() + rect.get_width() / 2.25, height + (0.02*cutoff_at) if height < cutoff_at else cutoff_at - 10, "*" if pvals_unknown[i] < 0.05 else "", ha='center', va='bottom', color="grey")
         for i, rect in enumerate(rects3):
             height = rect.get_height()
-            plt.text(rect.get_x() + rect.get_width() / 2.0, height + 20 if height < cutoff_at else cutoff_at - 10, "*" if pvals_pos_val[i] < 0.05 else "", ha='center', va='bottom')
+            plt.text(rect.get_x() + rect.get_width() / 2.25, height + (0.02*cutoff_at) if height < cutoff_at else cutoff_at - 10, "*" if pvals_pos_val[i] < 0.05 else "", ha='center', va='bottom')
 
         ax.set_xlabel("Predicted in # of models")
-        fig.set_size_inches(20, 10)
+        fig.set_size_inches(7, 4)
         fig.set_dpi(300)
         fig.tight_layout()
+        self.logger.info("Plotting overlap plot to {}".format(plot_name))
         plt.savefig(plot_name)
 
         return pvals_pos_val

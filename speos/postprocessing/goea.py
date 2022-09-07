@@ -1,5 +1,5 @@
 import pandas as pd
-from coregenes.postprocessing.lightgoea.light_goea import GOEA
+from speos.postprocessing.lightgoea.light_goea import GOEA
 import numpy as np
 import os
 
