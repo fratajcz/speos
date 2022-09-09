@@ -45,7 +45,7 @@
     "directed": false},  
 {"name": "STRING",
     "type": "ppi",
-    "file_path": "data/ppi/string_pa.txt",
+    "file_path": "data/ppi/string_confident.txt",
     "source": "protein1",
     "target": "protein2",
     "sep": " ",

@@ -235,7 +235,7 @@ class PostProcessor:
 
         df = pd.read_csv(path, skiprows=1, sep="\t", usecols=[0, 2, 3], names=["entrez", "hpo", "description"])
 
-        hpo2name = {line[1]: line[2].split("-")[0].strip() for i, line in df.iterrows()}
+        hpo2name = {line[1]: line[2].split(" - ")[0].strip() for i, line in df.iterrows()}
         hpo2symbol = {}
         for i, line in df.iterrows():
             if int(line[0]) in entrez2symbol.keys():

@@ -127,7 +127,7 @@ class GraphDiagnosticWrapper:
                 except IndexError:
                     fig, ax = detail_func(fig=fig, ax=axes[col_idx], **kwargs)
 
-                ax.set_title('Phenotype: {}\nAdjacency: {}'.format(phenotype_tag, adjacency_tag))
+                ax.set_title('Phenotype: {}\nAdjacency: {}'.format(" ".join([word.capitalize() for word in phenotype_tag.split("_")]), adjacency_tag if not self.merge else self.adajcency_tag))
 
                 plt.tight_layout()
 

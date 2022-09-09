@@ -13,15 +13,15 @@ class PostProcessorTest(unittest.TestCase):
         self.config.name = "TestPostProcessor"
 
         self.config.logging.dir = "speos/tests/logs/"
-        self.config.pp.save_dir = "tests/results"
-        self.config.pp.plot_dir = "tests/results"
-        self.config.model.save_dir = "tests/models/"
-        self.config.inference.save_dir = "tests/results"
+        self.config.pp.save_dir = "speos/tests/results"
+        self.config.pp.plot_dir = "speos/tests/plots"
+        self.config.model.save_dir = "speos/tests/models/"
+        self.config.inference.save_dir = "speos/tests/results"
 
         self.pp = PostProcessor(self.config)
 
-        self.test_outer_results = "/home/icb/florin.ratajczak/ppi-core-genes/results/cardiovascular5outer_results.json"
-        self.results_file = "/home/icb/florin.ratajczak/ppi-core-genes/results/cardiovascular5_outer_0_fold_1.tsv"
+        self.test_outer_results = "speos/tests/files/cardiovascular_filmouter_results.json"
+        self.results_file = "speos/tests/files/cardiovascular_film_outer_0_fold_1.tsv"
         #self.test_outer_results = "/home/icb/florin.ratajczak/ppi-core-genes/results/c7e39douter_results.json"
         #self.results_file = "/home/icb/florin.ratajczak/ppi-core-genes/results/c7e39d_outer_0_fold_1_sorted.tsv"
         # self.test_outer_results = "/home/icb/florin.ratajczak/ppi-core-genes/results/962982outer_results.json"
@@ -85,7 +85,6 @@ class PostProcessorTest(unittest.TestCase):
         self.pp.outer_result = outer_results
 
         print(self.pp.hpo_enrichment(self.results_file))
-
 
     def test_goea(self):
 

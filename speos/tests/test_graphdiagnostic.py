@@ -1,4 +1,5 @@
 import unittest
+from speos.preprocessing.mappers import GWASMapper
 from speos.utils.config import Config
 from speos.visualization.diagnosticwrapper import GraphDiagnosticWrapper
 import matplotlib.pyplot as plt
@@ -105,22 +106,24 @@ class DummyGraphTest(unittest.TestCase):
         self.config.input.gwas_mappings = "speos/tests/files/dummy_graph/gwas.json"
         self.config.input.adjacency_mappings = "speos/tests/files/dummy_graph/adjacency.json"
         self.config.input.gene_sets = "speos/tests/files/dummy_graph/"
-        self.config.input.gwas = "speos/tests/files/dummy_graph/"
+        self.config.input.gwas = "speos/tests/files/dummy_graph/gwas.json"
+
+        self.gwasmapper = GWASMapper(mapping_file=self.config.input.gwas)
 
     def test_dummy_paths_directed(self):
-        diagnostic = GraphDiagnosticWrapper(config=self.config, phenotype_tag="dummy", adjacency_tag="DummyDirectedGraph")
+        diagnostic = GraphDiagnosticWrapper(gwasmapper=self.gwasmapper, config=self.config, phenotype_tag="dummy", adjacency_tag="DummyDirectedGraph")
 
         fig, ax = diagnostic.get_diagnostics("paths", save=False)
         plt.savefig(os.path.join(self.config.model.plot_dir, "dummy_paths.png"))
 
     def test_dummy_paths_undirected(self):
-        diagnostic = GraphDiagnosticWrapper(config=self.config, phenotype_tag="dummy", adjacency_tag="DummyUndirectedGraph")
+        diagnostic = GraphDiagnosticWrapper(gwasmapper=self.gwasmapper, config=self.config, phenotype_tag="dummy", adjacency_tag="DummyUndirectedGraph")
 
         fig, ax = diagnostic.get_diagnostics("paths", save=False)
         plt.savefig(os.path.join(self.config.model.plot_dir, "dummy_paths_undirected.png"))
 
     def test_dummy_degrees_directed(self):
-        diagnostic = GraphDiagnosticWrapper(config=self.config, phenotype_tag="dummy", adjacency_tag="DummyDirectedGraph")
+        diagnostic = GraphDiagnosticWrapper(gwasmapper=self.gwasmapper, config=self.config, phenotype_tag="dummy", adjacency_tag="DummyDirectedGraph")
 
         fig, ax = diagnostic.get_diagnostics("degrees", save=False)
         plt.savefig(os.path.join(self.config.model.plot_dir, "dummy_degrees.png"))
@@ -130,7 +133,7 @@ class DummyGraphTest(unittest.TestCase):
         plt.savefig(os.path.join(self.config.model.plot_dir, "dummy_degrees_absolute.png"))
 
     def test_dummy_degrees_undirected(self):
-        diagnostic = GraphDiagnosticWrapper(config=self.config, phenotype_tag="dummy", adjacency_tag="DummyUndirectedGraph")
+        diagnostic = GraphDiagnosticWrapper(gwasmapper=self.gwasmapper, config=self.config, phenotype_tag="dummy", adjacency_tag="DummyUndirectedGraph")
 
         fig, ax = diagnostic.get_diagnostics("degrees", save=False)
         plt.savefig(os.path.join(self.config.model.plot_dir, "dummy_degrees_undirected.png"))
@@ -140,33 +143,35 @@ class DummyGraphTest(unittest.TestCase):
         plt.savefig(os.path.join(self.config.model.plot_dir, "dummy_degrees_undirected_absolute.png"))
 
     def test_dummy_homophily_directed(self):
-        diagnostic = GraphDiagnosticWrapper(config=self.config, phenotype_tag="dummy", adjacency_tag="DummyDirectedGraph")
+        diagnostic = GraphDiagnosticWrapper(gwasmapper=self.gwasmapper, config=self.config, phenotype_tag="dummy", adjacency_tag="DummyDirectedGraph")
 
         fig, ax = diagnostic.get_diagnostics("homophily", save=False)
+        fig.tight_layout()
         plt.savefig(os.path.join(self.config.model.plot_dir, "dummy_homophily.png"))
 
     def test_dummy_homophily_undirected(self):
-        diagnostic = GraphDiagnosticWrapper(config=self.config, phenotype_tag="dummy", adjacency_tag="DummyUndirectedGraph")
+        diagnostic = GraphDiagnosticWrapper(gwasmapper=self.gwasmapper, config=self.config, phenotype_tag="dummy", adjacency_tag="DummyUndirectedGraph")
 
         fig, ax = diagnostic.get_diagnostics("homophily", save=False)
         plt.savefig(os.path.join(self.config.model.plot_dir, "dummy_homophily_undirected.png"))
 
     def test_dummy_components_directed(self):
-        diagnostic = GraphDiagnosticWrapper(config=self.config, phenotype_tag="dummy", adjacency_tag="DummyDirectedGraph")
+        diagnostic = GraphDiagnosticWrapper(gwasmapper=self.gwasmapper, config=self.config, phenotype_tag="dummy", adjacency_tag="DummyDirectedGraph")
 
         fig, ax = diagnostic.get_diagnostics("components", save=False)
         plt.savefig(os.path.join(self.config.model.plot_dir, "dummy_components.png"))
 
     def test_dummy_components_undirected(self):
-        diagnostic = GraphDiagnosticWrapper(config=self.config, phenotype_tag="dummy", adjacency_tag="DummyUndirectedGraph")
+        diagnostic = GraphDiagnosticWrapper(gwasmapper=self.gwasmapper, config=self.config, phenotype_tag="dummy", adjacency_tag="DummyUndirectedGraph")
 
         fig, ax = diagnostic.get_diagnostics("components", save=False)
         plt.savefig(os.path.join(self.config.model.plot_dir, "dummy_components_undirected.png"))
 
     def test_dummy_metrics(self):
-        diagnostic = GraphDiagnosticWrapper(config=self.config, phenotype_tag="dummy", adjacency_tag="DummyUndirectedGraph")
+        diagnostic = GraphDiagnosticWrapper(gwasmapper=self.gwasmapper, config=self.config, phenotype_tag="dummy", adjacency_tag="DummyUndirectedGraph")
 
         fig, ax = diagnostic.get_diagnostics("metrics", save=False)
+        plt.tight_layout()
         plt.savefig(os.path.join(self.config.model.plot_dir, "dummy_metrics_undirected.png"))
 
 

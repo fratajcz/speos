@@ -6,8 +6,8 @@ import os
 
 class GOEA_Study:
     def __init__(self, base_path="./data/goa_human/",
-                filename_scheme = "GO_{}_sym.txt",
-                task_dict = None):
+                 filename_scheme="GO_{}_sym.txt",
+                 task_dict=None):
         self.base_path = base_path
         self.filename_scheme = filename_scheme
         if task_dict is None:
@@ -47,7 +47,7 @@ class GOEA_Study:
         df = GOEA(np.asarray(results), self.go2symbol, fdr_thresh=0.05)
 
         descriptions = [self.go2name[go] for go in df.index]
-        df["description"] = [description.capitalize() for description in descriptions]
+        df["description"] = [" ".join([word.capitalize() for word in description.split(" ")]) for description in descriptions]
 
         df = self.calculate_goea_statistics(df, results, background, self.go2symbol)
 
@@ -66,7 +66,7 @@ class GOEA_Study:
 
     def set_term_description(self, term_description: dict):
         self.go2name = term_description
-    
+
     def set_term_symbol(self, term_symbol: dict):
         self.go2symbol = term_symbol
 
@@ -99,16 +99,29 @@ class GOEA_Study:
 
         return df
 
-    def plot(self, df, path):
+    def plot(self, df, path, color_channel: str = "log_q", plot_on_x: str = "enrichment", top_cutoff=10):
+        """
+            color_channel: specify a column in df which will be used for color coding. Default: log_q
+
+            plot_on_x:  specify a column in df which will be used for x axis. This value will be sorted along. Default: enrichment
+        """
+
         import matplotlib as mpl
         import matplotlib.pyplot as plt
         import textwrap
         import numpy as np
         from matplotlib.lines import Line2D
 
-        fig, ax = plt.subplots(figsize=(6, 0.45*len(df.index)))
-        cmap = mpl.cm.coolwarm
-        norm = mpl.colors.Normalize(vmin=df.enrichment.min(), vmax=df.enrichment.max())
+        df = df.sort_values(by=plot_on_x, ascending=False)
+
+        if len(df.index) > 20:
+            scaling_factor = 0.45
+        else:
+            scaling_factor = 0.6
+        fig, ax = plt.subplots(figsize=(6, scaling_factor*len(df.index)))
+        #cmap = mpl.cm.coolwarm
+        cmap = mpl.cm.get_cmap("RdYlBu_r")
+        norm = mpl.colors.Normalize(vmin=df[color_channel].min(), vmax=df[color_channel].max())
         mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
 
         simple_significant = np.log10(0.05) * -1
@@ -119,12 +132,21 @@ class GOEA_Study:
         count = np.asarray(df["observed"][::-1])
         count_normalized = (count / count.max()) * max_size * max_size_factor
 
-        plt.axvline(x=simple_significant, color='lightgrey', linestyle='--', linewidth=1, zorder=-1)
-        plt.axvline(x=highly_significant, color='lightgrey', linestyle=':', linewidth=1, zorder=-1)
-        plt.scatter(df["log_q"][::-1], df["description"][::-1].tolist(), color=mapper.to_rgba(df["enrichment"][::-1]), s=count_normalized**2, zorder=2)
+        if plot_on_x in ["log_q", "fdr_q_value", "p_value"]:
+            plt.axvline(x=simple_significant, color='lightgrey', linestyle='--', linewidth=1, zorder=-1)
+            plt.axvline(x=highly_significant, color='lightgrey', linestyle=':', linewidth=1, zorder=-1)
+        else:
+            ax.xaxis.grid(color='lightgrey', linestyle=':', linewidth=1)
+
+        plt.scatter(df[plot_on_x][::-1], df["description"][::-1].tolist(), color=mapper.to_rgba(df[color_channel][::-1]), s=count_normalized**2, zorder=2)
         ax.set_yticklabels([textwrap.fill(e, 30) for e in df["description"]][::-1])
-        fig.colorbar(mapper, orientation='horizontal', location="top", label="Fold Enrichment", pad=0.005, ax=ax)
-        ax.set_xlabel(r"$-\log(q)$")
+        fig.colorbar(mapper, orientation='horizontal', location="top", label=" ".join([word.capitalize() if word not in ["q", "p"] else word for word in color_channel.split("_")]), pad=0.005, ax=ax)
+        if plot_on_x == "log_q":
+            ax.set_xlabel(r"$-\log(q)$")
+        elif plot_on_x == "enrichment":
+            ax.set_xlabel(r"Fold Enrichment")
+        else:
+            ax.set_xlabel(" ".join([word.capitalize() if word not in ["q", "p"] else word for word in color_channel.split("_")]))
 
         legend_elements = [Line2D([0], [0], marker='o', color='grey', label="{} Genes".format(int(count.min())),
                                   markerfacecolor='w', markersize=count_normalized.min(), linestyle=''),
@@ -136,6 +158,12 @@ class GOEA_Study:
 
         ax.legend(handles=legend_elements, loc='upper left', labelspacing=2, borderpad=1.5)
         plt.ylim([-0.5, len(df["description"])])
-        plt.xlim([0, df["log_q"].max()+1])
+        plt.xlim([0, df[plot_on_x].max()+1])
         plt.tight_layout()
-        plt.savefig(path, bbox_inches='tight')
+        plt.savefig(path, bbox_inches='tight', dpi=300)
+
+        if top_cutoff is not None:
+            top_path = "".join(path.split(".")[:-1]) + "_top{}.png".format(top_cutoff)
+            top_df = df.head(top_cutoff)
+
+            self.plot(top_df, top_path, color_channel=color_channel, plot_on_x=plot_on_x, top_cutoff=None)

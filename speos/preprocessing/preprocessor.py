@@ -381,6 +381,7 @@ class PreProcessor:
                 node[1]["y"] = 1
                 self.pos_idx.append(node[0])
             else:
+                node[1]["y"] = 0
                 self.neg_idx.append(node[0])
 
         self.has_labels = True
@@ -413,7 +414,10 @@ class PreProcessor:
 
         # quick check that all mappings use the same ground truth
         ground_truth = [mapping["ground_truth"] for mapping in mapping_list]
-        assert len(set(ground_truth)) == 1
+        if len(set(ground_truth)) > 1:
+            raise ValueError("We can use only one ground truth as labels, but you used {}".format(set(ground_truth)))
+        elif len(set(ground_truth)) == 0:
+            raise ValueError("No ground truth labels found, please check the requested tags")
 
         self.ground_truth = ground_truth
         self.mapping_list = mapping_list

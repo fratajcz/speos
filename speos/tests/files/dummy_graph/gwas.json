@@ -1,7 +1,7 @@
 [ {"name": "dummy",
-    "ground_truth": "dummy_mendelian.bed",
+    "ground_truth": "speos/tests/files/dummy_graph/dummy_mendelian.bed",
     "phenotype": "dummy",
-    "features_file": "dummy_mendelian.out",
+    "features_file": "speos/tests/files/dummy_graph/dummy_mendelian.out",
     "match_type": "perfect",
     "significant": "True"}
 ]
