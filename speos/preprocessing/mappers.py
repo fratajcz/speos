@@ -35,7 +35,7 @@ class Mapper:
                 if appendFlag:
                     mappings.append(mapping)
 
-        return mappings
+        return self.remove_blacklisted_mappings(tags, mappings)
 
     def remove_blacklisted_mappings(self, tags, mappings):
         blacklisted_mappings = []
