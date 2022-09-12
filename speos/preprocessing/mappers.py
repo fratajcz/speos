@@ -42,7 +42,7 @@ class Mapper:
         for banned_mapping in self.blacklist:
             for tag in tags:
                 # skip removing blacklisted adjacencies if they are explicitely requested
-                if banned_mapping in tag.lower():
+                if banned_mapping.lower() in tag.lower():
                     skip_mapping = True
                 else: 
                     skip_mapping = False
@@ -79,7 +79,7 @@ class GWASMapper(Mapper):
 
         self.mapping_list = []
 
-        for mapping in mapping_file, extension_mappings:
+        for mapping in [mapping_file, extension_mappings]:
             with open(mapping, "r") as file:
                 content = file.read()
                 self.mapping_list.extend(json.loads(content))
