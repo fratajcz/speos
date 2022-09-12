@@ -125,15 +125,18 @@ class PreProcessor:
         return all([_adjacency["directed"] for _adjacency in self.adjacency_list])
 
     def reindex(self) -> None:
-        self.ensembl2id = {}
-        self.entrez2id = {}
-        self.hgnc2id = {}
+        del self.ensembl2id
+        del self.entrez2id
+        del self.hgnc2id
+        
         self.G = nx.relabel.convert_node_labels_to_integers(
             self.G, first_label=0, ordering='default')
-        for node in self.G.nodes(data=True):
-            self.ensembl2id[node[1][self.ensembl_key]] = node[0]
-            self.entrez2id[node[1][self.entrez_key]] = node[0]
-            self.hgnc2id[node[1][self.hgnc_key]] = node[0]
+
+        self.hgnc2id = {self.G.nodes[i]["hgnc"]: i for i in range(len(self.G.nodes))}
+        self.id2hgnc = {i: self.G.nodes[i]["hgnc"] for i in range(len(self.G.nodes))}
+        self.ensembl2id = {self.G.nodes[i]["ensembl"]: i for i in range(len(self.G.nodes))}
+        self.entrez2id = {self.G.nodes[i]["entrez"]: i for i in range(len(self.G.nodes))}
+
         self.find_pos_and_neg_idx()
 
     def assign_new_adjacencies(self, adjacency_list, compile=False, wipe=True) -> None:
