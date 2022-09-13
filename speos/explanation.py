@@ -339,7 +339,7 @@ class Explainer(pyg.nn.models.Explainer):
         node_kwargs['node_size'] = kwargs.get('node_size') or 800
         node_kwargs['cmap'] = colormap
         
-        pos_cmap = mpl.cm.get_cmap("Red")
+        pos_cmap = mpl.cm.get_cmap("Reds")
         pos_norm = mpl.colors.Normalize(vmin=0, vmax=1)
         pos_mapper = mpl.cm.ScalarMappable(norm=pos_norm, cmap=pos_cmap)
 
@@ -356,7 +356,7 @@ class Explainer(pyg.nn.models.Explainer):
                 '', xy=pos[target], xycoords='data', xytext=pos[source],
                 textcoords='data', arrowprops=dict(
                     arrowstyle="->",
-                    alpha=min(max(data['att'], 0.1) * 2, 1),
+                    alpha=min(max(data['att'], 0.05) * 2, 1),
                     color=data['edge_color'],
                     shrinkA=sqrt(node_kwargs['node_size']) / 2.0,
                     shrinkB=sqrt(node_kwargs['node_size']) / 2.0,
@@ -369,7 +369,7 @@ class Explainer(pyg.nn.models.Explainer):
         else:
             node_alpha_subset = node_alpha[subset]
             assert ((node_alpha_subset >= 0) & (node_alpha_subset <= 1)).all()
-            nx.draw_networkx_nodes(G, pos, alpha=min(node_alpha_subset.detach().cpu().numpy() * 2, 1),
+            nx.draw_networkx_nodes(G, pos, alpha=min(max(node_alpha_subset.detach().cpu().numpy(), 0.05) * 2, 1),
                                    node_color=node_colors, **node_kwargs)
         
         nx.draw_networkx_labels(G, pos, **label_kwargs)
