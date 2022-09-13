@@ -343,7 +343,7 @@ class Explainer(pyg.nn.models.Explainer):
         pos_norm = mpl.colors.Normalize(vmin=0, vmax=1)
         pos_mapper = mpl.cm.ScalarMappable(norm=pos_norm, cmap=pos_cmap)
 
-        node_colors = [mapper.to_rgba(value) if y == 0 else pos_mapper.to_rgba(value) for y, value in zip(y, node_alpha[subset].detach().cpu().numpy())]
+        node_colors = np.asarray([mapper.to_rgba(value) if y == 0 else pos_mapper.to_rgba(value) for y, value in zip(y, node_alpha[subset].detach().cpu().numpy())])
 
         label_args = set(signature(nx.draw_networkx_labels).parameters.keys())
         label_kwargs = {k: v for k, v in kwargs.items() if k in label_args}
@@ -370,7 +370,9 @@ class Explainer(pyg.nn.models.Explainer):
             node_alpha_subset = node_alpha[subset]
             assert ((node_alpha_subset >= 0) & (node_alpha_subset <= 1)).all()
             node_alpha = np.fmin(np.fmax(node_alpha_subset, 0.05) * 2, 1)
-            np.asarray(node_colors)[:, 3] = node_alpha
+            print(node_alpha)
+            node_colors[:, 3] = node_alpha
+            print(node_colors)
             nx.draw_networkx_nodes(G, pos,
                                    node_color=node_colors, **node_kwargs)
         
