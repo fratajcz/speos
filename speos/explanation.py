@@ -370,6 +370,6 @@ class Explainer(pyg.nn.models.Explainer):
                             ax=ax,
                             label="Is Important",
                             ticks=[0, 0.5, 1],
-                            ticklabels=["Never", "Sometimes", "Always"],
                             pad=0.02)
+        cbar.ax.set_yticklabels(["Never", "Sometimes", "Always"])
         return ax, G
