@@ -348,7 +348,7 @@ class Explainer(pyg.nn.models.Explainer):
                 '', xy=pos[target], xycoords='data', xytext=pos[source],
                 textcoords='data', arrowprops=dict(
                     arrowstyle="->",
-                    alpha=max(data['att'], 0.1),
+                    #alpha=max(data['att'], 0.1),
                     color=data['edge_color'],
                     shrinkA=sqrt(node_kwargs['node_size']) / 2.0,
                     shrinkB=sqrt(node_kwargs['node_size']) / 2.0,
