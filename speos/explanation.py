@@ -315,7 +315,7 @@ class Explainer(pyg.nn.models.Explainer):
                 cmap = mpl.cm.get_cmap(colormap)
                 norm = mpl.colors.Normalize(vmin=edge_mask.min(), vmax=edge_mask.max())
                 mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
-                edge_color = [mapper.to_rgba(value) for value in edge_mask]
+                edge_color = [mapper.to_rgba(value) for value in edge_mask.detach().cpu().numpy()]
             else:
                 edge_color = ['black'] * edge_index.size(1)
         else:
