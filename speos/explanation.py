@@ -370,18 +370,20 @@ class Explainer(pyg.nn.models.Explainer):
             node_alpha_subset = node_alpha[subset]
             assert ((node_alpha_subset >= 0) & (node_alpha_subset <= 1)).all()
             node_alpha = np.fmin(np.fmax(node_alpha_subset, 0.05) * 2, 1)
-            nx.draw_networkx_nodes(G, pos, alpha=node_alpha,
+            node_colors[:,3] = node_alpha
+            nx.draw_networkx_nodes(G, pos,
                                    node_color=node_colors, **node_kwargs)
         
         nx.draw_networkx_labels(G, pos, **label_kwargs)
-        plt.rc('axes', labelsize=12)    # fontsize of the x and y labels
-        plt.rc('axes', labelsize=12)    # fontsize of the x and y labels
-        plt.rc('xtick', labelsize=10)    # fontsize of the tick labels
-        plt.rc('ytick', labelsize=10)    # fontsize of the tick labels
+        plt.rc('axes', labelsize=16)    # fontsize of the x and y labels
+        plt.rc('axes', labelsize=16)    # fontsize of the x and y labels
+        plt.rc('xtick', labelsize=14)    # fontsize of the tick labels
+        plt.rc('ytick', labelsize=14)    # fontsize of the tick labels
         cbar = plt.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
                             ax=ax,
                             label="Is Important",
                             ticks=[0, 0.5, 1],
-                            pad=0.02)
-        cbar.ax.set_yticklabels(["Never", "Sometimes", "Always"], rotation=-90)
+                            pad=0.02,
+                            location="top")
+        cbar.ax.set_yticklabels(["Never", "Sometimes", "Always"])
         return ax, G
