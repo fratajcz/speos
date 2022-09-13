@@ -314,7 +314,8 @@ class Explainer(pyg.nn.models.Explainer):
             if colormap is not None:
                 cmap = mpl.cm.get_cmap(colormap)
                 my_cmap = cmap(np.arange(cmap.N))
-                my_cmap[:, -1] = np.linspace(0.2, 1, cmap.N)
+                half_the_numbers = int(cmap.N / 2)
+                my_cmap[:, -1] = np.concatenate(np.linspace(0.25, 1, half_the_numbers), np.ones((int(cmap.N - half_the_numbers),)))
                 my_cmap = ListedColormap(my_cmap)
                 norm = mpl.colors.Normalize(vmin=0, vmax=1)
                 mapper = mpl.cm.ScalarMappable(norm=norm, cmap=my_cmap)
@@ -384,7 +385,7 @@ class Explainer(pyg.nn.models.Explainer):
         plt.rc('axes', labelsize=16)    # fontsize of the x and y labels
         plt.rc('xtick', labelsize=14)    # fontsize of the tick labels
         plt.rc('ytick', labelsize=14)    # fontsize of the tick labels
-        cbar = plt.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
+        cbar = plt.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=my_cmap),
                             ax=ax,
                             label="Is Important",
                             ticks=[0, 0.5, 1],
