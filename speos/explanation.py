@@ -315,7 +315,7 @@ class Explainer(pyg.nn.models.Explainer):
                 cmap = mpl.cm.get_cmap(colormap)
                 my_cmap = cmap(np.arange(cmap.N))
                 half_the_numbers = int(cmap.N / 2)
-                my_cmap[:, -1] = np.concatenate((np.linspace(0.25, 1, half_the_numbers), np.ones((int(cmap.N - half_the_numbers),))))
+                my_cmap[:, -1] = np.concatenate((np.linspace(0.1, 1, half_the_numbers), np.ones((int(cmap.N - half_the_numbers),))))
                 my_cmap = ListedColormap(my_cmap)
                 norm = mpl.colors.Normalize(vmin=0, vmax=1)
                 mapper = mpl.cm.ScalarMappable(norm=norm, cmap=my_cmap)
