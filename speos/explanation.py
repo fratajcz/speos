@@ -281,7 +281,7 @@ class Explainer(pyg.nn.models.Explainer):
         from torch_geometric.utils import k_hop_subgraph, to_networkx
         from inspect import signature
         from math import sqrt
-
+        from matplotlib.colors import ListedColormap
         from torch_geometric.data import Data
 
         assert edge_mask.size(0) == edge_index.size(1)
@@ -313,8 +313,11 @@ class Explainer(pyg.nn.models.Explainer):
         if edge_y is None:
             if colormap is not None:
                 cmap = mpl.cm.get_cmap(colormap)
+                my_cmap = cmap(np.arange(cmap.N))
+                my_cmap[:, -1] = np.linspace(0, 1, cmap.N)
+                my_cmap = ListedColormap(my_cmap)
                 norm = mpl.colors.Normalize(vmin=0, vmax=1)
-                mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
+                mapper = mpl.cm.ScalarMappable(norm=norm, cmap=my_cmap)
                 edge_color = [mapper.to_rgba(value) for value in edge_mask.detach().cpu().numpy()]
             else:
                 edge_color = ['black'] * edge_index.size(1)
