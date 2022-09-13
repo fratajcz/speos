@@ -369,7 +369,8 @@ class Explainer(pyg.nn.models.Explainer):
         else:
             node_alpha_subset = node_alpha[subset]
             assert ((node_alpha_subset >= 0) & (node_alpha_subset <= 1)).all()
-            nx.draw_networkx_nodes(G, pos, alpha=min(max(node_alpha_subset.detach().cpu().numpy(), 0.05) * 2, 1),
+            node_alpha = min(max(node_alpha_subset.detach().cpu().numpy(), 0.05) * 2, 1)
+            nx.draw_networkx_nodes(G, pos, alpha=node_alpha,
                                    node_color=node_colors, **node_kwargs)
         
         nx.draw_networkx_labels(G, pos, **label_kwargs)
