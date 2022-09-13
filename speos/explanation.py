@@ -363,7 +363,13 @@ class Explainer(pyg.nn.models.Explainer):
             assert ((node_alpha_subset >= 0) & (node_alpha_subset <= 1)).all()
             nx.draw_networkx_nodes(G, pos, alpha=node_alpha_subset.tolist(),
                                    node_color=y.tolist(), **node_kwargs)
-
+        
         nx.draw_networkx_labels(G, pos, **label_kwargs)
-
+        
+        cbar = plt.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
+                            ax=ax,
+                            label="Is Important",
+                            ticks=[0, 0.5, 1],
+                            ticklabels=["Never", "Sometimes", "Always"],
+                            pad=0.02)
         return ax, G
