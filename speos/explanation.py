@@ -249,7 +249,7 @@ class Explainer(pyg.nn.models.Explainer):
                            threshold: Optional[int] = None,
                            edge_y: Optional[Tensor] = None,
                            node_alpha: Optional[Tensor] = None, seed: int = 10,
-                           colormap: Optional[str] = "viridis",
+                           colormap: Optional[str] = "viridis_r",
                            **kwargs):
         r"""Visualizes the subgraph given an edge mask :attr:`edge_mask`.
 
@@ -313,7 +313,7 @@ class Explainer(pyg.nn.models.Explainer):
         if edge_y is None:
             if colormap is not None:
                 cmap = mpl.cm.get_cmap(colormap)
-                norm = mpl.colors.Normalize(vmin=edge_mask.min(), vmax=edge_mask.max())
+                norm = mpl.colors.Normalize(vmin=0, vmax=1)
                 mapper = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
                 edge_color = [mapper.to_rgba(value) for value in edge_mask.detach().cpu().numpy()]
             else:
