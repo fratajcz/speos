@@ -314,7 +314,7 @@ class Explainer(pyg.nn.models.Explainer):
             if colormap is not None:
                 cmap = mpl.cm.get_cmap(colormap)
                 my_cmap = cmap(np.arange(cmap.N))
-                my_cmap[:, -1] = np.linspace(0, 1, cmap.N)
+                my_cmap[:, -1] = np.linspace(0.2, 1, cmap.N)
                 my_cmap = ListedColormap(my_cmap)
                 norm = mpl.colors.Normalize(vmin=0, vmax=1)
                 mapper = mpl.cm.ScalarMappable(norm=norm, cmap=my_cmap)
@@ -359,7 +359,7 @@ class Explainer(pyg.nn.models.Explainer):
                 '', xy=pos[target], xycoords='data', xytext=pos[source],
                 textcoords='data', arrowprops=dict(
                     arrowstyle="->",
-                    alpha=min(max(data['att'], 0.05) * 2, 1),
+                    #alpha=min(max(data['att'], 0.05) * 2, 1),
                     color=data['edge_color'],
                     shrinkA=sqrt(node_kwargs['node_size']) / 2.0,
                     shrinkB=sqrt(node_kwargs['node_size']) / 2.0,
@@ -372,9 +372,9 @@ class Explainer(pyg.nn.models.Explainer):
         else:
             node_alpha_subset = node_alpha[subset]
             assert ((node_alpha_subset >= 0) & (node_alpha_subset <= 1)).all()
-            node_alpha = np.fmin(np.fmax(node_alpha_subset, 0.1) * 2, 1)
+            #node_alpha = np.fmin(np.fmax(node_alpha_subset, 0.1) * 2, 1)
             print(node_alpha)
-            node_colors[:, 3] = node_alpha
+            #node_colors[:, 3] = node_alpha
             print(node_colors)
             nx.draw_networkx_nodes(G, pos,
                                    node_color=node_colors, **node_kwargs)
