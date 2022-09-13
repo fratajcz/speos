@@ -370,7 +370,7 @@ class Explainer(pyg.nn.models.Explainer):
             node_alpha_subset = node_alpha[subset]
             assert ((node_alpha_subset >= 0) & (node_alpha_subset <= 1)).all()
             node_alpha = np.fmin(np.fmax(node_alpha_subset, 0.05) * 2, 1)
-            node_colors[:,3] = node_alpha
+            np.asarray(node_colors)[:,3] = node_alpha
             nx.draw_networkx_nodes(G, pos,
                                    node_color=node_colors, **node_kwargs)
         
