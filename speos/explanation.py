@@ -380,8 +380,8 @@ class Explainer(pyg.nn.models.Explainer):
             #node_alpha = np.fmin(np.fmax(node_alpha_subset, 0.1) * 2, 1)
             positives = y.numpy().astype(np.bool8)
             not_positives = ~positives
-            nx.draw_networkx_nodes(G, pos_unknowns, node_color=np.asarray(node_colors)[not_positives], **node_kwargs)
-            nx.draw_networkx_nodes(G, pos_positives, node_color=np.asarray(node_colors)[positives], node_shape="^", **node_kwargs)
+            nx.draw_networkx_nodes(G, pos_unknowns, node_color=np.asarray(node_colors)[not_positives], nodelist=list(pos_unknowns.keys()), **node_kwargs)
+            nx.draw_networkx_nodes(G, pos_positives, node_color=np.asarray(node_colors)[positives], node_shape="^", nodelist=list(pos_positives.keys()), **node_kwargs)
         
         nx.draw_networkx_labels(G, pos, **label_kwargs)
         plt.rc('axes', labelsize=16)    # fontsize of the x and y labels
@@ -390,14 +390,14 @@ class Explainer(pyg.nn.models.Explainer):
         plt.rc('ytick', labelsize=14)    # fontsize of the tick labels
         cbar = plt.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=my_cmap),
                             ax=ax,
-                            label="Is Important",
+                            label="Relative Importance (Unknowns)",
                             ticks=[0, 0.5, 1],
                             pad=0.02,
                             location="top")
         cbar.ax.set_xticklabels(["Never", "Sometimes", "Always"])
         cbar = plt.colorbar(mpl.cm.ScalarMappable(norm=pos_norm, cmap=pos_mapper),
                             ax=ax,
-                            label="Is Important",
+                            label="Relative Importance (Positives)",
                             ticks=[0, 0.5, 1],
                             pad=0.02,
                             location="top")
