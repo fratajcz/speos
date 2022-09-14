@@ -368,17 +368,21 @@ class Explainer(pyg.nn.models.Explainer):
                 ))
 
         if node_alpha is None:
-            nx.draw_networkx_nodes(G, pos, node_color=node_colors,
+            nx.draw_networkx_nodes(G, pos[~y.numpy()], node_color=node_colors[~y.numpy()],
                                    **node_kwargs)
+            nx.draw_networkx_nodes(G, pos[y.numpy()], node_color=node_colors[y.numpy()],
+                                   node_shape="^", **node_kwargs)
         else:
             node_alpha_subset = node_alpha[subset]
-            assert ((node_alpha_subset >= 0) & (node_alpha_subset <= 1)).all()
+            try:
+                assert ((node_alpha_subset >= 0) & (node_alpha_subset <= 1)).all()
+                
             #node_alpha = np.fmin(np.fmax(node_alpha_subset, 0.1) * 2, 1)
             print(node_alpha)
             #node_colors[:, 3] = node_alpha
             print(node_colors)
-            nx.draw_networkx_nodes(G, pos,
-                                   node_color=node_colors, **node_kwargs)
+            nx.draw_networkx_nodes(G, pos[~y.numpy()], node_color=node_colors[~y.numpy()], **node_kwargs)
+            nx.draw_networkx_nodes(G, pos[y.numpy()], node_color=node_colors[y.numpy()], node_shape="^", **node_kwargs)
         
         nx.draw_networkx_labels(G, pos, **label_kwargs)
         plt.rc('axes', labelsize=16)    # fontsize of the x and y labels
@@ -386,6 +390,13 @@ class Explainer(pyg.nn.models.Explainer):
         plt.rc('xtick', labelsize=14)    # fontsize of the tick labels
         plt.rc('ytick', labelsize=14)    # fontsize of the tick labels
         cbar = plt.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=my_cmap),
+                            ax=ax,
+                            label="Is Important",
+                            ticks=[0, 0.5, 1],
+                            pad=0.02,
+                            location="top")
+        cbar.ax.set_xticklabels(["Never", "Sometimes", "Always"])
+        cbar = plt.colorbar(mpl.cm.ScalarMappable(norm=pos_norm, cmap=pos_mapper),
                             ax=ax,
                             label="Is Important",
                             ticks=[0, 0.5, 1],
