@@ -403,9 +403,9 @@ class Explainer(pyg.nn.models.Explainer):
                             location="top")
         cbar.ax.set_xticklabels(["Never", "Sometimes", "Always"])
         from matplotlib.lines import Line2D
-        legend_elements = [Line2D([0], [0], marker='o', color='w', label='Unknowns', edgecolor='black',
+        legend_elements = [Line2D([0], [0], marker='o', color='w', label='Unknowns', markeredgecolor='black', linestyle=None,
                            markerfacecolor='w', markersize=15),
-                           Line2D([0], [0], marker='^', color='w', label='Positives', edgecolor='black',
+                           Line2D([0], [0], marker='^', color='w', label='Positives', markeredgecolor='black', linestyle=None,
                            markerfacecolor='w', markersize=15)]
         ax.legend(handles=legend_elements)
 
