@@ -381,8 +381,8 @@ class Explainer(pyg.nn.models.Explainer):
             print(positives.shape)
             print(np.asarray(pos).shape)
             print(np.asarray(node_colors).shape)
-            nx.draw_networkx_nodes(G, np.asarray(pos)[not_positives], node_color=np.asarray(node_colors)[not_positives], **node_kwargs)
-            nx.draw_networkx_nodes(G, np.asarray(pos)[positives], node_color=np.asarray(node_colors)[positives], node_shape="^", **node_kwargs)
+            nx.draw_networkx_nodes(G, pos, node_color=np.asarray(node_colors)[not_positives], **node_kwargs)
+            nx.draw_networkx_nodes(G, pos, node_color=np.asarray(node_colors)[positives], node_shape="^", **node_kwargs)
         
         nx.draw_networkx_labels(G, pos, **label_kwargs)
         plt.rc('axes', labelsize=16)    # fontsize of the x and y labels
