@@ -376,8 +376,13 @@ class Explainer(pyg.nn.models.Explainer):
             node_alpha_subset = node_alpha[subset]
             assert ((node_alpha_subset >= 0) & (node_alpha_subset <= 1)).all()
             #node_alpha = np.fmin(np.fmax(node_alpha_subset, 0.1) * 2, 1)
-            nx.draw_networkx_nodes(G, pos[~y.numpy().astype(np.bool8)], node_color=node_colors[~y.numpy().astype(np.bool8)], **node_kwargs)
-            nx.draw_networkx_nodes(G, pos[y.numpy().astype(np.bool8)], node_color=node_colors[y.numpy().astype(np.bool8)], node_shape="^", **node_kwargs)
+            positives = y.numpy().astype(np.bool8)
+            not_positives = ~positives
+            print(positives.shape)
+            print(np.asarray(pos).shape)
+            print(np.asarray(node_colors).shape)
+            nx.draw_networkx_nodes(G, np.asarray(pos)[not_positives], node_color=np.asarray(node_colors)[not_positives], **node_kwargs)
+            nx.draw_networkx_nodes(G, np.asarray(pos)[positives], node_color=np.asarray(node_colors)[positives], node_shape="^", **node_kwargs)
         
         nx.draw_networkx_labels(G, pos, **label_kwargs)
         plt.rc('axes', labelsize=16)    # fontsize of the x and y labels
