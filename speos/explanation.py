@@ -381,7 +381,7 @@ class Explainer(pyg.nn.models.Explainer):
             positives = y.numpy().astype(np.bool8)
             not_positives = ~positives
             nx.draw_networkx_nodes(G, pos_unknowns, node_color=np.asarray(node_colors)[not_positives], nodelist=list(pos_unknowns.keys()), **node_kwargs)
-            nx.draw_networkx_nodes(G, pos_positives, node_color=np.asarray(node_colors)[positives], node_shape="^", nodelist=list(pos_positives.keys()), edgecolors = "black", **node_kwargs)
+            nx.draw_networkx_nodes(G, pos_positives, node_color=np.asarray(node_colors)[positives], node_shape="^", nodelist=list(pos_positives.keys()), edgecolors="#333333", **node_kwargs)
         
         nx.draw_networkx_labels(G, pos, **label_kwargs)
         plt.rc('axes', labelsize=16)    # fontsize of the x and y labels
@@ -392,14 +392,21 @@ class Explainer(pyg.nn.models.Explainer):
                             ax=ax,
                             label="Relative Importance (Unknowns)",
                             ticks=[0, 0.5, 1],
-                            pad=0.02,
+                            pad=0,
                             location="top")
         cbar.ax.set_xticklabels(["Never", "Sometimes", "Always"])
         cbar = plt.colorbar(mpl.cm.ScalarMappable(norm=pos_norm, cmap=pos_cmap),
                             ax=ax,
                             label="Relative Importance (Positives)",
                             ticks=[0, 0.5, 1],
-                            pad=0.02,
+                            pad=0,
                             location="top")
         cbar.ax.set_xticklabels(["Never", "Sometimes", "Always"])
+        from matplotlib.lines import Line2D
+        legend_elements = [Line2D([0], [0], marker='o', color='w', label='Unknowns', edgecolor='black',
+                           markerfacecolor='w', markersize=15),
+                           Line2D([0], [0], marker='^', color='w', label='Unknowns', edgecolor='black',
+                           markerfacecolor='w', markersize=15)]
+        ax.legend(handles=legend_elements)
+
         return ax, G
