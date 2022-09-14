@@ -354,7 +354,8 @@ class Explainer(pyg.nn.models.Explainer):
         label_kwargs['font_size'] = kwargs.get('font_size') or 10
 
         pos = nx.spring_layout(G, seed=seed)
-        print(pos)
+        pos_positives = {key: value for y, (key, value) in zip(y, pos.items()) if y == 1}
+        pos_unknowns = {key: value for y, (key, value) in zip(y, pos.items()) if y == 0}
         ax = plt.gca()
         for source, target, data in G.edges(data=True):
             ax.annotate(
@@ -379,11 +380,8 @@ class Explainer(pyg.nn.models.Explainer):
             #node_alpha = np.fmin(np.fmax(node_alpha_subset, 0.1) * 2, 1)
             positives = y.numpy().astype(np.bool8)
             not_positives = ~positives
-            print(positives.shape)
-            print(np.asarray(pos).shape)
-            print(np.asarray(node_colors).shape)
-            nx.draw_networkx_nodes(G, pos, node_color=np.asarray(node_colors)[not_positives], **node_kwargs)
-            nx.draw_networkx_nodes(G, pos, node_color=np.asarray(node_colors)[positives], node_shape="^", **node_kwargs)
+            nx.draw_networkx_nodes(G, pos_unknowns, node_color=np.asarray(node_colors)[not_positives], **node_kwargs)
+            nx.draw_networkx_nodes(G, pos_positives, node_color=np.asarray(node_colors)[positives], node_shape="^", **node_kwargs)
         
         nx.draw_networkx_labels(G, pos, **label_kwargs)
         plt.rc('axes', labelsize=16)    # fontsize of the x and y labels
