@@ -405,7 +405,7 @@ class Explainer(pyg.nn.models.Explainer):
         from matplotlib.lines import Line2D
         legend_elements = [Line2D([0], [0], marker='o', color='w', label='Unknowns', edgecolor='black',
                            markerfacecolor='w', markersize=15),
-                           Line2D([0], [0], marker='^', color='w', label='Unknowns', edgecolor='black',
+                           Line2D([0], [0], marker='^', color='w', label='Positives', edgecolor='black',
                            markerfacecolor='w', markersize=15)]
         ax.legend(handles=legend_elements)
 
