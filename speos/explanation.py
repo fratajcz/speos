@@ -395,7 +395,7 @@ class Explainer(pyg.nn.models.Explainer):
                             pad=0.02,
                             location="top")
         cbar.ax.set_xticklabels(["Never", "Sometimes", "Always"])
-        cbar = plt.colorbar(mpl.cm.ScalarMappable(norm=pos_norm, cmap=pos_mapper),
+        cbar = plt.colorbar(mpl.cm.ScalarMappable(norm=pos_norm, cmap=pos_cmap),
                             ax=ax,
                             label="Relative Importance (Positives)",
                             ticks=[0, 0.5, 1],
