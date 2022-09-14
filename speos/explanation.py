@@ -354,6 +354,7 @@ class Explainer(pyg.nn.models.Explainer):
         label_kwargs['font_size'] = kwargs.get('font_size') or 10
 
         pos = nx.spring_layout(G, seed=seed)
+        print(pos)
         ax = plt.gca()
         for source, target, data in G.edges(data=True):
             ax.annotate(
