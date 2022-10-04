@@ -9,7 +9,8 @@ import os
 from speos.utils.logger import setup_logger
 import random
 import json
-
+from speos.postprocessing.pp_utils import PostProcessingTable
+import speos.utils.path_utils as pu
 
 class PostProcessor:
     """Reads a results file and generates reports and analyses on it. The results file must contain identifers, labels and predictions per gene"""
@@ -31,6 +32,17 @@ class PostProcessor:
                             # "Monogenic_Diabetes": "DOID9744"}
                             "Monogenic_Diabetes": "diabetes_query",
                             "Body_Mass_Disorder": "DOID9970"}
+        
+        self.init_pp_table()
+
+    def init_pp_table(self):
+        unknown_genes, all_genes, positive_genes = self.get_unknown_genes()
+        self.pp_table = PostProcessingTable(index=all_genes)
+        self.pp_table.add("Mendelian", index=positive_genes, values=True, remaining=False)
+
+    def save_pp_table(self):
+        path = os.path.join(pu.postprocessing_results_path(self.config), self.config.name + "_pp_table.tsv")
+        self.pp_table.save(path)
 
     def run(self):
         """Runs all tasks that are specified in the config as pp.tasks"""
@@ -53,6 +65,8 @@ class PostProcessor:
                     self.logger.error("KeyError during handling of postprocessing task {}:".format(function))
                     self.logger.error(e)
                     continue
+
+        self.save_pp_table()
 
         return value
 
@@ -183,6 +197,7 @@ class PostProcessor:
                 unknown_dge_genes = unknown_union_genes
                 valid_dge_genes = valid_union_genes
 
+            self.pp_table.add("DGE: {}".format(subtype), valid_dge_genes, True, False)
             array = self.make_contingency_table(all_genes, positive_genes, valid_dge_genes)
             is_enriched_result = fisher_exact(array)
 
@@ -337,6 +352,11 @@ class PostProcessor:
         unknown_drug_targets = self.return_only_valid(drug_targets, unknown_genes)
         valid_drug_targets = self.return_only_valid(drug_targets, all_genes)
 
+        self.pp_table.add("Drug Target", valid_drug_targets, True, False)
+        valid_dict = {gene: degree for gene, degree in hgnc2degree.items() if gene in all_genes}
+        genes, degree = list(zip(*valid_dict.items()))
+        self.pp_table.add("Number of Drug Interactions", genes, degree, 0)
+        
         array = self.make_contingency_table(all_genes, positive_genes, valid_drug_targets)
 
         drug_target_results = []
@@ -406,6 +426,8 @@ class PostProcessor:
         unknown_druggable_genes = self.return_only_valid(druggable_genes, unknown_genes)
         valid_druggable_genes = self.return_only_valid(druggable_genes, all_genes)
 
+        self.pp_table.add("Druggable", valid_druggable_genes, True, False)
+
         array = self.make_contingency_table(all_genes, positive_genes, valid_druggable_genes)
         total_druggable = []
         druggable_enrichment_result = fisher_exact(array)
@@ -465,15 +487,17 @@ class PostProcessor:
         array = self.make_contingency_table(all_genes, positive_genes, ko_genes.intersection(all_genes))
         ko_enrichment_result = fisher_exact(array)
 
-        valid_ko_genes = self.return_only_valid(ko_genes, unknown_genes)
+        valid_ko_genes = self.return_only_valid(ko_genes, all_genes)
+        self.pp_table.add("Mouse KO", valid_ko_genes, True, False)
+        unknown_ko_genes = self.return_only_valid(ko_genes, unknown_genes)
 
         self.logger.info("Total of {} Mouse KO genes, {} of them match with our translation table.".format(len(ko_genes), len(ko_genes.intersection(all_genes))))
         self.logger.info("Found {} Mouse KO genes among the {} known positive genes (p: {:.2e}, OR: {}), leaving {} in {} Unknowns".format(
-            len(ko_genes.intersection(positive_genes)), len(positive_genes), ko_enrichment_result[1], round(ko_enrichment_result[0], 3), len(valid_ko_genes), len(unknown_genes)))
+            len(ko_genes.intersection(positive_genes)), len(positive_genes), ko_enrichment_result[1], round(ko_enrichment_result[0], 3), len(unknown_ko_genes), len(unknown_genes)))
 
         predicted_genes = set(self.outer_result[0].keys())
 
-        array = self.make_contingency_table(unknown_genes, predicted_genes, valid_ko_genes)
+        array = self.make_contingency_table(unknown_genes, predicted_genes, unknown_ko_genes)
 
         ko_enrichment_result = fisher_exact(array)
 
@@ -505,6 +529,8 @@ class PostProcessor:
         pli_enrichment_result = fisher_exact(array)
 
         all_pli_genes = self.return_only_valid(all_pli_genes, all_genes)
+        self.pp_table.add("pLI>0.9", all_pli_genes, True, False)
+
         valid_pli_genes = self.return_only_valid(pli_genes, unknown_genes)
 
         self.logger.info("Total of {} genes with significant LoF Intolerance, {} of them match with our translation table.".format(len(pli_genes), len(pli_genes.intersection(all_genes))))
@@ -708,10 +734,12 @@ class PostProcessor:
                 json.dump(outer_result, fp, skipkeys=True, indent=2)
 
             self.outer_result = outer_result
-            self.logger.info("Outer Crossvalidation results in {} candidate genes in total. Results written to {}".format(total, os.path.join(self.config.pp.save_dir, str(self.config.name) + "outer_results.json")))
+            self.logger.info("Outer Crossvalidation results in {} candidate genes in total. Results written to {}".format(total, os.path.join(pu.postprocessing_results_path(self.config), str(self.config.name) + "outer_results.json")))
+            candidate_genes, consensus_score = list(zip(*outer_result[0].items()))
+            self.pp_table.add("Candidate", index=candidate_genes, values=True, remaining=False)
+            self.pp_table.add("CS", index=candidate_genes, values=consensus_score, remaining=0)
 
         self.logger.info("Finished Overlap Analysis")
-
         return count2gene,
 
     def load_outer_results(self, path=None):

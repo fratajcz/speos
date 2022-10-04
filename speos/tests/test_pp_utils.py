@@ -72,7 +72,7 @@ class PPTableTest(unittest.TestCase):
         isequal = np.equal(np.asarray(inserted_column)[~np.isnan(inserted_column)], np.asarray(final_column)[~np.isnan(final_column)])
         self.assertTrue(isequal.all())
 
-        self.assertRaises(ValueError, self.table.add, column_header=column_header, index=index, values=[0, 1])
+        self.assertRaises(TypeError, self.table.add, column_header=column_header, index=index, values=[0, 1])
 
     def test_add_scalar(self):
         column_header = "first"

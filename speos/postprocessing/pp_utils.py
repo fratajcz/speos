@@ -33,10 +33,11 @@ class PostProcessingTable:
             raise ValueError("Column {} specified by argument column_header does not exist yet, only {}." + 
                              " Use the add() method to add values new columns.".format(column_header, self.table.columns))
 
+        RAISERROR = False
         try:
             _ = iter(values)
             if isinstance(index, set):
-                raise ValueError("Sets of indices are of arbitrary order, passing iterators als values alongside will lead to invalid results.")
+                RAISERROR = True
         except TypeError:
             values = [values] * len(index)
 
@@ -44,9 +45,14 @@ class PostProcessingTable:
         if remaining is not None:
             try:
                 _ = iter(remaining)
+                if isinstance(index, set):
+                    RAISERROR = True
             except TypeError:
                 remaining = [remaining] * len(self.table.index.difference(index))
             self.table.loc[self.table.index.difference(index), column_header] = remaining
+
+        if RAISERROR:
+            raise TypeError("Sets of indices are of arbitrary order, passing iterators als values alongside will lead to invalid results.")
 
     def add(self, column_header: str, index: Iterable, values, remaining=None) -> None:
         """
@@ -61,3 +67,6 @@ class PostProcessingTable:
             
     def get_table(self):
         return self.table
+
+    def save(self, path, sep="\t"):
+        self.table.to_csv(path, sep=sep)
