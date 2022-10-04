@@ -4,7 +4,7 @@ from speos.datasets import DatasetBootstrapper
 from speos.preprocessing.mappers import GWASMapper, AdjacencyMapper
 
 from speos.helpers import CheckPointer
-
+import os
 import matplotlib.pyplot as plt
 import torch
 from captum.attr import IntegratedGradients
@@ -42,73 +42,93 @@ ig_attr_node_ = None
 num_inner = 10
 num_outer = 11
 
-for outer_fold in range(0, num_outer):
-    for inner_fold in range(0, num_inner + 1):
-        if inner_fold == outer_fold:
-            continue
-        config.name = "cardiovascular_tag_outer_{}_fold_{}".format(outer_fold, inner_fold)
-        #config.model.save_dir = "./models/"
-        print("Loading model from {}".format(config.model.save_dir + config.name + ".pt"))
+import json
 
-        checkpointer = CheckPointer(
+outer_results_file = "/lustre/groups/epigenereg01/projects/ppi-florin/results/cardiovascular_tagouter_results.json"
+
+with open(outer_results_file, "r") as file:
+            outer_results = json.load(file)[0]
+
+candidates = [dataset.preprocessor.hgnc2id[key] for key, value in outer_results.items() if value == 11]
+
+for i, output_idx in enumerate(candidates):
+    #if dataset.preprocessor.id2hgnc[output_idx] == "ABI1":
+    #    continue
+    if output_idx not in dataset.data.edge_index:
+        continue
+    if dataset.preprocessor.G.degree[output_idx] == 0:
+        print("Skipping Candidate Gene #{} out of {} ({}) because it has no incident edges.".format(i, len(candidates), dataset.preprocessor.id2hgnc[output_idx]))
+    path = "/lustre/groups/epigenereg01/projects/ppi-florin/explanation_{}.png".format(id2hgnc[output_idx])
+    if os.path.exists(path):
+        continue
+    print("Processing Candidate Gene #{} out of {}: {}".format(i, len(candidates), dataset.preprocessor.id2hgnc[output_idx]))
+    ig_attr_edge_ = None
+    ig_attr_node_ = None
+    for outer_fold in range(0, num_outer):
+        for inner_fold in range(0, num_inner + 1):
+            if inner_fold == outer_fold:
+                continue
+            config.name = "cardiovascular_tag_outer_{}_fold_{}".format(outer_fold, inner_fold)
+            #config.model.save_dir = "./models/"
+            print("Loading model from {}".format(config.model.save_dir + config.name + ".pt"))
+
+            checkpointer = CheckPointer(
                     model, config.model.save_dir + config.name, mode=config.es.mode)
-        checkpointer.restore()
+            checkpointer.restore()
 
-        # from torch_geometric.nn import Sequential
+            surrogate_model = model.architectures[0].repackage_into_one_sequential()
+            device = "cpu"
+        
 
+            edge_mask = torch.ones(data.num_edges, requires_grad=True, device=device)
 
-        surrogate_model = model.architectures[0].repackage_into_one_sequential()
-        device = "cpu"
-        output_idx = 6637 
-
-        edge_mask = torch.ones(data.num_edges, requires_grad=True, device=device)
-
-        captum_model = to_captum(surrogate_model, mask_type='node_and_edge',
+            captum_model = to_captum(surrogate_model, mask_type='node_and_edge',
                             output_idx=output_idx)
 
-        ig = IntegratedGradients(captum_model)
+            ig = IntegratedGradients(captum_model)
 
-        ig_attr_node, ig_attr_edge = ig.attribute(
-            (data.x.float().unsqueeze(0), edge_mask.unsqueeze(0)),
-            additional_forward_args=(data.edge_index), internal_batch_size=1)
+            ig_attr_node, ig_attr_edge = ig.attribute(
+                (data.x.float().unsqueeze(0), edge_mask.unsqueeze(0)),
+                additional_forward_args=(data.edge_index), internal_batch_size=1)
 
-        # Scale attributions to [0, 1]:
-        ig_attr_node = ig_attr_node.squeeze(0).abs().sum(dim=1)
-        ig_attr_node /= ig_attr_node.max()
-        ig_attr_edge = ig_attr_edge.squeeze(0).abs()
-        ig_attr_edge /= ig_attr_edge.max()
+            # Scale attributions to [0, 1]:
+            ig_attr_node = ig_attr_node.squeeze(0).abs().sum(dim=1)
+            ig_attr_node /= ig_attr_node.max()
+            ig_attr_edge = ig_attr_edge.squeeze(0).abs()
+            ig_attr_edge /= ig_attr_edge.max()
 
-        if ig_attr_edge_ is None:
-            ig_attr_edge_ = ig_attr_edge
-        else:
-            ig_attr_edge_ += ig_attr_edge
+            if ig_attr_edge_ is None:
+                ig_attr_edge_ = ig_attr_edge
+            else:
+                ig_attr_edge_ += ig_attr_edge
 
-        if ig_attr_node_ is None:
-            ig_attr_node_ = ig_attr_node
-        else:
-            ig_attr_node_ += ig_attr_node
+            if ig_attr_node_ is None:
+                ig_attr_node_ = ig_attr_node
+            else:
+                ig_attr_node_ += ig_attr_node
 
 
-ig_attr_edge_ /= inner_fold * outer_fold
-ig_attr_node_ /= 10
+    ig_attr_edge_ /= num_inner * num_outer
+    ig_attr_node_ /= num_inner * num_outer
 
-fig, ax = plt.subplots(figsize=(15, 15))
-# Visualize absolute values of attributions:
+    fig, ax = plt.subplots(figsize=(12, 12))
+    # Visualize absolute values of attributions:
 
-explainer = Explainer(surrogate_model)
+    explainer = Explainer(surrogate_model)
 
-ax, G = explainer.visualize_subgraph(output_idx, data.edge_index, ig_attr_edge_, y=data.y,
+    ax, G = explainer.visualize_subgraph(output_idx, data.edge_index, ig_attr_edge_, y=data.y,
                                      node_alpha=ig_attr_node_)
 
-id2hgnc = dataset.preprocessor.id2hgnc
+    id2hgnc = dataset.preprocessor.id2hgnc
 
-for textbox in ax.texts:
-    index = textbox._text
-    try:
-        hgnc = id2hgnc[int(index)]
-        textbox._text = hgnc
-    except (ValueError, KeyError):
-        continue
+    for textbox in ax.texts:
+        index = textbox._text
+        try:
+            hgnc = id2hgnc[int(index)]
+            textbox._text = hgnc
+        except (ValueError, KeyError):
+            continue
 
-fig.tight_layout()
-plt.savefig("explanation_new.png")
+    fig.tight_layout()
+    plt.savefig(path)
+    print("Saved Explanation for {}".format(id2hgnc[output_idx]))

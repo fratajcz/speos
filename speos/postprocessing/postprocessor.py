@@ -118,7 +118,7 @@ class PostProcessor:
 
         return df
 
-    def dge(self, results_path=None, plot=True, save=True) -> pd.DataFrame:
+    def dge(self, results_path=None, plot=True, save=True, convergence_score=1) -> pd.DataFrame:
         """ Runs Differential Gene Expression enrichment on the results of the outer crossvalidation.
             Uses only unknown genes as background, mendelians are removed.
 
@@ -193,7 +193,7 @@ class PostProcessor:
             mendelian_odds_ratios.append(is_enriched_result[0])
             mendelian_pvals.append(is_enriched_result[1])
 
-            predicted_genes = set(self.outer_result[0].keys())
+            predicted_genes = set([key for key, value in self.outer_result[0].items() if value >= convergence_score])
 
             array = self.make_contingency_table(unknown_genes, predicted_genes, unknown_dge_genes)
 

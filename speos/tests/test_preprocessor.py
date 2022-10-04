@@ -452,21 +452,21 @@ class DummyPreProcessorTest(unittest.TestCase):
 
     def setUp(self) -> None:
         self.config = Config()
-        self.config.logging.dir = "coregenes/tests/logs/"
+        self.config.logging.dir = "speos/tests/logs/"
 
         self.config.name = "DiagnosticTest"
         self.config.crossval.n_folds = 1
 
-        self.config.model.save_dir = "coregenes/tests/models/"
-        self.config.inference.save_dir = "coregenes/tests/results"
-        self.config.model.plot_dir = "coregenes/tests/plots"
+        self.config.model.save_dir = "speos/tests/models/"
+        self.config.inference.save_dir = "speos/tests/results"
+        self.config.model.plot_dir = "speos/tests/plots"
 
-        self.config.input.gwas_mappings = "coregenes/tests/files/dummy_graph/gwas.json"
-        self.config.input.adjacency_mappings = "coregenes/tests/files/dummy_graph/adjacency.json"
-        self.config.input.gene_sets = "coregenes/tests/files/dummy_graph/"
-        self.config.input.gwas = "coregenes/tests/files/dummy_graph/"
+        self.config.input.gwas_mappings = "speos/tests/files/dummy_graph/gwas.json"
+        self.config.input.adjacency_mappings = "speos/tests/files/dummy_graph/adjacency.json"
+        self.config.input.gene_sets = "speos/tests/files/dummy_graph/"
+        self.config.input.gwas = "speos/tests/files/dummy_graph/"
 
-        self.gwasmapper = GWASMapper(self.config.input.gene_sets, self.config.input.gwas, self.config.input.gwas_mappings)
+        self.gwasmapper = GWASMapper(self.config.input.gwas_mappings)
         self.adjacencymapper = AdjacencyMapper(mapping_file=self.config.input.adjacency_mappings)
 
     def test_find_idx(self):
@@ -506,6 +506,13 @@ class DummyPreProcessorTest(unittest.TestCase):
         preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
         preprocessor.build_graph()
         preprocessor.dump_edgelist(os.path.join("coregenes/tests/data/edgelist_directed.tsv.gz"))
+
+    def test_node_dicts(self):
+        gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
+        adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
+        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
+        preprocessor.build_graph(features=True)
+        self.assertEqual(len(preprocessor.id2hgnc), len(preprocessor.G))
 
     def test_load_embeddings(self):
         gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
