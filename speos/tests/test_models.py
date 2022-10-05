@@ -239,11 +239,10 @@ class RelationalGeneNetworkTest(unittest.TestCase):
 
     def test_forward_rgcn(self):
 
-        mappings = GWASMapper(self.config.input.gene_sets, self.config.input.gwas).get_mappings(
+        mappings = GWASMapper().get_mappings(
             self.config.input.tag, fields=self.config.input.field)
 
-        tag = "" if self.config.input.adjacency == "all" else self.config.input.adjacency
-        adjacencies = AdjacencyMapper(self.config.input.adjacency_mappings).get_mappings(tag)
+        adjacencies = AdjacencyMapper(self.config.input.adjacency_mappings).get_mappings("BioPlex")
 
         dataset = DatasetBootstrapper(
             mappings, adjacencies, holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()

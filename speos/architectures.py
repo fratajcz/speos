@@ -6,6 +6,7 @@ import torch_geometric.utils as pyg_utils
 from sklearn.preprocessing import LabelEncoder
 from torch_sparse import SparseTensor
 from speos.utils.logger import setup_logger
+import speos.utils.nn_utils as nn_utils
 import speos.layers as layers
 
 
@@ -367,23 +368,15 @@ class RelationalGeneNetwork(GeneNetwork):
         super(RelationalGeneNetwork, self).__init__(config, dim, num_adjacencies)
         self.has_cache = False
 
-    def forward(self, x, edge_index, cached=True):
+    def forward(self, x: dict, edge_index: dict, cached=True):
         x = list(x.values())[0]  # we have only one node type anyway, no need for keeping in a dict
         if cached:
             if not self.has_cache:
-                edges = torch.cat([edges for edges in edge_index.values()], dim=1)
-                types = [[edge_type[1]] * edges.shape[-1] for edge_type, edges in edge_index.items()]
-                types = [value for sublist in types for value in sublist]
-                types = torch.Tensor(LabelEncoder().fit_transform(types)).to(edges.device)
-                self.edge_index = SparseTensor.from_edge_index(edges.long(), types, (x.shape[0], x.shape[0]))
+                self.edge_index, self.edge_encoder = nn_utils.typed_edges_to_sparse_tensor(x, edge_index)
                 self.has_cache = True
             edge_index = self.edge_index
         else:
-            edges = torch.cat([edges for edges in edge_index.values()], dim=1)
-            types = [[edge_type[1]] * edges.shape[-1] for edge_type, edges in edge_index.items()]
-            types = [value for sublist in types for value in sublist]
-            types = torch.Tensor(LabelEncoder().fit_transform(types)).to(edges.device)
-            edge_index = SparseTensor.from_edge_index(edges.long(), types, (x.shape[0], x.shape[0]))
+            edge_index, _ = nn_utils.typed_edges_to_sparse_tensor(x, edge_index)
 
         return super().forward(x, edge_index)
 
