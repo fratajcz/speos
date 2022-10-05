@@ -38,6 +38,8 @@ class PostProcessor:
     def init_pp_table(self):
         unknown_genes, all_genes, positive_genes = self.get_unknown_genes()
         self.pp_table = PostProcessingTable(index=all_genes)
+        included_genes = self.read_results_file()["hgnc"].tolist()
+        self.pp_table.add("Is Included", index=included_genes, values=True, remaining=False)
         self.pp_table.add("Mendelian", index=positive_genes, values=True, remaining=False)
 
     def save_pp_table(self):
@@ -528,18 +530,18 @@ class PostProcessor:
         array = self.make_contingency_table(all_genes, positive_genes, pli_genes.intersection(all_genes))
         pli_enrichment_result = fisher_exact(array)
 
-        all_pli_genes = self.return_only_valid(all_pli_genes, all_genes)
-        self.pp_table.add("pLI>0.9", all_pli_genes, True, False)
+        valid_pli_genes = self.return_only_valid(pli_genes, all_genes)
+        self.pp_table.add("pLI>0.9", valid_pli_genes, True, False)
 
-        valid_pli_genes = self.return_only_valid(pli_genes, unknown_genes)
+        unknown_pli_genes = self.return_only_valid(pli_genes, unknown_genes)
 
         self.logger.info("Total of {} genes with significant LoF Intolerance, {} of them match with our translation table.".format(len(pli_genes), len(pli_genes.intersection(all_genes))))
         self.logger.info("Found {} LoF Intolerance genes among the {} known positive genes (p: {:.2e}, OR: {}), leaving {} in {} Unknowns".format(
-            len(pli_genes.intersection(positive_genes)), len(positive_genes), pli_enrichment_result[1], round(pli_enrichment_result[0], 3), len(valid_pli_genes), len(unknown_genes)))
+            len(pli_genes.intersection(positive_genes)), len(positive_genes), pli_enrichment_result[1], round(pli_enrichment_result[0], 3), len(unknown_pli_genes), len(unknown_genes)))
 
         predicted_genes = set(self.outer_result[0].keys())
 
-        array = self.make_contingency_table(unknown_genes, predicted_genes, valid_pli_genes)
+        array = self.make_contingency_table(unknown_genes, predicted_genes, unknown_pli_genes)
 
         pli_enrichment_result = fisher_exact(array)
 
@@ -679,10 +681,6 @@ class PostProcessor:
         return fig
 
     def get_true_positives(self, results_path=None):
-        if results_path is None:
-            results_path = self.results_paths[0]
-            if type(results_path) == list:
-                results_path = results_path[0]
 
         table = self.read_results_file(results_path)
 
@@ -767,7 +765,15 @@ class PostProcessor:
                 if pval > 0.05:
                     return len(pvals) - i + 1
 
-    def read_results_file(self, results_file):
+    def read_results_file(self, results_file=None):
+        """Reads and returns the specified results file.
+           If no results file is specified, reads the first.
+           If a list is passed as results_file, the first element is read."""
+
+        if results_file is None:
+            results_file = self.results_paths[0]
+        if type(results_file) == list:
+            results_file = results_file[0]
         return pd.read_csv(results_file, header=0, index_col=0, sep="\t")
 
     def get_doid(self):
