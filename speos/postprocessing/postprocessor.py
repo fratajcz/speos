@@ -575,6 +575,7 @@ class PostProcessor:
             if plot:
                 tukey.plot_simultaneous(comparison_name="Candidate Gene")
                 plt.savefig(self.config.name + "_Tukey_" + "_".join(description.split(" ")))
+                plt.close()
 
             tukeys.append(tukey)
 
@@ -749,7 +750,7 @@ class PostProcessor:
     def get_consensus_genes(self, count2gene, pvals):
         consensus_score = self.find_consensus_score(pvals)
         mask = [np.array(list(count2gene.keys())) >= consensus_score]
-        selected_keys = np.array(list(count2gene.keys()))[mask]
+        selected_keys = np.array(list(count2gene.keys()))[tuple(mask)]
         return sorted([gene for key in selected_keys for gene in count2gene[key]]), consensus_score
 
     def find_consensus_score(self, pvals: list) -> int:
@@ -991,6 +992,7 @@ class PostProcessor:
         fig.tight_layout()
         self.logger.info("Plotting overlap plot to {}".format(plot_name))
         plt.savefig(plot_name)
+        plt.close()
 
         return pvals_pos_val
 

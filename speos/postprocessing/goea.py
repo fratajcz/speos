@@ -139,6 +139,7 @@ class GOEA_Study:
             ax.xaxis.grid(color='lightgrey', linestyle=':', linewidth=1)
 
         plt.scatter(df[plot_on_x][::-1], df["description"][::-1].tolist(), color=mapper.to_rgba(df[color_channel][::-1]), s=count_normalized**2, zorder=2)
+        ax.set_yticks(ax.get_yticks())  # this is required, otherwise the set_yticklabels line right below throws a nasty warning
         ax.set_yticklabels([textwrap.fill(e, 30) for e in df["description"]][::-1])
         fig.colorbar(mapper, orientation='horizontal', location="top", label=" ".join([word.capitalize() if word not in ["q", "p"] else word for word in color_channel.split("_")]), pad=0.005, ax=ax)
         if plot_on_x == "log_q":
@@ -161,6 +162,7 @@ class GOEA_Study:
         plt.xlim([0, df[plot_on_x].max()+1])
         plt.tight_layout()
         plt.savefig(path, bbox_inches='tight', dpi=300)
+        plt.close()
 
         if top_cutoff is not None:
             top_path = "".join(path.split(".")[:-1]) + "_top{}.png".format(top_cutoff)
