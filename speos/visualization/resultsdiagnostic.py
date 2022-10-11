@@ -109,6 +109,9 @@ class ResultsDiagnostic(GraphDiagnostic):
         plt.savefig("Results_degrees_{}.png".format(self.config.name), dpi=450)
 
 
+
+
+
 config = Config()
 config.parse_yaml(args.config)
 diagnostic = ResultsDiagnostic(config=config)

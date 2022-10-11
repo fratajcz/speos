@@ -33,7 +33,6 @@ class PostProcessor:
                             "Monogenic_Diabetes": "diabetes_query",
                             "Body_Mass_Disorder": "DOID9970"}
         
-        self.init_pp_table()
 
     def init_pp_table(self):
         unknown_genes, all_genes, positive_genes = self.get_unknown_genes()
@@ -48,6 +47,8 @@ class PostProcessor:
 
     def run(self):
         """Runs all tasks that are specified in the config as pp.tasks"""
+
+        self.init_pp_table()
 
         # ensure overlap analysis is run first
         if "overlap_analysis" in self.config.pp.tasks:

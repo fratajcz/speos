@@ -133,7 +133,7 @@ class RunComparison:
     def __init__(self, metrics: list = ["mrr_filtered", "mean_rank_filtered", "auroc"]):
         self.metrics = metrics
 
-    def eval(self, results_, target="val", additional_mask=None, plot=False, remove_nodes=[]):
+    def eval(self, results_, target="val", additional_mask=None, remove_nodes=[]):
         """ Remove nodes is an iterable that contains the indices of nodes to be removed from the results prior to anything else
             Additional mask is a bool array or None. If it is a bool array it will also be masked out during evaluation of metrics
             Note: Additional mask will be coerced with regular mask using AND operation, so it should have 1s where you want to keep nodes and will only

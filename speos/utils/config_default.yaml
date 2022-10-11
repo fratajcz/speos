@@ -74,9 +74,9 @@ optim:
   measure: loss
 
 es:
-  mode: min
+  mode: max
   patience: 100
-  metric: mean_rank_filtered
+  metric: auroc
 
 scheduler:
   factor: 0.33
