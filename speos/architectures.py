@@ -369,14 +369,16 @@ class RelationalGeneNetwork(GeneNetwork):
         self.has_cache = False
 
     def forward(self, x: dict, edge_index: dict, cached=True):
-        x = list(x.values())[0]  # we have only one node type anyway, no need for keeping in a dict
-        if cached:
-            if not self.has_cache:
-                self.edge_index, self.edge_encoder = nn_utils.typed_edges_to_sparse_tensor(x, edge_index)
-                self.has_cache = True
-            edge_index = self.edge_index
-        else:
-            edge_index, _ = nn_utils.typed_edges_to_sparse_tensor(x, edge_index)
+        if isinstance(x, dict):
+            x = list(x.values())[0]  # we have only one node type anyway, no need for keeping in a dict
+        if isinstance(edge_index, dict):
+            if cached:
+                if not self.has_cache:
+                    self.edge_index, self.edge_encoder = nn_utils.typed_edges_to_sparse_tensor(x, edge_index)
+                    self.has_cache = True
+                edge_index = self.edge_index
+            else:
+                edge_index, _ = nn_utils.typed_edges_to_sparse_tensor(x, edge_index)
 
         return super().forward(x, edge_index)
 

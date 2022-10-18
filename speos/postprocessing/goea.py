@@ -114,6 +114,9 @@ class GOEA_Study:
 
         df = df.sort_values(by=plot_on_x, ascending=False)
 
+        if len(df.index) > 100:
+            df = df.head(100)
+
         if len(df.index) > 20:
             scaling_factor = 0.45
         else:

@@ -63,7 +63,11 @@ class MetricsHelper:
 
     @property
     def accuracy(self):
-        return np.sum(np.equal(self.get_truth(), self.prediction)) / len(self.get_truth())
+        try:
+            num_examples = len(self.get_truth())
+        except TypeError:
+            num_examples = 1 # in case there is only one example held out
+        return np.sum(np.equal(self.get_truth(), self.prediction)) / num_examples
 
     @property
     def recall(self):
@@ -105,7 +109,7 @@ class MetricsHelper:
         confusion = self.confusion
         try:
             return confusion[1][1] / np.sum((confusion[1][1], confusion[0][1], 1e-10))
-        except IndexError:
+        except (IndexError, TypeError):
             return np.nan
 
     @property

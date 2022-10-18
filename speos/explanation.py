@@ -284,7 +284,10 @@ class Explainer(pyg.nn.models.Explainer):
         from matplotlib.colors import ListedColormap
         from torch_geometric.data import Data
 
-        assert edge_mask.size(0) == edge_index.size(1)
+        if isinstance(edge_index, SparseTensor):
+            assert edge_mask.size(0) == edge_index.nnz()
+        else:
+            assert edge_mask.size(0) == edge_index.size(1)
 
         if node_idx is None or node_idx < 0:
             hard_edge_mask = torch.BoolTensor([True] * edge_index.size(1),

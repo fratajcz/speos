@@ -11,7 +11,7 @@ import speos.utils.path_utils as pu
 
 
 class GeneDataset(InMemoryDataset):
-    def __init__(self, mappings, adjacencies, name, config, holdout_size: float = 0.05, transform=None, pre_transform=None):
+    def __init__(self, mappings, adjacencies, name, config, holdout_size: float = 0.5, transform=None, pre_transform=None):
         self.root = config.input.save_dir
         self.save = config.input.save_data
         self.name = name
@@ -67,14 +67,18 @@ class GeneDataset(InMemoryDataset):
         train_mask = np.array([index in train_indices for index in indices])
         holdout_mask = ~train_mask
 
-        if self.holdout_size > 0:
-            test_indices, val_indices = train_test_split(
+        try:
+            if self.holdout_size > 0:
+                test_indices, val_indices = train_test_split(
                 indices[holdout_mask], test_size=0.5, stratify=y[holdout_mask])
-        else:
-            test_indices, val_indices = [], []
-
-        test_mask = np.array([index in test_indices for index in indices])
-        val_mask = np.array([index in val_indices for index in indices])
+            else:
+                test_indices, val_indices = [], []
+            test_mask = np.array([index in test_indices for index in indices])
+            val_mask = np.array([index in val_indices for index in indices])
+        except ValueError:
+            train_mask = np.ones_like(train_mask).astype(np.bool8)
+            val_mask = np.zeros_like(train_mask).astype(np.bool8)
+            test_mask = np.zeros_like(train_mask).astype(np.bool8)
 
         assert np.sum(train_mask + val_mask + test_mask) == len(indices)
 

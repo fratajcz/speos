@@ -218,7 +218,7 @@ class SimpleModel(BaseModel):
                 assert len(keys) == 1, "More than one node type passed, this implementation is built with only one node type in mind."
                 out = out[keys[0]]
 
-        loss = self.loss_function(out[mask].squeeze(), data.y[mask]).squeeze()
+        loss = self.loss_function(out[mask].squeeze(), data.y[mask].squeeze()).squeeze()
 
         if len(loss.shape) > 0:
             loss = self.balance_losses(loss, data.y[mask])

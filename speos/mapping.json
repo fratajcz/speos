@@ -535,6 +535,13 @@
       "phenotype": "bodymass_disorder",
       "features_file": "",
       "match_type": "related",
-      "significant": true}
+      "significant": true},
+
+      {"name": "T1D-pancreatitis",
+      "ground_truth": "data/mendelian_gene_sets/pancreatitis.bed",
+      "phenotype": "pancreatitis",
+      "features_file": "data/gwas/T1D_UKBS.genes.out",
+      "match_type": "related",
+      "significant": false}
     
     ]
