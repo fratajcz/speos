@@ -1,3 +1,5 @@
+![SPEOS Header](img/speos_space_11_1080.png "SPEOS")
+
 # Identification of core genes from PPI and GWAS
 
 The idea is to use PPI as a network scaffold and identify core genes as those
