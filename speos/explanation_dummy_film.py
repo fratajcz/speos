@@ -21,8 +21,8 @@ parser.add_argument('--gene', "-g", type=str, default="",
 
 args = parser.parse_args()
 
-ig_attr_edge = torch.load("ig_attr_edge_outer{}_inner{}.pt".format(0, 1))
-print(ig_attr_edge.shape)
+#ig_attr_edge = torch.load("ig_attr_edge_outer{}_inner{}.pt".format(0, 1))
+#print(ig_attr_edge.shape)
 
 config = Config()
 config.parse_yaml("/home/florin.ratajczak/ppi-core-genes/configs/config_immune_dysregulation_film_forreal.yaml")
@@ -30,8 +30,14 @@ config.parse_yaml("/home/florin.ratajczak/ppi-core-genes/configs/config_immune_d
 config.input.save_dir = "./data/"
 config.logging.dir =  "./logs/"
 
-mappings = GWASMapper().get_mappings(
+pre_mappings = GWASMapper().get_mappings(
             config.input.tag, fields=config.input.field)
+
+mappings = []
+
+for mapping in pre_mappings:
+    if not "AMD" in mapping["name"]:
+        mappings.append(mapping)
 
 
 adjacencies = AdjacencyMapper(blacklist=config.input.adjacency_blacklist).get_mappings(config.input.adjacency, fields=config.input.adjacency_field)
@@ -92,7 +98,7 @@ with open(outer_results_file, "r") as file:
 
 
 #print("Candidates: {}".format(candidates))
-candidates = [6690]
+candidates =  [6749] if args.gene == "IL18RAP" else [15145] # [15145] #  [6690]
 for i, output_idx in enumerate(candidates):
     #if dataset.preprocessor.id2hgnc[output_idx] == "ABI1":
     #    continue
@@ -102,22 +108,28 @@ for i, output_idx in enumerate(candidates):
     #if os.path.exists(path):
     #    continue
     #print("Processing Candidate Gene #{} out of {}: {}".format(i, len(candidates), dataset.preprocessor.id2hgnc[output_idx]))
-    ig_attr_edge_ = None
-    ig_attr_node_ = None
+    ig_attr_edge_all = None
+    ig_attr_node_all = None
+    ig_attr_self_all = None
+    ig_attr_self_abs_all = None
     num_processed = 0
     for outer_fold in range(0, num_outer):
         for inner_fold in range(0, num_inner + 1):
             if inner_fold == outer_fold:
                 continue
             try:
-                ig_attr_node = torch.load("ig_attr_node_outer{}_inner{}.pt".format(outer_fold, inner_fold))
-                ig_attr_edge = torch.load("ig_attr_edge_outer{}_inner{}.pt".format(outer_fold, inner_fold))
+                ig_attr_node = torch.load("/lustre/groups/epigenereg01/projects/ppi-florin/explanations/ig_attr_node_outer{}_inner{}_{}.pt".format(outer_fold, inner_fold, args.gene))
+                ig_attr_edge = torch.load("/lustre/groups/epigenereg01/projects/ppi-florin/explanations/ig_attr_edge_outer{}_inner{}_{}.pt".format(outer_fold, inner_fold, args.gene))
+                ig_attr_self = torch.load("/lustre/groups/epigenereg01/projects/ppi-florin/explanations/ig_attr_self_outer{}_inner{}_{}.pt".format(outer_fold, inner_fold, args.gene))
+                ig_attr_self_abs = torch.load("/lustre/groups/epigenereg01/projects/ppi-florin/explanations/ig_attr_self_abs_outer{}_inner{}_{}.pt".format(outer_fold, inner_fold, args.gene))
                 print("Loaded edge and node attributes for outer {} inner {}".format(outer_fold, inner_fold))
                 ig_attr_node.requires_grad = False
                 ig_attr_edge.requires_grad = False
+                ig_attr_self.requires_grad = False
+                ig_attr_self_abs.requires_grad = False
             except FileNotFoundError:
-                
-                config.name = "cardiovascular_film_outer_{}_fold_{}".format(outer_fold, inner_fold)
+                #continue 
+                config.name = "immune_dysregulation_film_forreal_outer_{}_fold_{}".format(outer_fold, inner_fold)
                 #config.model.save_dir = "./models/"
                 print("Loading model from {}".format(config.model.save_dir + config.name + ".pt"))
 
@@ -146,32 +158,55 @@ for i, output_idx in enumerate(candidates):
                     additional_forward_args=(data.edge_index), internal_batch_size=1)
 
                 # Scale attributions to [0, 1]:
+                ig_attr_self = ig_attr_node.squeeze(0)[output_idx]
+                ig_attr_self_abs = ig_attr_node.squeeze(0)[output_idx].abs()
                 ig_attr_node = ig_attr_node.squeeze(0).abs().sum(dim=1)
+                
+                ig_attr_self /= ig_attr_self.abs().max()
+                ig_attr_self_abs /= ig_attr_self_abs.max()
                 ig_attr_node /= ig_attr_node.max()
+
                 ig_attr_edge = ig_attr_edge.squeeze(0).abs()
                 ig_attr_edge /= ig_attr_edge.max()
                 
-                torch.save(ig_attr_node, "ig_attr_node_outer{}_inner{}.pt".format(outer_fold, inner_fold))
-                torch.save(ig_attr_edge, "ig_attr_edge_outer{}_inner{}.pt".format(outer_fold, inner_fold))
+                torch.save(ig_attr_self, "/lustre/groups/epigenereg01/projects/ppi-florin/explanations/ig_attr_self_outer{}_inner{}_{}.pt".format(outer_fold, inner_fold, args.gene))
+                torch.save(ig_attr_self_abs, "/lustre/groups/epigenereg01/projects/ppi-florin/explanations/ig_attr_self_abs_outer{}_inner{}_{}.pt".format(outer_fold, inner_fold, args.gene))
+                torch.save(ig_attr_node, "/lustre/groups/epigenereg01/projects/ppi-florin/explanations/ig_attr_node_outer{}_inner{}_{}.pt".format(outer_fold, inner_fold, args.gene))
+                torch.save(ig_attr_edge, "/lustre/groups/epigenereg01/projects/ppi-florin/explanations/ig_attr_edge_outer{}_inner{}_{}.pt".format(outer_fold, inner_fold, args.gene))
             
             num_processed += 1
 
-            if ig_attr_edge_ is None:
-                ig_attr_edge_ = ig_attr_edge
+
+            if ig_attr_self_abs_all is None:
+                ig_attr_self_abs_all = ig_attr_self_abs
             else:
-                ig_attr_edge_ += ig_attr_edge
+                ig_attr_self_abs_all += ig_attr_self_abs
 
-            if ig_attr_node_ is None:
-                ig_attr_node_ = ig_attr_node
+            if ig_attr_self_all is None:
+                ig_attr_self_all = ig_attr_self
             else:
-                ig_attr_node_ += ig_attr_node
+                ig_attr_self_all += ig_attr_self
+
+            if ig_attr_edge_all is None:
+                ig_attr_edge_all = ig_attr_edge
+            else:
+                ig_attr_edge_all += ig_attr_edge
+
+            if ig_attr_node_all is None:
+                ig_attr_node_all = ig_attr_node
+            else:
+                ig_attr_node_all += ig_attr_node
 
 
-    ig_attr_edge_ /= num_processed
-    ig_attr_node_ /= num_processed
+    ig_attr_self_all /= num_processed
+    ig_attr_self_abs_all /= num_processed
+    ig_attr_edge_all /= num_processed
+    ig_attr_node_all /= num_processed
     
-    torch.save(ig_attr_edge, 'ig_attr_edge_film.pt')
-    torch.save(ig_attr_node, 'ig_attr_node_film.pt')
+    torch.save(ig_attr_self_all, '/lustre/groups/epigenereg01/projects/ppi-florin/explanations/ig_attr_self_abs_film_{}.pt'.format(args.gene))
+    torch.save(ig_attr_self_abs_all, '/lustre/groups/epigenereg01/projects/ppi-florin/explanations/ig_attr_self_film_{}.pt'.format(args.gene))
+    torch.save(ig_attr_edge_all, '/lustre/groups/epigenereg01/projects/ppi-florin/explanations/ig_attr_edge_film_{}.pt'.format(args.gene))
+    torch.save(ig_attr_node_all, '/lustre/groups/epigenereg01/projects/ppi-florin/explanations/ig_attr_node_film_{}.pt'.format(args.gene))
 
     fig, ax = plt.subplots(figsize=(12, 12))
     # Visualize absolute values of attributions:
@@ -186,11 +221,21 @@ for i, output_idx in enumerate(candidates):
     print(edge_index.shape)
     #ig_attr_edge_, types = torch.tensor_split(ig_attr_edge_, 2, dim=1)
     
-    threshold = 0.1
-    print(torch.sum(ig_attr_edge_ > threshold))
-    print(edge_index[:, ig_attr_edge_.squeeze() > threshold])
-    print(edge_types[ig_attr_edge_.squeeze() > threshold])
-    print(ig_attr_edge_[ig_attr_edge_.squeeze() > threshold])
+    k = 10
+    print("edges:")
+    top_indices = torch.topk(ig_attr_edge_all, k).indices
+    #print(torch.sum(ig_attr_edge_ > threshold))
+    #print(edge_index[:, ig_attrr_edge_.squeeze() > threshold])
+    #print(edge_types[ig_attr_edge_.squeeze() > threshold])
+    #print(ig_attr_edge_[ig_attr_edge_.squeeze() > threshold])
+    print(edge_index[:, top_indices])
+    print(edge_types[top_indices])
+    print(ig_attr_edge_all[top_indices])
+    print(ig_attr_self_all)
+    print(ig_attr_self_abs_all)
+    print("Nodes:")
+    top_nodes = torch.topk(ig_attr_node_all, k)
+    print(top_nodes)
     #ax, G = explainer.visualize_subgraph(output_idx, edge_index, ig_attr_edge_.squeeze(), threshold=threshold,
     #                                 node_alpha=ig_attr_node_)
 

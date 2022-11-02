@@ -12,14 +12,29 @@ from captum.attr import IntegratedGradients
 from torch_geometric.nn import to_captum
 from speos.explanation import Explainer
 
+import argparse
+
+parser = argparse.ArgumentParser(description='Get Promising Drug Development Candidates from Postprocessing Table')
+
+parser.add_argument('--gene', "-g", type=str, default="",
+                    help='Path to the Postprocessing Table.')
+
+args = parser.parse_args()
+
 config = Config()
-config.parse_yaml("/home/florin.ratajczak/ppi-core-genes/configs/config_cardiovascular_tag.yaml")
+config.parse_yaml("/home/florin.ratajczak/ppi-core-genes/configs/config_immune_dysregulation_tag.yaml")
 #print(config)
 config.input.save_dir = "./data/"
 config.logging.dir =  "./logs/"
 
-mappings = GWASMapper().get_mappings(
+pre_mappings = GWASMapper().get_mappings(
             config.input.tag, fields=config.input.field)
+
+mappings = []
+
+for mapping in pre_mappings:
+    if not "AMD" in mapping["name"]:
+        mappings.append(mapping)
 
 
 adjacencies = AdjacencyMapper(blacklist=config.input.adjacency_blacklist).get_mappings(config.input.adjacency, fields=config.input.adjacency_field)
@@ -44,21 +59,25 @@ num_outer = 11
 
 import json
 
-outer_results_file = "/lustre/groups/epigenereg01/projects/ppi-florin/results/cardiovascular_tagouter_results.json"
+outer_results_file = "/lustre/groups/epigenereg01/projects/ppi-florin/results/immune_dysregulation_tagouter_results.json"
 
 with open(outer_results_file, "r") as file:
             outer_results = json.load(file)[0]
 
-candidates = [dataset.preprocessor.hgnc2id[key] for key, value in outer_results.items() if value == 11]
+if args.gene == "":
+    candidates = [dataset.preprocessor.hgnc2id[key] for key, value in outer_results.items() if value == 11]
+else:
+    candidates = [dataset.preprocessor.hgnc2id[args.gene]]
+
 
 for i, output_idx in enumerate(candidates):
     #if dataset.preprocessor.id2hgnc[output_idx] == "ABI1":
     #    continue
-    if output_idx not in dataset.data.edge_index:
-        continue
-    if dataset.preprocessor.G.degree[output_idx] == 0:
-        print("Skipping Candidate Gene #{} out of {} ({}) because it has no incident edges.".format(i, len(candidates), dataset.preprocessor.id2hgnc[output_idx]))
-    path = "/lustre/groups/epigenereg01/projects/ppi-florin/explanation_{}.png".format(id2hgnc[output_idx])
+    #if output_idx not in dataset.data.edge_index:
+    #    continue
+    #if dataset.preprocessor.G.degree[output_idx] == 0:
+    #    print("Skipping Candidate Gene #{} out of {} ({}) because it has no incident edges.".format(i, len(candidates), dataset.preprocessor.id2hgnc[output_idx]))
+    path = "/lustre/groups/epigenereg01/projects/ppi-florin/explanation_tag_immune_{}.png".format(dataset.preprocessor.id2hgnc[output_idx])
     if os.path.exists(path):
         continue
     print("Processing Candidate Gene #{} out of {}: {}".format(i, len(candidates), dataset.preprocessor.id2hgnc[output_idx]))
@@ -68,7 +87,7 @@ for i, output_idx in enumerate(candidates):
         for inner_fold in range(0, num_inner + 1):
             if inner_fold == outer_fold:
                 continue
-            config.name = "cardiovascular_tag_outer_{}_fold_{}".format(outer_fold, inner_fold)
+            config.name = "immune_dysregulation_tag_outer_{}_fold_{}".format(outer_fold, inner_fold)
             #config.model.save_dir = "./models/"
             print("Loading model from {}".format(config.model.save_dir + config.name + ".pt"))
 
@@ -119,7 +138,7 @@ for i, output_idx in enumerate(candidates):
     ax, G = explainer.visualize_subgraph(output_idx, data.edge_index, ig_attr_edge_, y=data.y,
                                      node_alpha=ig_attr_node_)
 
-    id2hgnc = dataset.preprocessor.id2hgnc
+    id2hgnc = {value: key for key, value in dataset.preprocessor.hgnc2id.items()}
 
     for textbox in ax.texts:
         index = textbox._text
