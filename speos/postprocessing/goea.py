@@ -99,11 +99,11 @@ class GOEA_Study:
 
         return df
 
-    def plot(self, df, path, color_channel: str = "log_q", plot_on_x: str = "enrichment", top_cutoff=10):
+    def plot(self, df, path, color_channel: str = "enrichment", plot_on_x: str = "log_q", top_cutoff=10):
         """
-            color_channel: specify a column in df which will be used for color coding. Default: log_q
+            color_channel: specify a column in df which will be used for color coding. Default: enrichment
 
-            plot_on_x:  specify a column in df which will be used for x axis. This value will be sorted along. Default: enrichment
+            plot_on_x:  specify a column in df which will be used for x axis. This value will be sorted along. Default: log_q
         """
 
         import matplotlib as mpl
@@ -111,8 +111,9 @@ class GOEA_Study:
         import textwrap
         import numpy as np
         from matplotlib.lines import Line2D
-
+        
         df = df.sort_values(by=plot_on_x, ascending=False)
+        df = df[~df["description"].duplicated(keep='first')]
 
         if len(df.index) > 100:
             df = df.head(100)
@@ -144,7 +145,12 @@ class GOEA_Study:
         plt.scatter(df[plot_on_x][::-1], df["description"][::-1].tolist(), color=mapper.to_rgba(df[color_channel][::-1]), s=count_normalized**2, zorder=2)
         ax.set_yticks(range(len(df["description"])))  # this is required, otherwise the set_yticklabels line right below throws a nasty warning
         ax.set_yticklabels([textwrap.fill(e, 30) for e in df["description"]][::-1])
-        fig.colorbar(mapper, orientation='horizontal', location="top", label=" ".join([word.capitalize() if word not in ["q", "p"] else word for word in color_channel.split("_")]), pad=0.005, ax=ax)
+        if plot_on_x == "enrichment":
+            _label = (r"Fold Enrichment")
+        else:
+            _label = " ".join([word.capitalize() if word not in ["q", "p"] else word for word in color_channel.split("_")])
+
+        fig.colorbar(mapper, orientation='horizontal', location="top", label=_label, pad=0.005, ax=ax)
         if plot_on_x == "log_q":
             ax.set_xlabel(r"$-\log(q)$")
         elif plot_on_x == "enrichment":
@@ -160,7 +166,7 @@ class GOEA_Study:
                                   markerfacecolor='w', markersize=count_normalized.max(), linestyle='')
                            ]
 
-        ax.legend(handles=legend_elements, loc='upper left', labelspacing=2, borderpad=1.5)
+        ax.legend(handles=legend_elements, loc='lower right', labelspacing=2, borderpad=1.5)
         plt.ylim([-0.5, len(df["description"])])
         plt.xlim([0, df[plot_on_x].max()+1])
         plt.tight_layout()

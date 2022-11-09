@@ -174,19 +174,20 @@ class MessagePassingExplainer:
 
         adjacency_name = self.adjacency_names[self.adjacency]
         
-        if self.adjacency == 0:
-            lin = mp_layers[self.layer].lin_skip
-        else:
-            lin = mp_layers[self.layer].lins[self.adjacency - 1]
+        #if self.adjacency == 0:
+        #    lin = mp_layers[self.layer].lin_skip
+        #else:
+        lin = mp_layers[self.layer].lins[self.adjacency - 1]
 
         beta, gamma = self.get_beta_gamma(latent_node_features, mp_layers[self.layer], self.adjacency)
 
-        if self.adjacency == 0:
-            messages = self.get_identity_messages(lin(latent_node_features[0]), beta, gamma)
-            null_messages = self.get_identity_messages(lin(latent_node_features[0]), torch.zeros_like(beta), torch.ones_like(gamma))
-        else:
-            messages = self.get_messages(lin(latent_node_features[0]), edges, edge_types, beta, gamma, self.adjacency)
-            null_messages = self.get_messages(lin(latent_node_features[0]), edges, edge_types, torch.zeros_like(beta), torch.ones_like(gamma), self.adjacency)
+        #if self.adjacency == 0:
+        #    messages = self.get_identity_messages(lin(latent_node_features[0]), beta, gamma)
+        #    null_messages = self.get_identity_messages(lin(latent_node_features[0]), torch.zeros_like(beta), torch.ones_like(gamma))
+        #else:
+
+        messages = self.get_messages(lin(latent_node_features[0]), edges, edge_types, beta, gamma, self.adjacency)
+        null_messages = self.get_messages(lin(latent_node_features[0]), edges, edge_types, torch.zeros_like(beta), torch.ones_like(gamma), self.adjacency)
 
         length = messages.norm(p=2, dim=1)
         null_length = null_messages.norm(p=2, dim=1)

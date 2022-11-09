@@ -11,6 +11,7 @@ import random
 import json
 from speos.postprocessing.pp_utils import PostProcessingTable
 import speos.utils.path_utils as pu
+import traceback
 
 class PostProcessor:
     """Reads a results file and generates reports and analyses on it. The results file must contain identifers, labels and predictions per gene"""
@@ -26,7 +27,8 @@ class PostProcessor:
         self.target = self.config.input.tag
         self.consensus = self.config.pp.consensus
 
-        self.target2doid = {"Immune_Dysregulation": "DOID2914",
+        self.target2doid = {#"Immune_Dysregulation": "DOID2914",
+                            "Immune_Dysregulation": "immune_dysreg_query",
                             "Cardiovascular": "cad_query",
                             "Insulin_Disorder": "insulin_query",
                             # "Monogenic_Diabetes": "DOID9744"}
@@ -131,7 +133,14 @@ class PostProcessor:
             self.create_if_not_exists(self.config.pp.plot_dir)
             image_path = os.path.join(self.config.pp.plot_dir, self.config.name + "_pathwayea.png")
             self.logger.info("Saving plot to {}".format(image_path))
-            goea.plot(df, image_path)
+            if len(df) > 0:
+                try:
+                    goea.plot(df, image_path)
+                except Exception as e:
+                    self.logger.error("Something went wrong trying to plot:")
+                    self.logger.error(traceback.format_exc())
+            else:
+                self.logger.info("Not Plotting Pathway Enrichment because no significant Terms have been found.")
 
         return df
 
@@ -280,8 +289,15 @@ class PostProcessor:
         if self.config.pp.plot:
             self.create_if_not_exists(self.config.pp.plot_dir)
             image_path = os.path.join(self.config.pp.plot_dir, self.config.name + "_hpoea.png")
-            self.logger.info("Saving plot to {}".format(image_path))
-            goea.plot(df, image_path)
+            if len(df) > 0:
+                self.logger.info("Saving plot to {}".format(image_path))
+                try:
+                    goea.plot(df, image_path)
+                except Exception as e:
+                    self.logger.error("Something went wrong trying to plot:")
+                    self.logger.error(traceback.format_exc())
+            else:
+                self.logger.info("Not Plotting HPO Enrichment because no significant Terms have been found.")
 
         return df
 
@@ -317,7 +333,14 @@ class PostProcessor:
                 self.create_if_not_exists(self.config.pp.plot_dir)
                 path = os.path.join(self.config.pp.plot_dir, self.config.name + "_goea_{}.png".format("_".join(task.split(" "))))
                 self.logger.info("Saving plot to {}".format(path))
-                goea.plot(df, path)
+                if len(df) > 0:
+                    try:
+                        goea.plot(df, path)
+                    except Exception as e:
+                        self.logger.error("Something went wrong trying to plot:")
+                        self.logger.error(traceback.format_exc())
+                else:
+                    self.logger.info("Not Plotting Go Enrichment fo {} because no significant Terms have been found.".format(task))
 
             goea.reset()
 

@@ -17,7 +17,10 @@ import argparse
 parser = argparse.ArgumentParser(description='Get Promising Drug Development Candidates from Postprocessing Table')
 
 parser.add_argument('--gene', "-g", type=str, default="",
-                    help='Path to the Postprocessing Table.')
+                    help='gene to examine (either IL18RAP or TNFSF15)')
+parser.add_argument('--readonly', "-r" dest='accumulate', action='store_const',
+                    const=True, default=False,
+                    help='if run should be readonly.')
 
 args = parser.parse_args()
 
@@ -128,7 +131,8 @@ for i, output_idx in enumerate(candidates):
                 ig_attr_self.requires_grad = False
                 ig_attr_self_abs.requires_grad = False
             except FileNotFoundError:
-                #continue 
+                if args.readonly:
+                    continue 
                 config.name = "immune_dysregulation_film_forreal_outer_{}_fold_{}".format(outer_fold, inner_fold)
                 #config.model.save_dir = "./models/"
                 print("Loading model from {}".format(config.model.save_dir + config.name + ".pt"))
