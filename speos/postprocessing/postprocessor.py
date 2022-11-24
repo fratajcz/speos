@@ -190,6 +190,7 @@ class PostProcessor:
         mendelian_pvals = []
         candidate_odds_ratios = []
         candidate_pvals = []
+        n_dge = []
 
         valid_union_genes = set()
         unknown_union_genes = set()
@@ -219,6 +220,7 @@ class PostProcessor:
 
             mendelian_odds_ratios.append(is_enriched_result[0])
             mendelian_pvals.append(is_enriched_result[1])
+            n_dge.append(len(valid_dge_genes))
 
             predicted_genes = set([key for key, value in self.outer_result[0].items() if value >= convergence_score])
 
@@ -236,6 +238,7 @@ class PostProcessor:
         results["mendelian_pvals"] = mendelian_pvals
         results["candidate_odds_ratios"] = candidate_odds_ratios
         results["candidate_pvals"] = candidate_pvals
+        results["n_dge"] = n_dge
 
         return results
 

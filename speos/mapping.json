@@ -49,7 +49,7 @@
   {"name": "AMD-immune_dysregulation",
     "ground_truth": "data/mendelian_gene_sets/Immune_Dysregulation_genes.bed",
     "phenotype": "immune_dysregulation",
-    "features_file": "data/gwas/AMD.genes.out",
+    "features_file": "",
     "match_type": "related",
     "significant": true},
 

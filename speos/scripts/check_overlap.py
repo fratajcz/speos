@@ -20,6 +20,10 @@ args = parser.parse_args()
 
 viridis = cm.get_cmap('viridis')
 
+pretty_names = {"film": "Breadth",
+                "tag": "Depth",
+                "gcn": "GCN"}
+
 results = []
 disorder = args.disorder
 method = args.row
@@ -63,12 +67,12 @@ print(final)
 
 fig, ax = plt.subplots()
 positions = list(range(1, 1 + n_reps))
-labels = ["{} {}".format(args.column, rep) for rep in range(n_reps)]
+labels = ["{} {}".format(pretty_names[args.column], rep) for rep in range(n_reps)]
 
 ax.xaxis.set_major_locator(ticker.FixedLocator(positions))
 ax.xaxis.set_major_formatter(ticker.FixedFormatter([""] + labels))
 
-labels = ["{} {}".format(args.row, rep) for rep in range(n_reps)]
+labels = ["{} {}".format(pretty_names[args.row], rep) for rep in range(n_reps)]
 ax.yaxis.set_major_locator(ticker.FixedLocator(positions))
 ax.yaxis.set_major_formatter(ticker.FixedFormatter([""] + labels))
 
@@ -80,4 +84,4 @@ for (i, j), z in np.ndenumerate(final):
 fig.colorbar(cax)
 fig.suptitle("Overlap for multiple runs of {}".format(args.disorder.capitalize()))
 fig.tight_layout()
-fig.savefig("Overlap_{}_{}_{}.png".format(args.disorder, args.row, args.column), dpi = 400)
+fig.savefig("Overlap_{}_{}_{}.svg".format(args.disorder, args.row, args.column), bbox_inches="tight")

@@ -9,7 +9,7 @@ import os
 
 
 class GraphDiagnosticWrapper:
-    def __init__(self, preprocessor=None, config=None, gwasmapper=None, adjacencymapper=None, phenotype_tag="", adjacency_tag="", phenotype_fields="name", adjacency_fields="name", merge=False):
+    def __init__(self, preprocessor=None, config=None, gwasmapper=None, adjacencymapper=None, phenotype_tag="", adjacency_tag="", phenotype_fields="name", adjacency_fields="name", merge=False, features=False):
 
         self.config = Config() if config is None else config
         self.gwasmapper = GWASMapper() if gwasmapper is None else gwasmapper
@@ -22,7 +22,7 @@ class GraphDiagnosticWrapper:
 
         self.phenotype_tag = phenotype_tag
         self.adajcency_tag = adjacency_tag
-
+        self.features = features
         self.merge = merge
 
         if not merge and (len(self.distinct_mappings) > 1 or len(self.adjacencies) > 1):
@@ -31,7 +31,7 @@ class GraphDiagnosticWrapper:
         else:
             self.mode = "focus"
             preprocessor = PreProcessor(self.config, self.gwasmappings, self.adjacencies) if preprocessor is None else preprocessor
-            self.diagnostic = GraphDiagnostic(preprocessor.get_graph(features=False))
+            self.diagnostic = GraphDiagnostic(preprocessor.get_graph(features=self.features))
 
         self.details = ["components", "paths", "degrees", "homophily", "metrics"]
 

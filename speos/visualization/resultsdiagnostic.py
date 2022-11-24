@@ -5,11 +5,15 @@ from speos.utils.config import Config
 import json
 import os
 import argparse
+import numpy as np
+from scipy.stats import fisher_exact
 
 parser = argparse.ArgumentParser(description='Plot statistical properties of results')
 
 parser.add_argument('--config', "-c", type=str,
                     help='Path to the config that should be used for the run.')
+parser.add_argument('--cutoff', "-k", type=int, default=1,
+                    help='cutoff convergence score.')
 
 args = parser.parse_args()
 
@@ -18,14 +22,14 @@ class ResultsDiagnostic(GraphDiagnostic):
     """Class that checks the results of a crossvalidation run for correlation with graph properties such as homophily and node degree"""
     def __init__(self, config=None):
         self.config = Config() if config is None else config
-        self.gwasmapper = GWASMapper(config.input.gene_sets, config.input.gwas, config.input.gwas_mappings)
-        self.adjacencymapper = AdjacencyMapper(mapping_file=config.input.adjacency_mappings)
+        self.gwasmapper = GWASMapper()
+        self.adjacencymapper = AdjacencyMapper(config.input.adjacency_mappings, blacklist=self.config.input.adjacency_blacklist)
 
-        mappings = GWASMapper(config.input.gene_sets, config.input.gwas).get_mappings(
+        mappings = GWASMapper().get_mappings(
             config.input.tag, fields=config.input.field)
 
         tag = "" if config.input.adjacency == "all" else config.input.adjacency
-        adjacencies = AdjacencyMapper(config.input.adjacency_mappings).get_mappings(tag, fields=config.input.adjacency_field)
+        adjacencies = AdjacencyMapper(config.input.adjacency_mappings, blacklist=self.config.input.adjacency_blacklist).get_mappings(tag, fields=config.input.adjacency_field)
 
         self.prepro = PreProcessor(self.config, mappings, adjacencies)
         self.G = self.prepro.get_graph()
@@ -37,13 +41,33 @@ class ResultsDiagnostic(GraphDiagnostic):
         if graph is None:
             graph = self.G
         all_keys = list(self.prepro.hgnc2id.keys())
+        connected_and_positive = 0
+        connected_and_negative = 0
+        disconnected_and_positive = 0
+        disconnected_and_negative = 0
         bins = {convergence_score: [] for convergence_score in range(12)}
+        global args
         for key in all_keys:
             degree = graph.degree[self.prepro.hgnc2id[key]]
-            if key in self.results.keys():
+            if key in self.results.keys() and self.results[key] >= args.cutoff:
                 bins[self.results[key]].append(degree)
+                if degree > 0:
+                    connected_and_positive += 1
+                else: 
+                    disconnected_and_positive += 1
             else:
                 bins[0].append(degree)
+                if degree > 0:
+                    connected_and_negative += 1
+                else: 
+                    disconnected_and_negative += 1
+
+        array = np.array(((connected_and_positive, connected_and_negative), (disconnected_and_positive, disconnected_and_negative)), dtype=np.uint16)
+
+        test_result = fisher_exact(array)
+
+        print("Fishers Exact Test for Connected Genes among Predicted Genes. p: {:.2e}, OR: {}".format(test_result[1], round(test_result[0], 3)))
+        print(array)
 
         return bins
 

@@ -18,9 +18,11 @@ class GeneDataset(InMemoryDataset):
         self.config = config
         self.holdout_size = holdout_size
         self.preprocessor = PreProcessor(config, mappings, adjacencies)
+        logger = setup_logger(config, __name__)
         self.is_multigraph = False
         super(GeneDataset, self).__init__(self.root, transform, pre_transform)
         if self.save:
+            logger.info("Loading Processed Data from {}".format(self.processed_paths[0]))
             if torch.cuda.is_available():
                 self.data = torch.load(self.processed_paths[0])
             else:

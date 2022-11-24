@@ -143,7 +143,7 @@ diagnostic = GraphDiagnosticWrapper(config=config, phenotype_tag=["immune_dysreg
 fig, ax = diagnostic.get_diagnostics("metrics", save=False)
 plt.savefig(os.path.join(config.model.plot_dir, "metrics_recon3d_immune.png"))
 """
-
+"""
 diagnostic = GraphDiagnosticWrapper(config=config, phenotype_tag=["immune_dysregulation", "cardiovascular_disease"], adjacency_tag=["BioPlex 3.0 293T", "HuRI", "IntAct_Direct", "STRING"])
 fig, ax = diagnostic.get_diagnostics("homophily", save=False)
 plt.tight_layout()
@@ -164,3 +164,14 @@ diagnostic = GraphDiagnosticWrapper(config=config, phenotype_tag=["immune_dysreg
 fig, ax = diagnostic.get_diagnostics("components", save=False)
 plt.tight_layout()
 plt.savefig(os.path.join(config.model.plot_dir, "components_intact_string.png"))
+"""
+"""
+diagnostic = GraphDiagnosticWrapper(config=config, phenotype_tag=["immune_dysregulation"], adjacency_tag="IntAct_Direct", features=True)
+fig, ax = diagnostic.get_diagnostics(save=False)
+plt.tight_layout()
+plt.savefig(os.path.join(config.model.plot_dir, "focus_immune_intact_direct.pdf"), bbox_inches="tight")
+"""
+diagnostic = GraphDiagnosticWrapper(config=config, phenotype_tag=["immune_dysregulation"], adjacency_tag="", merge=True, features=True)
+fig, ax = diagnostic.get_diagnostics(save=False)
+plt.tight_layout()
+plt.savefig(os.path.join(config.model.plot_dir, "focus_immune_all.pdf"), bbox_inches="tight")
