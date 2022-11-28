@@ -191,6 +191,14 @@ class PostProcessor:
         candidate_odds_ratios = []
         candidate_pvals = []
         n_dge = []
+        n_mendelians_with_de = []
+        n_mendelians_without_de = []
+        n_nonmendelians_with_de = []
+        n_nonmendelians_without_de = []
+        n_candidate_with_de = []
+        n_candidate_without_de = []
+        n_noncandidate_with_de = []
+        n_noncandidate_without_de = []
 
         valid_union_genes = set()
         unknown_union_genes = set()
@@ -212,6 +220,10 @@ class PostProcessor:
 
             self.pp_table.add("DGE: {}".format(subtype), valid_dge_genes, True, False)
             array = self.make_contingency_table(all_genes, positive_genes, valid_dge_genes)
+            n_mendelians_with_de.append(array[0][0].item())
+            n_mendelians_without_de.append(array[1][0].item())
+            n_nonmendelians_with_de.append(array[0][1].item())
+            n_nonmendelians_without_de.append(array[1][1].item())
             is_enriched_result = fisher_exact(array)
 
             self.logger.info("Total of {} {} DE genes, {} of them match with our translation table.".format(len(dge_genes), subtype, len(valid_dge_genes)))
@@ -221,11 +233,15 @@ class PostProcessor:
             mendelian_odds_ratios.append(is_enriched_result[0])
             mendelian_pvals.append(is_enriched_result[1])
             n_dge.append(len(valid_dge_genes))
+            
+            
 
             predicted_genes = set([key for key, value in self.outer_result[0].items() if value >= convergence_score])
-
             array = self.make_contingency_table(unknown_genes, predicted_genes, unknown_dge_genes)
-
+            n_candidate_with_de.append(array[0][0].item())
+            n_candidate_without_de.append(array[1][0].item())
+            n_noncandidate_with_de.append(array[0][1].item())
+            n_noncandidate_without_de.append(array[1][1].item())
             is_enriched_result = fisher_exact(array)
 
             self.logger.info("Fishers Exact Test for {} DE genes among Predicted Genes. p: {:.2e}, OR: {}".format(subtype, is_enriched_result[1], round(is_enriched_result[0], 3)))
@@ -234,12 +250,19 @@ class PostProcessor:
             candidate_odds_ratios.append(is_enriched_result[0])
             candidate_pvals.append(is_enriched_result[1])
 
-        results["mendelian_odds_ratios"] = mendelian_odds_ratios
-        results["mendelian_pvals"] = mendelian_pvals
-        results["candidate_odds_ratios"] = candidate_odds_ratios
-        results["candidate_pvals"] = candidate_pvals
-        results["n_dge"] = n_dge
-
+        results["Mendelian ORs"] = mendelian_odds_ratios
+        results["Mendelian pvals"] = mendelian_pvals
+        results["Candidate ORs"] = candidate_odds_ratios
+        results["Candidate pvals"] = candidate_pvals
+        results["N DEG"] = n_dge
+        results["N Mendelian And DEG"] = n_mendelians_with_de
+        results["N Mendelian Not DEG"] = n_mendelians_without_de
+        results["N Not Mendelian And DEG"] = n_nonmendelians_with_de
+        results["N Not Mendelian Not DEG"] = n_nonmendelians_without_de
+        results["N Candidate And DEG"] = n_candidate_with_de
+        results["N Candidate Not DEG"] = n_candidate_without_de
+        results["N Not Candidate And DEG"] = n_noncandidate_with_de
+        results["N Not Candidate Not DEG"] = n_noncandidate_without_de
         return results
 
     def hpo_enrichment(self, results_path=None, plot=True, save=True) -> pd.DataFrame:
@@ -363,10 +386,14 @@ class PostProcessor:
         from scipy.stats import fisher_exact, mannwhitneyu
         from speos.scripts.utils import fdr
 
+        df = pd.DataFrame(columns=["Group Name", "Group N", "N Drug Targets", "OR DT", "pval DT unadjusted", "pval DT adjusted (FDR)", "Median # of DT", "xDC"," ", "Pariwse Comparison", "pval xDC unadjusted", "pval xDC adjusted (FDR)", "U-Stat"],
+                          index=range(3))
+        df["Group Name"] = ["Mendelian", "Candidate Gene", "Noncandidate Gene"]
+        df[" "] = [" "] * 3
+
         unknown_genes, all_genes, positive_genes = self.get_unknown_genes(results_path)
 
         hgnc2degree = self.get_drugtarget_dict()
-        
         if "Total" in self.outer_result[0].keys():
             self.outer_result[0].pop("Total")
 
@@ -376,10 +403,19 @@ class PostProcessor:
 
         predicted_genes = set(hgnc2predictions.keys())
         drug_targets = set(hgnc2degree.keys())
-        not_predicted_genes = all_genes - predicted_genes
+        not_predicted_genes = unknown_genes - predicted_genes
+
+        df["Group N"] = [len(positive_genes), len(predicted_genes), len(not_predicted_genes)]
 
         unknown_drug_targets = self.return_only_valid(drug_targets, unknown_genes)
         valid_drug_targets = self.return_only_valid(drug_targets, all_genes)
+        noncandidate_drug_targets = self.return_only_valid(drug_targets, not_predicted_genes)
+        candidate_drug_targets = self.return_only_valid(drug_targets, predicted_genes)
+        mendelian_drug_targets = self.return_only_valid(drug_targets, positive_genes)
+
+        assert len(valid_drug_targets) == len(noncandidate_drug_targets) + len(candidate_drug_targets) + len(mendelian_drug_targets)
+
+        df["N Drug Targets"] = [len(mendelian_drug_targets), len(candidate_drug_targets), len(noncandidate_drug_targets)]
 
         self.pp_table.add("Drug Target", valid_drug_targets, True, False)
         valid_dict = {gene: degree for gene, degree in hgnc2degree.items() if gene in all_genes}
@@ -401,6 +437,9 @@ class PostProcessor:
         is_drug_target_result = fisher_exact(array)
         drug_target_results.append(is_drug_target_result)
 
+        df["OR DT"] = [drug_target_results[0][0], drug_target_results[1][0], np.nan]
+        df["pval DT unadjusted"] = [drug_target_results[0][1], drug_target_results[1][1], np.nan]
+
         self.logger.info("Fishers Exact Test for Drug Targets among Predicted Genes. p: {:.2e}, OR: {}".format(is_drug_target_result[1], round(is_drug_target_result[0], 3)))
         self.logger.info("Drug Targets Confusion Matrix:\n" + str(array))
 
@@ -411,6 +450,10 @@ class PostProcessor:
         positive_degrees = [hgnc2degree[hgnc] for hgnc in positive_genes_and_drug_targets]
         predicted_degrees = [hgnc2degree[hgnc] for hgnc in predicted_genes_and_drug_targets]
         not_predicted_degrees = [hgnc2degree[hgnc] for hgnc in not_predicted_genes_and_drug_targets]
+
+        df["Median # of DT"] = [np.median(positive_degrees), np.median(predicted_degrees), np.median(not_predicted_degrees)]
+        df["xDC"] = [np.median(positive_degrees) / np.median(not_predicted_degrees), np.median(predicted_degrees) / np.median(not_predicted_degrees), 1]
+        df["Pariwse Comparison"] = ["Mendelian vs Candidate Gene", "Mendelian vs Noncandidate Gene", "Candidate Gene vs Noncandidate Gene"]
 
         pvals = []
         u_stats = []
@@ -429,7 +472,12 @@ class PostProcessor:
         pvals.append(drug_degree_result[1])
         u_stats.append(drug_degree_result[0])
 
+        df["pval xDC unadjusted"] = [pvals[2], pvals[1], pvals[0]]
+        df["U-Stat"] = [u_stats[2], u_stats[1], u_stats[0]]
+
         pvals = fdr(pvals)
+        df["pval xDC adjusted (FDR)"] = [pvals[2], pvals[1], pvals[0]]
+
         self.logger.info("U-Test for number of Drug interactions in Predicted Genes vs Non-Predicted Genes. q: {:.2e}, U: {}".format(pvals[0], round(u_stats[0], 3)))
         self.logger.info("U-Test for number of Drug interactions in Mendelian Genes vs Non-Predicted Genes. q: {:.2e}, U: {}".format(pvals[1], round(u_stats[1], 3)))
         self.logger.info("U-Test for number of Drug interactions in Mendelian Genes vs Predicted Genes. q: {:.2e}, U: {}".format(pvals[2], round(u_stats[2], 3)))
@@ -441,7 +489,7 @@ class PostProcessor:
         if plot:
             self.make_boxplot(not_predicted_degrees, predicted_degrees, positive_degrees, plot=plot)
 
-        return drug_target_results, pvals, (not_predicted_degrees, predicted_degrees, positive_degrees)
+        return drug_target_results, pvals, (not_predicted_degrees, predicted_degrees, positive_degrees), df
 
     def druggable(self, results_path=None):
         if self.outer_result is None:
@@ -513,8 +561,8 @@ class PostProcessor:
         unknown_genes, all_genes, positive_genes = self.get_unknown_genes(results_path)
         ko_genes = set(self.get_mouse_knockout_genes("~/ppi-core-genes/data/mgi/{}.txt".format(self.get_doid())))
 
-        array = self.make_contingency_table(all_genes, positive_genes, ko_genes.intersection(all_genes))
-        ko_enrichment_result = fisher_exact(array)
+        mendelian_array = self.make_contingency_table(all_genes, positive_genes, ko_genes.intersection(all_genes))
+        mendelian_ko_enrichment_result = fisher_exact(mendelian_array)
 
         valid_ko_genes = self.return_only_valid(ko_genes, all_genes)
         self.pp_table.add("Mouse KO", valid_ko_genes, True, False)
@@ -522,7 +570,7 @@ class PostProcessor:
 
         self.logger.info("Total of {} Mouse KO genes, {} of them match with our translation table.".format(len(ko_genes), len(ko_genes.intersection(all_genes))))
         self.logger.info("Found {} Mouse KO genes among the {} known positive genes (p: {:.2e}, OR: {}), leaving {} in {} Unknowns".format(
-            len(ko_genes.intersection(positive_genes)), len(positive_genes), ko_enrichment_result[1], round(ko_enrichment_result[0], 3), len(unknown_ko_genes), len(unknown_genes)))
+            len(ko_genes.intersection(positive_genes)), len(positive_genes), mendelian_ko_enrichment_result[1], round(mendelian_ko_enrichment_result[0], 3), len(unknown_ko_genes), len(unknown_genes)))
 
         predicted_genes = set(self.outer_result[0].keys())
 
@@ -533,7 +581,7 @@ class PostProcessor:
         self.logger.info("Fishers Exact Test for mouse KO Genes among Predicted Genes. p: {:.2e}, OR: {}".format(ko_enrichment_result[1], round(ko_enrichment_result[0], 3)))
         self.logger.info("Mouse KO Confusion Matrix:\n" + str(array))
 
-        return ko_enrichment_result
+        return mendelian_ko_enrichment_result, ko_enrichment_result, mendelian_array, array
 
     def lof_intolerance(self, results_path=None, plot=True):
         if self.outer_result is None:
