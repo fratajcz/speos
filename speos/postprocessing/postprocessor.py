@@ -386,7 +386,7 @@ class PostProcessor:
         from scipy.stats import fisher_exact, mannwhitneyu
         from speos.scripts.utils import fdr
 
-        df = pd.DataFrame(columns=["Group Name", "Group N", "N Drug Targets", "OR DT", "pval DT unadjusted", "pval DT adjusted (FDR)", "Median # of DT", "xDC"," ", "Pariwse Comparison", "pval xDC unadjusted", "pval xDC adjusted (FDR)", "U-Stat"],
+        df = pd.DataFrame(columns=["Group Name", "Group N", "N Drug Targets", "OR DT", "pval DT unadjusted", "pval DT adjusted (FDR)", "Median # of DT", "xDC"," ", "Pairwse Comparison", "pval xDC unadjusted", "pval xDC adjusted (FDR)", "U-Stat"],
                           index=range(3))
         df["Group Name"] = ["Mendelian", "Candidate Gene", "Noncandidate Gene"]
         df[" "] = [" "] * 3
@@ -453,7 +453,7 @@ class PostProcessor:
 
         df["Median # of DT"] = [np.median(positive_degrees), np.median(predicted_degrees), np.median(not_predicted_degrees)]
         df["xDC"] = [np.median(positive_degrees) / np.median(not_predicted_degrees), np.median(predicted_degrees) / np.median(not_predicted_degrees), 1]
-        df["Pariwse Comparison"] = ["Mendelian vs Candidate Gene", "Mendelian vs Noncandidate Gene", "Candidate Gene vs Noncandidate Gene"]
+        df["Pairwse Comparison"] = ["Mendelian vs Candidate Gene", "Mendelian vs Noncandidate Gene", "Candidate Gene vs Noncandidate Gene"]
 
         pvals = []
         u_stats = []
@@ -498,22 +498,35 @@ class PostProcessor:
 
         from scipy.stats import fisher_exact
 
+        df = pd.DataFrame(columns=["Group Name", "Group N", "N Druggable", "OR Dr", "pval Dr unadjusted", "pval Dr adjusted (FDR)", "N Non-Drugtarget", "N Druggable among Non-Drugargets", "OR Dr-", "pval Dr- unadjusted", "pval Dr- adjusted (FDR)"],
+                          index=range(3))
+        df["Group Name"] = ["Mendelian", "Candidate Gene", "Noncandidate Gene"]
+
         unknown_genes, all_genes, positive_genes = self.get_unknown_genes(results_path)
+        predicted_genes = set(self.outer_result[0].keys())
+        not_predicted_genes = unknown_genes - predicted_genes
+        df["Group N"] = [len(positive_genes), len(predicted_genes), len(not_predicted_genes)]
+
         druggable_genes = set(self.get_druggable_genes("/home/icb/florin.ratajczak/ppi-core-genes/data/dgidb/druggable_genome.tsv"))
         unknown_druggable_genes = self.return_only_valid(druggable_genes, unknown_genes)
+        positive_druggable_genes = self.return_only_valid(druggable_genes, positive_genes)
+        predicted_druggable_genes = self.return_only_valid(druggable_genes, predicted_genes)
+        noncandidate_druggable_genes = self.return_only_valid(druggable_genes, not_predicted_genes)
         valid_druggable_genes = self.return_only_valid(druggable_genes, all_genes)
+
+        assert len(valid_druggable_genes) == len(positive_druggable_genes) + len(predicted_druggable_genes) + len(noncandidate_druggable_genes)
+
+        df["N Druggable"] = [len(positive_druggable_genes), len(predicted_druggable_genes), len(noncandidate_druggable_genes)]
 
         self.pp_table.add("Druggable", valid_druggable_genes, True, False)
 
         array = self.make_contingency_table(all_genes, positive_genes, valid_druggable_genes)
         total_druggable = []
-        druggable_enrichment_result = fisher_exact(array)
-        total_druggable.append(druggable_enrichment_result)
+        mendelian_druggable_enrichment_result = fisher_exact(array)
+        total_druggable.append(mendelian_druggable_enrichment_result)
         self.logger.info("Total of {} druggable genes, {} of them match with our translation table.".format(len(druggable_genes), len(valid_druggable_genes)))
         self.logger.info("Found {} druggable genes among the {} known positive genes (p: {:.2e}, OR: {}), leaving {} in {} Unknowns".format(
-            len(druggable_genes.intersection(positive_genes)), len(positive_genes), druggable_enrichment_result[1], round(druggable_enrichment_result[0], 3), len(unknown_druggable_genes), len(unknown_genes)))
-
-        predicted_genes = set(self.outer_result[0].keys())
+            len(druggable_genes.intersection(positive_genes)), len(positive_genes), mendelian_druggable_enrichment_result[1], round(mendelian_druggable_enrichment_result[0], 3), len(unknown_druggable_genes), len(unknown_genes)))
 
         array = self.make_contingency_table(unknown_genes, predicted_genes, unknown_druggable_genes)
         druggable_enrichment_result = fisher_exact(array)
@@ -522,23 +535,39 @@ class PostProcessor:
         self.logger.info("Fishers Exact Test for Druggable Genes among Predicted Genes. p: {:.2e}, OR: {}".format(druggable_enrichment_result[1], round(druggable_enrichment_result[0], 3)))
         self.logger.info("Druggable Genes Confusion Matrix:\n" + str(array))
 
-        # Now after subtracting the already known drug targets
+        df["OR Dr"] = [mendelian_druggable_enrichment_result[0], druggable_enrichment_result[0], np.nan]
+        df["pval Dr unadjusted"] = [mendelian_druggable_enrichment_result[1], druggable_enrichment_result[1], np.nan]
+
+        # Now we subtract the already known drug targets
         drug_targets = self.get_drugtargets()
+        
         all_genes = all_genes - drug_targets
         unknown_genes = unknown_genes - drug_targets
         positive_genes = positive_genes - drug_targets
         druggable_genes = druggable_genes - drug_targets
         valid_druggable_genes = valid_druggable_genes - drug_targets
         unknown_druggable_genes = unknown_druggable_genes - drug_targets
+        predicted_genes = predicted_genes - drug_targets
+        not_predicted_genes = not_predicted_genes - drug_targets
+
+        assert len(all_genes) == len(positive_genes) + len(predicted_genes) + len(not_predicted_genes)
+
+        df["N Non-Drugtarget"] = [len(positive_genes), len(predicted_genes), len(not_predicted_genes)]
+
+        positive_druggable_genes = positive_druggable_genes - drug_targets
+        predicted_druggable_genes = predicted_druggable_genes - drug_targets
+        noncandidate_druggable_genes = predicted_druggable_genes  - drug_targets
+
+        df["N Druggable among Non-Drugargets"] = [len(positive_druggable_genes), len(predicted_druggable_genes), len(noncandidate_druggable_genes)]
 
         leftover_druggable = []
         array = self.make_contingency_table(all_genes, positive_genes, valid_druggable_genes)
-        druggable_enrichment_result = fisher_exact(array)
+        mendelian_druggable_enrichment_result = fisher_exact(array)
         leftover_druggable.append(druggable_enrichment_result)
         
         self.logger.info("Total of {} druggable genes which are not yet Drug Targets, {} of them match with our translation table.".format(len(druggable_genes), len(valid_druggable_genes)))
         self.logger.info("Found {} druggable non drug target genes among the {} known positive genes (p: {:.2e}, OR: {}), leaving {} in {} Unknowns".format(
-            len(druggable_genes.intersection(positive_genes)), len(positive_genes), druggable_enrichment_result[1], round(druggable_enrichment_result[0], 3), len(unknown_druggable_genes), len(unknown_genes)))
+            len(druggable_genes.intersection(positive_genes)), len(positive_genes), mendelian_druggable_enrichment_result[1], round(mendelian_druggable_enrichment_result[0], 3), len(unknown_druggable_genes), len(unknown_genes)))
 
         predicted_genes = set(self.outer_result[0].keys())
 
@@ -549,7 +578,10 @@ class PostProcessor:
         self.logger.info("Fishers Exact Test for Druggable Non Drug Target Genes among Predicted Genes. p: {:.2e}, OR: {}".format(druggable_enrichment_result[1], round(druggable_enrichment_result[0], 3)))
         self.logger.info("Druggable Genes Confusion Matrix:\n" + str(array))
 
-        return total_druggable, leftover_druggable
+        df["OR Dr-"] = [mendelian_druggable_enrichment_result[0], druggable_enrichment_result[0], np.nan]
+        df["pval Dr- unadjusted"] = [mendelian_druggable_enrichment_result[1], druggable_enrichment_result[1], np.nan]
+
+        return total_druggable, leftover_druggable, df
 
     def mouseKO(self, results_path=None):
         if self.outer_result is None:
