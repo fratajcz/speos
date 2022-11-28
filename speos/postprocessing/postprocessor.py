@@ -563,7 +563,7 @@ class PostProcessor:
         leftover_druggable = []
         array = self.make_contingency_table(all_genes, positive_genes, valid_druggable_genes)
         mendelian_druggable_enrichment_result = fisher_exact(array)
-        leftover_druggable.append(druggable_enrichment_result)
+        leftover_druggable.append(mendelian_druggable_enrichment_result)
         
         self.logger.info("Total of {} druggable genes which are not yet Drug Targets, {} of them match with our translation table.".format(len(druggable_genes), len(valid_druggable_genes)))
         self.logger.info("Found {} druggable non drug target genes among the {} known positive genes (p: {:.2e}, OR: {}), leaving {} in {} Unknowns".format(
@@ -591,22 +591,27 @@ class PostProcessor:
         from scipy.stats import fisher_exact
 
         unknown_genes, all_genes, positive_genes = self.get_unknown_genes(results_path)
+        background_ko_genes = set(self.get_mouse_knockout_genes("~/ppi-core-genes/data/mgi/background.txt"))
+        valid_background_ko_genes = self.return_only_valid(background_ko_genes, all_genes)
+        unknown_background_ko_genes = self.return_only_valid(valid_background_ko_genes, unknown_genes)
+        self.pp_table.add("Included in Mouse KO", valid_background_ko_genes, True, False)
+
         ko_genes = set(self.get_mouse_knockout_genes("~/ppi-core-genes/data/mgi/{}.txt".format(self.get_doid())))
 
-        mendelian_array = self.make_contingency_table(all_genes, positive_genes, ko_genes.intersection(all_genes))
+        mendelian_array = self.make_contingency_table(valid_background_ko_genes, positive_genes, ko_genes.intersection(all_genes))
         mendelian_ko_enrichment_result = fisher_exact(mendelian_array)
 
         valid_ko_genes = self.return_only_valid(ko_genes, all_genes)
-        self.pp_table.add("Mouse KO", valid_ko_genes, True, False)
-        unknown_ko_genes = self.return_only_valid(ko_genes, unknown_genes)
+        self.pp_table.add("Is Mouse KO", valid_ko_genes, True, False)
+        unknown_ko_genes = self.return_only_valid(ko_genes, unknown_background_ko_genes)
 
         self.logger.info("Total of {} Mouse KO genes, {} of them match with our translation table.".format(len(ko_genes), len(ko_genes.intersection(all_genes))))
         self.logger.info("Found {} Mouse KO genes among the {} known positive genes (p: {:.2e}, OR: {}), leaving {} in {} Unknowns".format(
-            len(ko_genes.intersection(positive_genes)), len(positive_genes), mendelian_ko_enrichment_result[1], round(mendelian_ko_enrichment_result[0], 3), len(unknown_ko_genes), len(unknown_genes)))
+            len(ko_genes.intersection(positive_genes)), len(positive_genes), mendelian_ko_enrichment_result[1], round(mendelian_ko_enrichment_result[0], 3), len(unknown_ko_genes), len(unknown_background_ko_genes)))
 
         predicted_genes = set(self.outer_result[0].keys())
 
-        array = self.make_contingency_table(unknown_genes, predicted_genes, unknown_ko_genes)
+        array = self.make_contingency_table(unknown_background_ko_genes, predicted_genes, unknown_ko_genes)
 
         ko_enrichment_result = fisher_exact(array)
 
