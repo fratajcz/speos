@@ -703,6 +703,15 @@ class PostProcessor:
 
         return unknown_genes, all_genes, positive_genes
 
+    def get_previous_symbols(self):
+        translation_table = self.get_translation_table()
+        previous_to_current = dict()
+        for previous, current in zip(translation_table["prev_symbol", "symbol"]):
+            if previous != "":
+                previous_to_current[previous] = current
+        
+        return previous_to_current
+
     def return_only_valid(self, subset: set, super_set: set) -> set:
         """check if each entry in subset are present in super_set and return only those wo are"""
 
@@ -725,6 +734,33 @@ class PostProcessor:
 
     def get_pli_table(self, path_to_table="data/forweb_cleaned_exac_r03_march16_z_data_pLI.txt") -> tuple:
         return pd.read_csv(path_to_table, header=0, sep="\t")
+    
+    @property
+    def mouse2human(self, path="./data/mgi/HOM_MouseHumanSequence.rpt"):
+        import pandas as pd
+
+        if hasattr(self, "_mouse2human"):
+            return self._mouse2human
+
+        table = pd.read_csv(path, sep="\t", header=0)
+
+        human = table[table["Common Organism Name"] == "human"]
+        mouse = table[table["Common Organism Name"] == "mouse, laboratory"]
+        human.index = human["DB Class Key"]
+        mouse.index = mouse["DB Class Key"]
+        joined = human.join(mouse, how="inner", lsuffix=" human", rsuffix=" mouse")
+        mouse2human = {}
+        doubles = {}
+        for human, mouse in zip(joined["Symbol human"], joined["Symbol mouse"]):
+            if mouse in mouse2human.keys():
+                mouse2human[mouse].append(human)
+                doubles[mouse] = mouse2human[mouse]
+            else:
+                mouse2human[mouse] = [human]
+
+        self._mouse2human = mouse2human
+
+        return mouse2human
 
     def get_druggable_genes(self, path_to_table) -> list:
         self.logger.info("Reading druggable genes from {}".format(path_to_table))
@@ -737,9 +773,27 @@ class PostProcessor:
         return df
 
     def get_mouse_knockout_genes(self, path_to_table) -> list:
+        """ 
+            Reads the Mouse Knockout genes from path_to_table, 
+            matches it against the mouse to human homologs (self.mouse2human) and returns the human homologs with a corresponding mouse KO gene 
+
+            Mouse KO genes which do not have human homologs will not be returned.
+        """
+
         self.logger.info("Reading mouse knockout genes from {}".format(path_to_table))
-        symbols = [entry.split("<")[0].upper() for entry in pd.read_csv(path_to_table, sep="\t", header=0)["Allele Symbol"].tolist()]
-        return symbols
+        mouse_symbols = [entry.split("<")[0] for entry in pd.read_csv(path_to_table, sep="\t", header=0)["Allele Symbol"].tolist()]
+        human_homolog_symbols = set()
+
+        for mouse_symbol in mouse_symbols:
+            try:
+                human_homolog_symbols.update(self.mouse2human[mouse_symbol])
+            except KeyError:
+                continue
+
+        return human_homolog_symbols
+
+    def get_mouse_knockout_background(self, path="~/ppi-core-genes/data/mgi/background.txt"):
+        return self.get_mouse_knockout_genes(path)
 
     def load_drugtarget_graph(self, path_to_graph):
         import networkx as nx
@@ -807,7 +861,15 @@ class PostProcessor:
             Returns a dictionary that maps the counts to the genes and a list of runs that have been considered for the analysis.
         """
         self.logger.info("Starting Overlap Analysis.")
-        gene_counters, count_counters, all_pos_pvals = list(zip(*[self.check_overlap(results_paths, self.config.pp.cutoff_value, self.config.pp.cutoff_type, plot=self.config.pp.plot) for results_paths in self.results_paths]))
+        gene_counters, count_counters, all_pos_pvals, dfs = list(zip(*[self.check_overlap(results_paths, self.config.pp.cutoff_value, self.config.pp.cutoff_type, plot=self.config.pp.plot) for results_paths in self.results_paths]))
+        
+        if write:
+            df = pd.concat(dfs)
+            df["Outer Fold"] = np.repeat(range(1, len(dfs) + 1), len(dfs[0])).astype(int)
+            df["Inner Overlap Bin"] = df["Inner Overlap Bin"].astype(int)
+            columns = [df.columns[-1]] + df.columns[:-1].tolist()
+            df = df[columns]
+            df.to_csv(os.path.join(self.config.pp.save_dir, str(self.config.name) + "_overlap.tsv"), index=False, sep="\t")
 
         most_often_predicted_list = []
         handles = []
@@ -971,10 +1033,10 @@ class PostProcessor:
 
         if plot:
             plot_title = "Overlap in predicted disease genes between {} runs, type {} {}".format(len(results_paths), cutoff_type, cutoff_value)
-            plot_name = self.longest_common_string(results_paths[0].split("/")[-1], results_paths[1].split("/")[-1]) + "_overlap.png"
-            pos_test_pvals = self.plot_overlap(count_counters, total_gene_set_sizes, plot_title, plot_name)
+            plot_name = self.longest_common_string(results_paths[0].split("/")[-1], results_paths[1].split("/")[-1]) + "_overlap.svg"
+            pos_test_pvals, df = self.plot_overlap(count_counters, total_gene_set_sizes, plot_title, plot_name)
 
-        return gene_counters["Unknown"], count_counters["Unknown"], pos_test_pvals
+        return gene_counters["Unknown"], count_counters["Unknown"], pos_test_pvals, df
 
     def count_overlap(self, list_of_sets, get_mean_sd: bool = False):
         ''' Takes a list of gene sets and returns counts how often each gene occurs in each of the sets and how often each of the counts occurs in the total list.
@@ -1024,7 +1086,7 @@ class PostProcessor:
 
             return gene_counter, count_counter
 
-    def plot_overlap(self, count_counters, total_gene_set_sizes, plot_title, plot_name, percentage=True) -> list:
+    def plot_overlap(self, count_counters, total_gene_set_sizes, plot_title, plot_name, percentage=True, vector=True) -> list:
         from scipy.stats import t
         from speos.scripts.utils import fdr
 
@@ -1049,8 +1111,13 @@ class PostProcessor:
         pvals_pos_val = [t.sf(pos_val_value, self.num_runs_for_random_experiments, random_mean, random_sd + 1e-16) if random_mean > 0.1 else 0 for pos_val_value, random_mean, random_sd in zip(pos_val_values, pos_val_random_mean_values, pos_val_random_sd_values)]
 
         pvals_adjusted = fdr([*pvals_unknown, *pvals_pos_val])
-        pvals_unknown = pvals_adjusted[:len(pvals_unknown)]
-        pvals_pos_val = pvals_adjusted[len(pvals_unknown):]
+        pvals_adj_unknown = pvals_adjusted[:len(pvals_unknown)]
+        pvals_adj_pos_val = pvals_adjusted[len(pvals_unknown):]
+
+        df = pd.DataFrame(data=np.vstack((range(1, len(unknown_values) + 1), unknown_values, unknown_random_mean_values, unknown_random_sd_values, pvals_unknown, pvals_adj_unknown,
+                                                                             pos_val_values, pos_val_random_mean_values, pos_val_random_sd_values, pvals_pos_val, pvals_adj_pos_val)).transpose(),
+                          columns=["Inner Overlap Bin", "Unlabeled Count", "Unlabeled Random Mean", "Unlabeled Random SD", "Unlabeled pval", "Unlabeled pval adjusted (FDR)",
+                                                        "Pos Test Count", "Pos Test Random Mean", "Pos Test Random SD", "Pos Test pval", "Pos Test pval adjusted (FDR)"])
 
         indexes = np.arange(max(unknown_labels))
         width = 0.22
@@ -1093,10 +1160,10 @@ class PostProcessor:
                     plt.text(rect.get_x() + rect.get_width() / 2.25, height + (0.003*cutoff_at) if height < cutoff_at else cutoff_at - 30, round(height, 1), ha='center', va='bottom')
         for i, rect in enumerate(rects1):
             height = rect.get_height()
-            plt.text(rect.get_x() + rect.get_width() / 2.25, height + (0.02*cutoff_at) if height < cutoff_at else cutoff_at - 10, "*" if pvals_unknown[i] < 0.05 else "", ha='center', va='bottom', color="grey")
+            plt.text(rect.get_x() + rect.get_width() / 2.25, height + (0.02*cutoff_at) if height < cutoff_at else cutoff_at - 10, "*" if pvals_adj_unknown[i] < 0.05 else "", ha='center', va='bottom', color="grey")
         for i, rect in enumerate(rects3):
             height = rect.get_height()
-            plt.text(rect.get_x() + rect.get_width() / 2.25, height + (0.02*cutoff_at) if height < cutoff_at else cutoff_at - 10, "*" if pvals_pos_val[i] < 0.05 else "", ha='center', va='bottom')
+            plt.text(rect.get_x() + rect.get_width() / 2.25, height + (0.02*cutoff_at) if height < cutoff_at else cutoff_at - 10, "*" if pvals_adj_pos_val[i] < 0.05 else "", ha='center', va='bottom')
 
         ax.set_xlabel("Predicted in # of models")
         fig.set_size_inches(7, 4)
@@ -1106,7 +1173,7 @@ class PostProcessor:
         plt.savefig(plot_name)
         plt.close()
 
-        return pvals_pos_val
+        return pvals_adj_pos_val, df
 
     @property
     def results_paths(self):
