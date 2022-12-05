@@ -19,7 +19,7 @@ class PostProcessor:
     def __init__(self, config, translation_table="./data/hgnc_official_list.tsv"):
         self.config = config
         self.logger = setup_logger(config, __name__)
-        self.num_runs_for_random_experiments = 100
+        self.num_runs_for_random_experiments = 1000
         self.outer_result = None   # is populated by overlap_analysis when pp is run
 
         self.register_translation_table(translation_table)
