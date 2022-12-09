@@ -297,8 +297,7 @@ class PreProcessor:
 
         if use_embeddings:
             from gensim.models import KeyedVectors
-            wv = KeyedVectors.load(
-                "~/ppi-core-genes/data/misc/walking_all.output", mmap='r')
+            wv = KeyedVectors.load(self.config.input.embedding_path, mmap='r')
 
         if len(self.additional_inputs) > 0:
             addtl_dfs = [getattr(hooks, addtl_input["function"])(*addtl_input["args"], **addtl_input["kwargs"]) for addtl_input in self.additional_inputs]

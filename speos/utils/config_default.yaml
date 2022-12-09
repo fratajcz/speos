@@ -24,6 +24,7 @@ input:
   use_expression: True                  # if tissue wise gene expression values should be used
   log_expression: False                 # if tissue wise gene expression values should be log transformed before robust scaling
   use_embeddings: False
+  embedding_path: ./data/misc/walking_all.output
   tag: Immune_Dysregulation
   field: ground_truth
   holdout_size: 0.1
