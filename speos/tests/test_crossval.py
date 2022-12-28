@@ -94,6 +94,18 @@ class InnerCrossvalTest(unittest.TestCase):
         for indices, other_indices in zip(self.cv.indices, another_cv.indices):
             self.assertTrue((indices == other_indices).all())
 
+    def test_no_holdout(self):
+        new_config = self.config.copy()
+        new_config.crossval.hold_out_test = False
+        another_cv = CVWrapper(new_config)
+        no_test = another_cv.indices
+        with_test = self.cv.indices
+
+        #check that we have one less split
+        self.assertEqual(len(with_test), len(no_test) + 1)
+
+        #check that all splits together have equal length (i.e. there is nothing missing)
+        self.assertEqual(np.sum([len(split) for split in with_test]), np.sum([len(split) for split in no_test]))
 
 if __name__ == '__main__':
     unittest.main(warnings='ignore')

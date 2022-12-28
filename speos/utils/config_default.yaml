@@ -7,6 +7,7 @@ crossval:
   n_folds: 4
   seed: 1
   positive_only: False
+  hold_out_test: True
   suffix: _fold_{}
   outer_suffix: _outer_{}
 

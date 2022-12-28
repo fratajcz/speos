@@ -123,17 +123,21 @@ class CVWrapper(BaseWrapper):
         self.logger = setup_logger(config, __name__ + " (cv)")
         self.config = config
         self.n_folds = config.crossval.n_folds
+
         if slave:
             config = config.deepcopy()
             config.crossval.n_folds = config.crossval.n_folds * (config.crossval.n_folds + 1)
+
         self.base_experiment = Experiment(config, id="bootstrap")
         self.data = self.base_experiment.data
+
+        self.test_split = self.n_folds if self.config.crossval.hold_out_test else None
+
         if self.config.crossval.positive_only:
             self.indices = self.split_pos_indices(self.n_folds, self.config.crossval.seed)
         else:
             self.indices = self.split_all_indices(self.n_folds, self.config.crossval.seed)
-
-        self.test_split = self.n_folds
+        
 
     def run(self):
 
@@ -142,7 +146,7 @@ class CVWrapper(BaseWrapper):
 
         for i in range(len(self.indices)):
 
-            if i == self.test_split:
+            if self.indices is not None and i == self.test_split:
                 continue
 
             self.logger.info("Starting Inner Split {}".format(i))
@@ -209,8 +213,10 @@ class CVWrapper(BaseWrapper):
         if seed is not None:
             random.seed(seed)
         random.shuffle(indices)
-        # generate n+1 splits
-        return np.array_split(indices, n_folds + 1)
+        # generate n+1 splits if we want to hold out a test set
+        if self.test_split is not None:
+            n_folds += 1
+        return np.array_split(indices, n_folds)
 
     def split_pos_indices(self, n_folds, seed):
         pos_indices = np.nonzero(self.data.y.detach().cpu().numpy())[0]
@@ -248,7 +254,8 @@ class CVWrapper(BaseWrapper):
     @property
     def test_mask(self) -> np.ndarray:
         test_mask = np.zeros((self.data.y.shape[0])).astype(np.bool8)
-        test_mask[self.test_indices] = True
+        if self.test_split is not None:
+            test_mask[self.test_indices] = True
         return test_mask
 
 

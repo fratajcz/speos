@@ -7,13 +7,14 @@ import torch
 
 
 class TestBench(Pipeline):
-    def __init__(self, parameter_file, config_path="", repeats=4):
+    def __init__(self, parameter_file, config_path="", repeats=4, hold_out_test=False):
         super(TestBench, self).__init__(config_path)
         # read parameters that should be benchmarked
         self.read_parameter_list(parameter_file)
         self.resultshandlers = []
         self.configs = []
         self.repeats = repeats
+        self.hold_out_test = hold_out_test
 
     def run(self):
         self.fit()
@@ -27,6 +28,7 @@ class TestBench(Pipeline):
                 config = self.adapt_config(parameters)
                 # make sure we have a unique name for this run
                 config.name = self.config.name + "_" + self.name + "_" + config.name + "rep{}".format(repeat)
+                config.crossval.hold_out_test = self.hold_out_test
                 # feed config into CV Pipeline
                 cv = CVWrapper(config)
                 # run pipeline and gather the results

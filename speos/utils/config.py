@@ -78,6 +78,9 @@ class Config(dict):
         self.recursive_update(new_config, self)
         return new_config
 
+    def copy(self):
+        return self.deepcopy()
+
     @property
     def _hash(self):
         m = hashlib.blake2b(digest_size=3)
