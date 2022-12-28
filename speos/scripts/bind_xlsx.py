@@ -1,5 +1,6 @@
 from os import listdir
 from os.path import isfile, join
+from string import punctuation
 
 import argparse
 import pandas as pd
@@ -19,12 +20,12 @@ onlyfiles = [f for f in listdir(args.dir) if isfile(join(args.dir, f)) and args.
 
 print("Gathering files: {}".format(onlyfiles))
 
-filename = args.string + ".xlsx"
+filename = "".join(args.string.split(".")[0]) + ".xlsx"
 print("Into file: {}".format(filename))
 
 workbook = Workbook()
 main_sheet = workbook.active
-main_sheet.title = "Header"
+main_sheet.title = "0Header"
 first = True
 for file in onlyfiles:
     df = pd.read_csv(join(args.dir, file), sep="\t")
@@ -37,10 +38,12 @@ for file in onlyfiles:
         first = False
     without_ending = file.split(".")[0]
     unique_part = "".join(without_ending.split(args.string))
-    new_sheet = workbook.create_sheet(unique_part[:30])
+    new_sheet = workbook.create_sheet(unique_part.strip(punctuation)[:30])
     for row in dataframe_to_rows(df, index=False, header=True):
         new_sheet.append(row)
 
 workbook._sheets.sort(key=lambda ws: ws.title)
+
+main_sheet.title = "Header"
 
 workbook.save(join(args.dir, filename))

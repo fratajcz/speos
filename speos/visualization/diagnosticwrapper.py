@@ -3,6 +3,7 @@ from speos.preprocessing.preprocessor import PreProcessor
 from speos.utils.config import Config
 from speos.visualization.graphdiagnostic.graphdiagnostic import GraphDiagnostic
 
+from speos.visualization.settings import *
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -69,7 +70,7 @@ class GraphDiagnosticWrapper:
         _, distinct_mappings = self.get_distinct_mappings()
         num_phenotypes = len(distinct_mappings)
         num_adjacencies = np.sum([2 if adjacency["directed"] else 1 for adjacency in self.adjacencies])
-        fig, axes = plt.subplots(num_phenotypes, num_adjacencies, figsize=(4 * num_adjacencies, (4 * num_phenotypes)), sharex=False, sharey=False)
+        fig, axes = plt.subplots(num_phenotypes, num_adjacencies, figsize=(4 * num_adjacencies * cm, (4 * num_phenotypes * cm)), sharex=False, sharey=False)
 
         adjacencies = []
         for adjacency in self.adjacencies:

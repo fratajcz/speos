@@ -47,7 +47,7 @@ class PostProcessor:
         path = os.path.join(pu.postprocessing_results_path(self.config), self.config.name + "_pp_table.tsv")
         self.pp_table.save(path)
 
-    def run(self):
+    def run(self, save=True):
         """Runs all tasks that are specified in the config as pp.tasks"""
 
         self.init_pp_table()
@@ -70,8 +70,9 @@ class PostProcessor:
                     self.logger.error("KeyError during handling of postprocessing task {}:".format(function))
                     self.logger.error(e)
                     continue
-
-        self.save_pp_table()
+        
+        if save:
+            self.save_pp_table()
 
         return value
 
@@ -694,14 +695,19 @@ class PostProcessor:
         return pli_enrichment_result, tukeys
 
     def get_unknown_genes(self, results_path=None):
-        translation_table = self.get_translation_table()
-        all_genes = set(translation_table['symbol'].tolist())
+        #translation_table = self.get_translation_table()
+        #all_genes = set(translation_table['symbol'].tolist())
         if results_path is None:
             results_path = self.results_paths[0][0]
         positive_genes = set(self.get_true_positives(results_path))
-        unknown_genes = all_genes - positive_genes
+        unlabeled_genes = set(self.get_unlabeled_genes(results_path))
+        assert len(positive_genes.intersection(unlabeled_genes)) == 0
 
-        return unknown_genes, all_genes, positive_genes
+        all_genes = set()
+        all_genes.update(positive_genes)
+        all_genes.update(unlabeled_genes)
+
+        return unlabeled_genes, all_genes, positive_genes
 
     def get_previous_symbols(self):
         translation_table = self.get_translation_table()
@@ -716,7 +722,8 @@ class PostProcessor:
         """check if each entry in subset are present in super_set and return only those wo are"""
 
         return subset.intersection(super_set)
-
+        
+    @classmethod
     def make_contingency_table(self, full: set, A: set, B: set) -> np.ndarray:
         notA = full - A
         notB = full - B
@@ -852,6 +859,12 @@ class PostProcessor:
         table = self.read_results_file(results_path)
 
         return table["hgnc"][table["truth"] == 1].tolist()
+
+    def get_unlabeled_genes(self, results_path=None):
+
+        table = self.read_results_file(results_path)
+
+        return table["hgnc"][table["truth"] == 0].tolist()
 
     def overlap_analysis(self, write=True, plot=True):
         """

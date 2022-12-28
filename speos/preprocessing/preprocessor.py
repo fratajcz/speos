@@ -526,6 +526,10 @@ class PreProcessor:
     def get_graph(self, features=False):
         if not self.graph_is_built:
             self.build_graph(features=features)
+
+        if features and not self.has_features:
+            self.build_graph(features=features)
+
         return self.G
 
     def dump_edgelist(self, path, symbol="hgnc"):

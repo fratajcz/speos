@@ -1,8 +1,10 @@
 
 from speos.utils.config import Config
 from speos.visualization.diagnosticwrapper import GraphDiagnosticWrapper
-import matplotlib.pyplot as plt
+
 import os
+from speos.visualization.settings import *
+import matplotlib.pyplot as plt
 
 config = Config()
 config.logging.dir = "speos/tests/logs/"
@@ -165,13 +167,14 @@ fig, ax = diagnostic.get_diagnostics("components", save=False)
 plt.tight_layout()
 plt.savefig(os.path.join(config.model.plot_dir, "components_intact_string.png"))
 """
-"""
+
 diagnostic = GraphDiagnosticWrapper(config=config, phenotype_tag=["immune_dysregulation"], adjacency_tag="IntAct_Direct", features=True)
-fig, ax = diagnostic.get_diagnostics(save=False)
+fig, ax = diagnostic.get_diagnostics("paths", save=False, figsize=(8*cm, 8*cm))
+
 plt.tight_layout()
-plt.savefig(os.path.join(config.model.plot_dir, "focus_immune_intact_direct.pdf"), bbox_inches="tight")
-"""
-diagnostic = GraphDiagnosticWrapper(config=config, phenotype_tag=["immune_dysregulation"], adjacency_tag="", merge=True, features=True)
-fig, ax = diagnostic.get_diagnostics(save=False)
-plt.tight_layout()
-plt.savefig(os.path.join(config.model.plot_dir, "focus_immune_all.pdf"), bbox_inches="tight")
+plt.savefig(os.path.join(config.model.plot_dir, "focus_immune_intact_direct_paths.svg"), bbox_inches="tight", dpi=350)
+
+#diagnostic = GraphDiagnosticWrapper(config=config, phenotype_tag=["immune_dysregulation"], adjacency_tag="", merge=True, features=True)
+#fig, ax = diagnostic.get_diagnostics(save=False)
+#plt.tight_layout()
+#plt.savefig(os.path.join(config.model.plot_dir, "focus_immune_all.pdf"), bbox_inches="tight")
