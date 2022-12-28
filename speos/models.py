@@ -363,8 +363,7 @@ class ModelBootstrapper:
 class SKLearnModel:
     """ Interface to seamlessly fit sklearn models into this framework for easier comparison"""
     def __init__(self, model, config, *args, **kwargs):
-        self.model = model(*args, **kwargs)
-        # TODO: add model args and kwargs in config
+        self.model = model(*config.model.args, *args, **config.model.kwargs, **kwargs)
         self.pos_weight = config.training.pos_weight
         self.config = config
         self.architectures = [self]

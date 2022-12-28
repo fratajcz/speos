@@ -355,6 +355,17 @@ class SKLearnModelTest(unittest.TestCase):
         model = ModelBootstrapper(self.config, 90, 1).get_model()
         self.assertEqual(self.config.model.model, str(model.__class__.__name__))
 
+    def test_logistic_regression_kwargs(self):
+        self.config.model.model = "LogisticRegressionModel"
+        model = ModelBootstrapper(self.config, 90, 1).get_model()
+        self.assertEqual(model.model.penalty, "l2")
+
+        config = self.config.copy()
+        config.model.kwargs.update({"penalty": "l1"})
+        config.model.model = "LogisticRegressionModel"
+        model = ModelBootstrapper(config, 90, 1).get_model()
+        self.assertEqual(model.model.penalty, "l1")
+
     def test_logistic_regression_forward(self):
         from torch_geometric.data import Data
         self.config.model.model = "LogisticRegressionModel"
