@@ -42,6 +42,9 @@ python run_benchmark.py -c hpo_configs/adjacencies/testbench_config_adj_immu_con
 In general, the following subdirectoreis contain configs and parameter files for the following HPO details:
 
 adjacencies: Comparison of all adjacencies, Figure 1b, Extended Data Figure 6a
+
 gnn_layers: Comparison of different GNN layers and number of GNN layers, Extended Data Figure 5
+
 benchmark: Additional Benchmark settings necessary to put together Figure 1a
+
 nhid: Number of hidden dimensions, not shown in manuscript
