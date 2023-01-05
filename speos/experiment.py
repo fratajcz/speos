@@ -421,7 +421,12 @@ class InferenceEngine(Experiment):
             self.config.inference.target)
 
         node_df = self.dataset.node_df
-        node_df.drop(["truth", "train", "val", "test"], axis=1, inplace=True)
+        columns_to_drop = ["truth", "train", "val", "test"]
+        for column in columns_to_drop:
+            try:
+                node_df.drop(column, axis=1, inplace=True)
+            except KeyError:
+                continue
         results_df = pd.DataFrame(data=truth, columns=["truth"])
         results_df["prediction"] = prediction
         results_df["probability"] = probability

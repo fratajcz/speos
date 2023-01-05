@@ -1,6 +1,6 @@
 name: None            # Choose a name or set to None and have a hash generated as name
 cuda: auto            # True, False, "auto", list of cuda devices
-timestamp: None
+timestamp: None       # is automatically created upon initialization
 
 crossval:
   mode: kfold         # None, kfold, holdoneout (not implemented)
@@ -24,20 +24,20 @@ input:
   gwas_mappings: ./speos/mapping.json
   use_expression: True                  # if tissue wise gene expression values should be used
   log_expression: False                 # if tissue wise gene expression values should be log transformed before robust scaling
-  use_embeddings: False
+  use_embeddings: False                 # if the embeddings obtained from node2vec should be concatenated to the input vectors (laoded from embedding_path)
   embedding_path: ./data/misc/walking_all.output
   tag: Immune_Dysregulation
   field: ground_truth
-  holdout_size: 0.1
-  holdout_positive_only: True
+  holdout_size: 0.1                     # is overwritten by any crossvalidation wrapper to 1/nfolds+1 or 1/nfolds
+  holdout_positive_only: True           # is overwritten by any crossvalidation wrapper
   save_data: True
   save_dir: ./data/
 
 model:
-  model: SimpleModel   # SimpleModel or AdversarialModel
-  architecture: GeneNetwork
-  args: []
-  kwargs: {}
+  model: SimpleModel            # SimpleModel, LogisticRegressionModel, RandomForestModel, SupportVectorModel or AdversarialModel (untested)
+  architecture: GeneNetwork     # only relevant for SimpleModel and AdversarialModel, is automatically updated to RelationalGeneNetwork if more than one network is used
+  args: []                      # args passed to model initialization
+  kwargs: {}                    # kwargs passed to model initialization
   loss: bce
   regularization_lambda: 0.01           # only relevant in LINKX
   save: True
