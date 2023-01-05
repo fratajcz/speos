@@ -2,13 +2,9 @@
 
 # Identification of core genes from Biological Networks, GWAS and gene expression.
 
-Speos, pronounced like "space", is a machine learning framework to merge deep learning and the omnigenic model. Its goal is to predict core genes for several diseases which allow subsequent research to allocate resources to the most promising candidates.
+Speos, pronounced almost like "space", is a machine learning framework to merge deep learning and the omnigenic model. Its goal is to predict core genes for several diseases which allow subsequent research to allocate resources to the most promising candidates.
 
-A first approach to do this would be to go through all candidate genes with
-a certain minimal number of neighbors. For each candidate define discrete gene 
-sets by neighborhood or quantitative by proximity in the network. Then use
-either the discrete gene set or quantitive promximity as predictor in magma
-gene set analysis.
+For the installation instructions please see the documentation.
 
 # Documentation
 
