@@ -1,0 +1,13 @@
+name: linkx_benchmark
+
+metrics: 
+  - mrr_filtered
+  - mean_rank_filtered
+  - auroc
+  - auprc
+
+parameters:
+  - name: linkx
+    model:
+      architecture: LINKX
+      regularization_lambda: 0.01

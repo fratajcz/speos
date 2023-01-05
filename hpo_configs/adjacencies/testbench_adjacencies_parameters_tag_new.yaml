@@ -1,0 +1,131 @@
+name: benchmark_adj_tag_new
+
+metrics: 
+  - mrr_filtered
+  - mean_rank_filtered
+  - auroc
+  - auprc
+
+parameters:
+  - name: noadj
+    model:
+      mp:
+        n_layers: 0
+  - name: all-rgcn
+    input: 
+      adjacency: all
+    model:
+      mp:
+        n_layers: 2
+        type: rgcn
+  - name: all-film
+    input: 
+      adjacency: all
+    model:
+      mp:
+        type: film
+  - name: BioPlex30293T
+    input: 
+      adjacency: BioPlex30293T
+    model:
+      mp:
+        type: tag
+  - name: BioPlex30HCT116
+    input: 
+      adjacency: BioPlex30HCT116
+  - name: HuRI
+    input: 
+      adjacency: HuRI
+  - name: IntAct-Direct
+    input: 
+      adjacency: IntAct-Direct
+  - name: IntAct-PA
+    input: 
+      adjacency: IntAct-PA
+  - name: hetionet_regulates
+    input: 
+      adjacency: hetionet_regulates
+  - name: hetionet_covaries
+    input: 
+      adjacency: hetionet_covaries
+  - name: GRNDB-adipose_tissue
+    input: 
+      adjacency: GRNDB-adipose_tissue
+  - name: GRNDB-adrenal_gland
+    input: 
+      adjacency: GRNDB-adrenal_gland
+  - name: GRNDB-blood
+    input: 
+      adjacency: GRNDB-bloodx
+  - name: GRNDB-blood_vessel
+    input: 
+      adjacency: GRNDB-blood_vessel
+  - name: GRNDB-brain
+    input: 
+      adjacency: GRNDB-brain
+  - name: GRNDB-breast
+    input: 
+      adjacency: GRNDB-breast
+  - name: GRNDB-colon
+    input: 
+      adjacency: GRNDB-colon
+  - name: GRNDB-esophagus
+    input: 
+      adjacency: GRNDB-esophagus
+  - name: GRNDB-heart
+    input: 
+      adjacency: GRNDB-heart
+  - name: GRNDB-kidney
+    input: 
+      adjacency: GRNDB-kidney
+  - name: GRNDB-liver
+    input: 
+      adjacency: GRNDB-liver
+  - name: GRNDB-lung
+    input: 
+      adjacency: GRNDB-lung
+  - name: GRNDB-muscle
+    input: 
+      adjacency: GRNDB-muscle
+  - name: GRNDB-nerve
+    input: 
+     adjacency: GRNDB-nerve
+  - name: GRNDB-ovary
+    input: 
+      adjacency: GRNDB-ovary
+  - name: GRNDB-pancreas
+    input: 
+      adjacency: GRNDB-pancreas
+  - name: GRNDB-pituitary
+    input: 
+      adjacency: GRNDB-pituitary
+  - name: GRNDB-prostate
+    input: 
+      adjacency: GRNDB-prostate
+  - name: GRNDB-salivary_gland
+    input: 
+      adjacency: GRNDB-salivary_gland
+  - name: GRNDB-skin
+    input: 
+      adjacency: GRNDB-skin
+  - name: GRNDB-small_intestine
+    input: 
+      adjacency: GRNDB-small_intestine
+  - name: GRNDB-spleen
+    input: 
+      adjacency: GRNDB-spleen
+  - name: GRNDB-stomach
+    input: 
+      adjacency: GRNDB-stomach
+  - name: GRNDB-testis
+    input: 
+      adjacency: GRNDB-testis
+  - name: GRNDB-thyroid
+    input: 
+      adjacency: GRNDB-thyroid
+  - name: GRNDB-uterus
+    input: 
+      adjacency: GRNDB-uterus
+  - name: GRNDB-vagina
+    input: 
+      adjacency: GRNDB-vagina

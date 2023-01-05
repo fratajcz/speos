@@ -1,0 +1,39 @@
+name: gin_benchmark_depth
+
+metrics: 
+  - mrr_filtered
+  - mean_rank_filtered
+  - auroc
+  - auprc
+
+parameters:
+  - name: 0layers
+    model:
+      mp:
+        n_layers: 0
+        type: gin
+  - name: 1layers
+    model:
+      mp:
+        n_layers: 1
+        type: gin
+  - name: 2layers
+    model:
+      mp:
+        n_layers: 2
+        type: gin
+  - name: 3layers
+    model:
+      mp:
+        n_layers: 3
+        type: gin
+  - name: 4layers
+    model:
+      mp:
+        n_layers: 4
+        type: gin
+  - name: 5layers
+    model:
+      mp:
+        n_layers: 5
+        type: gin

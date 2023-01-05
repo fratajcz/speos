@@ -1,0 +1,39 @@
+name: gcn_benchmark_depth
+
+metrics: 
+  - mrr_filtered
+  - mean_rank_filtered
+  - auroc
+  - auprc
+
+parameters:
+  - name: 0layers
+    model:
+      mp:
+        n_layers: 0
+        type: gcn
+  - name: 1layers
+    model:
+      mp:
+        n_layers: 1
+        type: gcn
+  - name: 2layers
+    model:
+      mp:
+        n_layers: 2
+        type: gcn
+  - name: 3layers
+    model:
+      mp:
+        n_layers: 3
+        type: gcn
+  - name: 4layers
+    model:
+      mp:
+        n_layers: 4
+        type: gcn
+  - name: 5layers
+    model:
+      mp:
+        n_layers: 5
+        type: gcn

@@ -1,0 +1,39 @@
+name: graphsage_benchmark_depth
+
+metrics: 
+  - mrr_filtered
+  - mean_rank_filtered
+  - auroc
+  - auprc
+
+parameters:
+  - name: 0layers
+    model:
+      mp:
+        n_layers: 0
+        type: sage
+  - name: 1layers
+    model:
+      mp:
+        n_layers: 1
+        type: sage
+  - name: 2layers
+    model:
+      mp:
+        n_layers: 2
+        type: sage
+  - name: 3layers
+    model:
+      mp:
+        n_layers: 3
+        type: sage
+  - name: 4layers
+    model:
+      mp:
+        n_layers: 4
+        type: sage
+  - name: 5layers
+    model:
+      mp:
+        n_layers: 5
+        type: sage

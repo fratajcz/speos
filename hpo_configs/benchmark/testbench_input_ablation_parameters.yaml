@@ -1,0 +1,35 @@
+name: benchmark_input_ablation
+
+metrics: 
+  - mrr_filtered
+  - mean_rank_filtered
+  - auroc
+  - auprc
+
+parameters:
+  - name: film-all
+    input: 
+        adjacency: all
+    model:
+      mp:
+        type: film
+  - name: film-noexpression
+    input: 
+      adjacency: all
+      use_expression: False
+    model:
+      mp:
+        type: film
+  - name: tag-all
+    input: 
+      adjacency: IntAct_Direct
+    model:
+      mp:
+        type: tag
+  - name: tag-noexpression
+    input: 
+      adjacency: IntAct_Direct
+      use_expression: False
+    model:
+      mp:
+        type: tag

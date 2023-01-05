@@ -1,0 +1,45 @@
+name: gat_benchmark_depth
+
+metrics: 
+  - mrr_filtered
+  - mean_rank_filtered
+  - auroc
+  - auprc
+
+parameters:
+  - name: 0layers
+    model:
+      mp:
+        n_layers: 0
+        type: gat
+        nheads: 3
+  - name: 1layers
+    model:
+      mp:
+        n_layers: 1
+        type: gat
+        nheads: 3
+  - name: 2layers
+    model:
+      mp:
+        n_layers: 2
+        type: gat
+        nheads: 3
+  - name: 3layers
+    model:
+      mp:
+        n_layers: 3
+        type: gat
+        nheads: 3
+  - name: 4layers
+    model:
+      mp:
+        n_layers: 4
+        type: gat
+        nheads: 3
+  - name: 5layers
+    model:
+      mp:
+        n_layers: 5
+        type: gat
+        nheads: 3

@@ -1,0 +1,151 @@
+name: benchmark_nhid_new
+metrics: 
+  - mrr_filtered
+  - mean_rank_filtered
+  - auroc
+  - auprc
+
+parameters:
+  - name: nhid_10
+    model:
+      pre_mp:
+        dim: 10
+      mp:
+        dim: 10
+      post_mp:
+        dim: 10
+  
+  - name: nhid_20
+    model:
+      pre_mp:
+        dim: 20
+      mp:
+        dim: 20
+      post_mp:
+        dim: 20
+
+  - name: nhid_30
+    model:
+      pre_mp:
+        dim: 30
+      mp:
+        dim: 30
+      post_mp:
+        dim: 30
+
+  - name: nhid_40
+    model:
+      pre_mp:
+        dim: 40
+      mp:
+        dim: 40
+      post_mp:
+        dim: 40
+
+  - name: nhid_50
+    model:
+      pre_mp:
+        dim: 50
+      mp:
+        dim: 50
+      post_mp:
+        dim: 50
+
+  - name: nhid_60
+    model:
+      pre_mp:
+        dim: 60
+      mp:
+        dim: 60
+      post_mp:
+        dim: 60
+
+  - name: nhid_75
+    model:
+      pre_mp:
+        dim: 75
+      mp:
+        dim: 75
+      post_mp:
+        dim: 75
+
+  - name: nhid_100
+    model:
+      pre_mp:
+        dim: 100
+      mp:
+        dim: 100
+      post_mp:
+        dim: 100
+
+  - name: nhid_125
+    model:
+      pre_mp:
+        dim: 125
+      mp:
+        dim: 125
+      post_mp:
+        dim: 125
+
+  - name: nhid_150
+    model:
+      pre_mp:
+        dim: 150
+      mp:
+        dim: 150
+      post_mp:
+        dim: 150
+
+  - name: nhid_200
+    model:
+      pre_mp:
+        dim: 200
+      mp:
+        dim: 200
+      post_mp:
+        dim: 200
+
+  - name: nhid_300
+    model:
+      pre_mp:
+        dim: 300
+      mp:
+        dim: 300
+      post_mp:
+        dim: 300
+
+  - name: nhid_400
+    model:
+      pre_mp:
+        dim: 400
+      mp:
+        dim: 400
+      post_mp:
+        dim: 400
+  
+  - name: nhid_500
+    model:
+      pre_mp:
+        dim: 500
+      mp:
+        dim: 500
+      post_mp:
+        dim: 500
+
+  - name: nhid_750
+    model:
+      pre_mp:
+        dim: 750
+      mp:
+        dim: 750
+      post_mp:
+        dim: 750
+
+  - name: nhid_1000
+    model:
+      pre_mp:
+        dim: 1000
+      mp:
+        dim: 1000
+      post_mp:
+        dim: 1000

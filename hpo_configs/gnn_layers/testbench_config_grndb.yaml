@@ -1,0 +1,31 @@
+name: grndb_adipose
+
+crossval:
+  mode: kfold         # None, kfold, holdoneout (not implemented)
+  n_folds: 4
+  seed: 1
+  positive_only: False
+
+input:
+  adjacency: GRNDB-adipose_tissue
+
+training:
+  max_epochs: 1000
+
+model: 
+  save_dir: /storage/groups/epigenereg01/projects/ppi-florin/models/
+  plot: False
+  plot_dir: /storage/groups/epigenereg01/projects/ppi-florin/plots/
+
+logging:
+  dir: /storage/groups/epigenereg01/projects/ppi-florin/logs/
+
+inference:
+  switch: on                  # on, off, True, False
+  target: all
+  cutoff_value: 0.7
+  save: True
+  save_dir: /storage/groups/epigenereg01/projects/ppi-florin/results/
+  save_sorted: False
+  gnn_explain: False
+  input_explain: False

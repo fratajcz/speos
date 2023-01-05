@@ -1,0 +1,16 @@
+name: benchmark_n2v
+
+metrics: 
+  - mrr_filtered
+  - mean_rank_filtered
+  - auroc
+  - auprc
+
+parameters:
+  - name: original
+    model:
+      mp:
+        n_layers: 0
+    input:
+      use_embeddings: True
+      embedding_path: ./data/misc/walking_all.output

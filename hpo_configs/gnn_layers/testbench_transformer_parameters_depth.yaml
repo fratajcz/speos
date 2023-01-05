@@ -1,0 +1,39 @@
+name: transformer_benchmark_depth
+
+metrics: 
+  - mrr_filtered
+  - mean_rank_filtered
+  - auroc
+  - auprc
+
+parameters:
+  - name: 0layers
+    model:
+      mp:
+        n_layers: 0
+        type: transformer
+  - name: 1layers
+    model:
+      mp:
+        n_layers: 1
+        type: transformer
+  - name: 2layers
+    model:
+      mp:
+        n_layers: 2
+        type: transformer
+  - name: 3layers
+    model:
+      mp:
+        n_layers: 3
+        type: transformer
+  - name: 4layers
+    model:
+      mp:
+        n_layers: 4
+        type: transformer
+  - name: 5layers
+    model:
+      mp:
+        n_layers: 5
+        type: transformer

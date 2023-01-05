@@ -1,0 +1,35 @@
+name: intactdirect
+
+crossval:
+  mode: kfold         # None, kfold, holdoneout (not implemented)
+  n_folds: 4
+  seed: 1
+  positive_only: False
+
+input:
+  adjacency: IntAct-Direct
+
+training:
+  max_epochs: 1000
+
+model: 
+  save_dir: models/
+  plot: False
+  plot_dir: plots/
+  pre_mp:
+    n_layers: 2
+  post_mp:
+    n_layers: 2
+    
+logging:
+  dir: logs/
+
+inference:
+  switch: on                  # on, off, True, False
+  target: all
+  cutoff_value: 0.7
+  save: True
+  save_dir: results/
+  save_sorted: False
+  gnn_explain: False
+  input_explain: False

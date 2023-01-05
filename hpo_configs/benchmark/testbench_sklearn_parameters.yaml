@@ -1,0 +1,15 @@
+name: sklearn_benchmark
+
+metrics: 
+  - mrr_filtered
+  - mean_rank_filtered
+  - auroc
+  - auprc
+
+parameters:
+  - name: logistic
+    model:
+      model: "LogisticRegressionModel"
+  - name: randomforest
+    model:
+      model: "RandomForestModel"

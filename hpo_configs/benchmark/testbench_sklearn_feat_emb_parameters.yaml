@@ -1,0 +1,19 @@
+name: sklearn_benchmark_feat_emb
+
+metrics: 
+  - mrr_filtered
+  - mean_rank_filtered
+  - auroc
+  - auprc
+
+parameters:
+  - name: logistic
+    input:
+      use_embeddings: True
+    model:
+      model: "LogisticRegressionModel"
+  - name: randomforest
+    model:
+      model: "RandomForestModel"
+    input:
+      use_embeddings: True
