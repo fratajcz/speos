@@ -1,0 +1,32 @@
+name: immune_dysregulation_film_unbiased
+input:
+  tag: Immune_Dysregulation
+  adjacency: all
+  adjacency_blacklist: [recon3d, string, intact]
+
+crossval:
+  mode: kfold         # None, kfold, holdoneout (not implemented)
+  n_folds: 10
+  positive_only: True
+
+model:
+  save_dir: models/
+  plot_dir: plots/
+  pre_mp:
+    n_layers: 2
+  mp:
+    n_layers: 2
+    type: film
+  post_mp:
+    n_layers: 2
+
+logging:
+  dir: logs/
+
+inference:
+  save_dir: results/
+  save_tsv: True
+
+pp:
+  save_dir: results/
+  plot_dir: plots/

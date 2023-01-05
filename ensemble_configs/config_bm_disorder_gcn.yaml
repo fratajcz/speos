@@ -1,0 +1,31 @@
+name: bm_disorder_gcn
+input:
+  tag: Body_Mass_Disorder
+  adjacency: IntAct_Direct
+
+crossval:
+  mode: kfold         # None, kfold, holdoneout (not implemented)
+  n_folds: 10
+  positive_only: True
+
+model:
+  save_dir: models/
+  plot_dir: plots/
+  pre_mp:
+    n_layers: 2
+  mp:
+    n_layers: 2
+    type: gcn
+  post_mp:
+    n_layers: 2
+
+logging:
+  dir: logs/
+
+inference:
+  save_dir: results/
+  save_tsv: True
+
+pp:
+  save_dir: results/
+  plot_dir: plots/
