@@ -1,0 +1,17 @@
+name: benchmark_rgat_depth
+
+metrics: 
+  - mrr_filtered
+  - mean_rank_filtered
+  - auroc
+  - auprc
+
+parameters:
+  - name: rgat
+    input: 
+      adjacency: all
+    model:
+      mp:
+        n_layers: 2
+        type: rgat
+  
