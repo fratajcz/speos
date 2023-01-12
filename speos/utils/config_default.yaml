@@ -64,7 +64,7 @@ model:
     kwargs: {}
   post_mp:
     type: fc
-    dim_hid: 50
+    dim: 50
     n_layers: 5        # resulting number of layers will be n_layers + 2 for the output layer
     normalize: None
     dropout: None
