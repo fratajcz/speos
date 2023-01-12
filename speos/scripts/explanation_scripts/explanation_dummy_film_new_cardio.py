@@ -14,47 +14,51 @@ from speos.explanation import Explainer
 
 import argparse
 
-parser = argparse.ArgumentParser(description='Get Promising Drug Development Candidates from Postprocessing Table')
+parser = argparse.ArgumentParser(description='Provides Model Interpretations.')
 
+parser.add_argument('--config', "-c", type=str,
+                    help='path to config of the run that should be examined')
 parser.add_argument('--gene', "-g", type=str, default="",
-                    help='gene to examine (either ITGA7 or OBSCN)')
+                    help='gene to examine')
+parser.add_argument('--index', "-i", type=int, default=-1,
+                    help='index of gene to examine')
+parser.add_argument('--mincs', "-m", type=int, default=-1,
+                    help='minimal cs of candidates to examine')
 parser.add_argument('--readonly', "-r", action='store_true',
                     default=False,
                     help='if run should be readonly.')
 
 args = parser.parse_args()
 
+assert args.gene != "" or args.index != -1 or args.mincs != -1, ("At least a gene name, index or minimal cs has to be chosen")
 #ig_attr_edge = torch.load("ig_attr_edge_outer{}_inner{}.pt".format(0, 1))
 #print(ig_attr_edge.shape)
 
 config = Config()
-config.parse_yaml("/home/florin.ratajczak/ppi-core-genes/configs/config_cardiovascular_film.yaml")
+config.parse_yaml(args.config)
+old_config_name = config.name[:]
 #print(config)
 config.input.save_dir = "./data/"
 config.logging.dir =  "./logs/"
 
-pre_mappings = GWASMapper().get_mappings(
+mappings = GWASMapper().get_mappings(
             config.input.tag, fields=config.input.field)
 
-mappings = []
-
-for mapping in pre_mappings:
-    if not "AMD" in mapping["name"]:
-        mappings.append(mapping)
-
-
 adjacencies = AdjacencyMapper(blacklist=config.input.adjacency_blacklist).get_mappings(config.input.adjacency, fields=config.input.adjacency_field)
-
 
 #print(adjacencies)
 
 dataset = DatasetBootstrapper(
             mappings, adjacencies, holdout_size=config.input.holdout_size, name=config.name, config=config).get_dataset()
 
+if args.index == -1:
+    dataset.preprocessor.build_graph(features=True)
+
 data = dataset.data
+data.cuda()
 input_dim = data.x.shape[1]
 model = ModelBootstrapper(
-            config, input_dim, len(adjacencies)).get_model()
+            config, input_dim, len(adjacencies)).get_model().to("cuda")
 
 ig_attr_edge_ = None
 ig_attr_node_ = None
@@ -81,45 +85,42 @@ data.edge_index, edge_encoder = nn_utils.typed_edges_to_sparse_tensor(data.x, da
 #print(edge_masks.shape)
 #print(edge_masks[:,1].max())
 
-edge_mask = torch.ones_like(data.edge_index.storage.value(), requires_grad=True)
-edge_types = data.edge_index.storage.value()
+edge_mask = torch.ones_like(data.edge_index.storage.value(), requires_grad=True).cuda()
+edge_types = data.edge_index.storage.value().cuda()
 del data.x_dict
 del data.edge_index_dict
 
 surrogate_model = None
 import json
 
-candidates = [dataset.preprocessor.hgnc2id[args.gene]]
-print("Candidates: {}, {}".format(args.gene, candidates))
+if args.gene != "":
+    candidates = [dataset.preprocessor.hgnc2id[args.gene]]
+    genes = [args.gene]
+    print("Candidates: {}, {}".format(args.gene, candidates))
+elif args.index != -1:
+    candidates = [args.index]
+    genes = candidates[:]
+    print("Candidates: {}".format(candidates))
 
-outer_results_file = "/lustre/groups/epigenereg01/projects/ppi-florin/results/cardiovascular_filmouter_results.json"
+outer_results_file = "/lustre/groups/epigenereg01/projects/ppi-florin/results/{}outer_results.json".format(config.name)
 
 with open(outer_results_file, "r") as file:
     outer_results = json.load(file)[0]
+min_cs = 5
+if args.gene == "" and args.index == -1:
+    genes = [key for key, value in outer_results.items() if value > 5]
+    candidates = [dataset.preprocessor.hgnc2id[gene] for gene in genes]
+    print("Candidates: {}".format(candidates))
 
-#if args.gene == "":
-#    candidates = [dataset.preprocessor.hgnc2id[key] for key, value in outer_results.items() if value == 11]
-#else: 
-#    candidates = [dataset.preprocessor.hgnc2id[args.gene]]
-
-
-"""
-if args.gene == "OBSCN":
-    candidates =  [xxx]
-elif args.gene == "ITGA7": 
-    candidates = [xxx] # [15145] #  [6690]
-else:
-    raise ValueError("Can only interpret genes OBSCN or ITGA7")
-"""
-for i, output_idx in enumerate(candidates):
+for i, (output_idx, gene) in enumerate(zip(candidates, genes)):
     #if dataset.preprocessor.id2hgnc[output_idx] == "ABI1":
     #    continue
     #if dataset.preprocessor.G.degree[output_idx] == 0:
     #    print("Skipping Candidate Gene #{} out of {} ({}) because it has no incident edges.".format(i, len(candidates), dataset.preprocessor.id2hgnc[output_idx]))
-    path = "/lustre/groups/epigenereg01/projects/ppi-florin/explanation_film_{}.png".format(args.gene)
+    #path = "/lustre/groups/epigenereg01/projects/ppi-florin/explanation_film_{}.png".format(args.gene)
     #if os.path.exists(path):
     #    continue
-    #print("Processing Candidate Gene #{} out of {}: {}".format(i, len(candidates), dataset.preprocessor.id2hgnc[output_idx]))
+    print("Processing Candidate Gene #{} out of {}: {} (Index {})".format(i, len(candidates), gene, output_idx))
     ig_attr_edge_all = None
     ig_attr_node_all = None
     ig_attr_self_all = None
@@ -130,10 +131,10 @@ for i, output_idx in enumerate(candidates):
             if inner_fold == outer_fold:
                 continue
             try:
-                ig_attr_node = torch.load("/lustre/groups/epigenereg01/projects/ppi-florin/explanations/new_ig_attr_node_outer{}_inner{}_{}.pt".format(outer_fold, inner_fold, args.gene))
-                ig_attr_edge = torch.load("/lustre/groups/epigenereg01/projects/ppi-florin/explanations/new_ig_attr_edge_outer{}_inner{}_{}.pt".format(outer_fold, inner_fold, args.gene))
-                ig_attr_self = torch.load("/lustre/groups/epigenereg01/projects/ppi-florin/explanations/new_ig_attr_self_outer{}_inner{}_{}.pt".format(outer_fold, inner_fold, args.gene))
-                ig_attr_self_abs = torch.load("/lustre/groups/epigenereg01/projects/ppi-florin/explanations/new_ig_attr_self_abs_outer{}_inner{}_{}.pt".format(outer_fold, inner_fold, args.gene))
+                ig_attr_node = torch.load("/lustre/groups/epigenereg01/projects/ppi-florin/explanations/{}_ig_attr_node_outer{}_inner{}_{}.pt".format(old_config_name, outer_fold, inner_fold, gene))
+                ig_attr_edge = torch.load("/lustre/groups/epigenereg01/projects/ppi-florin/explanations/{}_ig_attr_edge_outer{}_inner{}_{}.pt".format(old_config_name, outer_fold, inner_fold, gene))
+                ig_attr_self = torch.load("/lustre/groups/epigenereg01/projects/ppi-florin/explanations/{}_ig_attr_self_outer{}_inner{}_{}.pt".format(old_config_name, outer_fold, inner_fold, gene))
+                ig_attr_self_abs = torch.load("/lustre/groups/epigenereg01/projects/ppi-florin/explanations/{}_ig_attr_self_abs_outer{}_inner{}_{}.pt".format(old_config_name, outer_fold, inner_fold, gene))
                 print("Loaded edge and node attributes for outer {} inner {}".format(outer_fold, inner_fold))
                 ig_attr_node.requires_grad = False
                 ig_attr_edge.requires_grad = False
@@ -142,7 +143,7 @@ for i, output_idx in enumerate(candidates):
             except FileNotFoundError:
                 if args.readonly:
                     continue 
-                config.name = "cardiovascular_film_outer_{}_fold_{}".format(outer_fold, inner_fold)
+                config.name = "{}_outer_{}_fold_{}".format(old_config_name, outer_fold, inner_fold)
                 #config.model.save_dir = "./models/"
                 print("Loading model from {}".format(config.model.save_dir + config.name + ".pt"))
 
@@ -151,6 +152,7 @@ for i, output_idx in enumerate(candidates):
                 checkpointer.restore()
 
                 surrogate_model = model.architectures[0].repackage_into_one_sequential()
+                surrogate_model.cuda()
                 for module in surrogate_model.modules():
                     #print(module)
                     if isinstance(module, pyg_nn.FiLMConv):
@@ -182,10 +184,10 @@ for i, output_idx in enumerate(candidates):
                 ig_attr_edge = ig_attr_edge.squeeze(0).abs()
                 ig_attr_edge /= ig_attr_edge.max()
                 
-                torch.save(ig_attr_self, "/lustre/groups/epigenereg01/projects/ppi-florin/explanations/new_ig_attr_self_outer{}_inner{}_{}.pt".format(outer_fold, inner_fold, args.gene))
-                torch.save(ig_attr_self_abs, "/lustre/groups/epigenereg01/projects/ppi-florin/explanations/new_ig_attr_self_abs_outer{}_inner{}_{}.pt".format(outer_fold, inner_fold, args.gene))
-                torch.save(ig_attr_node, "/lustre/groups/epigenereg01/projects/ppi-florin/explanations/new_ig_attr_node_outer{}_inner{}_{}.pt".format(outer_fold, inner_fold, args.gene))
-                torch.save(ig_attr_edge, "/lustre/groups/epigenereg01/projects/ppi-florin/explanations/new_ig_attr_edge_outer{}_inner{}_{}.pt".format(outer_fold, inner_fold, args.gene))
+                torch.save(ig_attr_self, "/lustre/groups/epigenereg01/projects/ppi-florin/explanations/{}_ig_attr_self_outer{}_inner{}_{}.pt".format(old_config_name, outer_fold, inner_fold, gene))
+                torch.save(ig_attr_self_abs, "/lustre/groups/epigenereg01/projects/ppi-florin/explanations/{}_ig_attr_self_abs_outer{}_inner{}_{}.pt".format(old_config_name, outer_fold, inner_fold, args.gene))
+                torch.save(ig_attr_node, "/lustre/groups/epigenereg01/projects/ppi-florin/explanations/{}_ig_attr_node_outer{}_inner{}_{}.pt".format(old_config_name, outer_fold, inner_fold, gene))
+                torch.save(ig_attr_edge, "/lustre/groups/epigenereg01/projects/ppi-florin/explanations/{}_ig_attr_edge_outer{}_inner{}_{}.pt".format(old_config_name, outer_fold, inner_fold, gene))
             
             num_processed += 1
 
@@ -216,12 +218,11 @@ for i, output_idx in enumerate(candidates):
     ig_attr_edge_all /= num_processed
     ig_attr_node_all /= num_processed
     
-    torch.save(ig_attr_self_all, '/lustre/groups/epigenereg01/projects/ppi-florin/explanations/new_ig_attr_self_abs_film_{}.pt'.format(args.gene))
-    torch.save(ig_attr_self_abs_all, '/lustre/groups/epigenereg01/projects/ppi-florin/explanations/new_ig_attr_self_film_{}.pt'.format(args.gene))
-    torch.save(ig_attr_edge_all, '/lustre/groups/epigenereg01/projects/ppi-florin/explanations/new_ig_attr_edge_film_{}.pt'.format(args.gene))
-    torch.save(ig_attr_node_all, '/lustre/groups/epigenereg01/projects/ppi-florin/explanations/new_ig_attr_node_film_{}.pt'.format(args.gene))
+    torch.save(ig_attr_self_all, '/lustre/groups/epigenereg01/projects/ppi-florin/explanations/{}_ig_attr_self_abs_{}.pt'.format(old_config_name, gene))
+    torch.save(ig_attr_self_abs_all, '/lustre/groups/epigenereg01/projects/ppi-florin/explanations/{}_ig_attr_self_{}.pt'.format(old_config_name, gene))
+    torch.save(ig_attr_edge_all, '/lustre/groups/epigenereg01/projects/ppi-florin/explanations/{}_ig_attr_edge_{}.pt'.format(old_config_name, gene))
+    torch.save(ig_attr_node_all, '/lustre/groups/epigenereg01/projects/ppi-florin/explanations/{}_ig_attr_node_{}.pt'.format(old_config_name, gene))
 
-    fig, ax = plt.subplots(figsize=(12, 12))
     # Visualize absolute values of attributions:
     if surrogate_model is None:
         surrogate_model = model.architectures[0].repackage_into_one_sequential()
@@ -251,17 +252,4 @@ for i, output_idx in enumerate(candidates):
     print(top_nodes)
     #ax, G = explainer.visualize_subgraph(output_idx, edge_index, ig_attr_edge_.squeeze(), threshold=threshold,
     #                                 node_alpha=ig_attr_node_)
-
-    #id2hgnc = dataset.preprocessor.id2hgnc
-
-    for textbox in ax.texts:
-        index = textbox._text
-        try:
-            hgnc = id2hgnc[int(index)]
-            textbox._text = hgnc
-        except (ValueError, KeyError):
-            continue
-
-    fig.tight_layout()
-    plt.savefig(path)
-    print("Saved Explanation for {}".format(args.gene))
+    print("Saved Explanation for {}".format(gene))
