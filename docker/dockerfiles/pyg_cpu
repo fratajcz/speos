@@ -3,51 +3,44 @@ FROM --platform=linux/amd64 ubuntu:20.04
 RUN apt-get update && apt-get install -y apt-transport-https ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get install -y --no-install-recommends apt-utils gnupg2 curl build-essential git openssh-client wget
+RUN apt-get update && apt-get install -y --no-install-recommends apt-utils gnupg2 curl build-essential git openssh-client wget vim
 
 # Create a working directory.
 RUN mkdir app
 WORKDIR app
 
-# Create a non-root user and switch to it.
-RUN adduser --disabled-password --gecos '' --shell /bin/bash user \
- && chown -R user:user /app
-#RUN echo "user ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/90-user
-USER user
-
-# All users can use /home/user as their home directory.
-ENV HOME=/home/user
-RUN chmod 777 /home/user
-
 # Install Miniconda.
-RUN curl -so ~/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-RUN chmod +x ~/miniconda.sh
-RUN ~/miniconda.sh -b -p ~/miniconda
-RUN rm ~/miniconda.sh
-ENV PATH=/home/user/miniconda/bin:$PATH
+RUN curl -so /app/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+RUN chmod +x /app/miniconda.sh
+RUN /app/miniconda.sh -b -p /app/miniconda
+RUN rm /app/miniconda.sh
+ENV PATH=/app/miniconda/bin:$PATH
 ENV CONDA_AUTO_UPDATE_CONDA=false
 
 # Create a Python 3.6 environment.
-RUN /home/user/miniconda/bin/conda install conda-build \
- && /home/user/miniconda/bin/conda create -y --name pyg python=3.7 \
- && /home/user/miniconda/bin/conda clean -ya
+RUN /app/miniconda/bin/conda install conda-build \
+ && /app/miniconda/bin/conda create -y --name pyg python=3.7 \
+ && /app/miniconda/bin/conda clean -ya
 ENV CONDA_DEFAULT_ENV=pyg
-ENV CONDA_PREFIX=/home/user/miniconda/envs/$CONDA_DEFAULT_ENV
+ENV CONDA_PREFIX=/app/miniconda/envs/$CONDA_DEFAULT_ENV
 ENV PATH=$CONDA_PREFIX/bin:$PATH
 
-RUN conda install pytorch torchvision torchaudio cpuonly -c pytorch-lts -y
+RUN conda install pytorch torchvision torchaudio cpuonly -c pytorch
 #RUN conda install pyg -c pyg
 RUN conda install pip
+RUN pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric==2.0.4 -f https://data.pyg.org/whl/torch-1.12.0+cpu.html
+#RUN pip install git+https://github.com/ExpectationMax/torch_persistent_homology.git
+#RUN pip install --no-deps git+https://github.com/fratajcz/reducedTOGL.git
 
-RUN curl -so torch_scatter-2.0.8-cp37-cp37m-linux_x86_64.whl https://data.pyg.org/whl/torch-1.8.0%2Bcpu/torch_scatter-2.0.6-cp37-cp37m-linux_x86_64.whl
-RUN pip install torch_scatter-2.0.8-cp37-cp37m-linux_x86_64.whl
-run rm torch_scatter-2.0.8-cp37-cp37m-linux_x86_64.whl
+#RUN curl -so torch_scatter-2.0.8-cp37-cp37m-linux_x86_64.whl https://data.pyg.org/whl/torch-1.8.0%2Bcpu/torch_scatter-2.0.6-cp37-cp37m-linux_x86_64.whl
+#RUN pip install torch_scatter-2.0.8-cp37-cp37m-linux_x86_64.whl
+#run rm torch_scatter-2.0.8-cp37-cp37m-linux_x86_64.whl
 
-RUN curl -so torch_sparse-0.6.12-cp37-cp37m-linux_x86_64.whl https://data.pyg.org/whl/torch-1.8.0%2Bcpu/torch_sparse-0.6.12-cp37-cp37m-linux_x86_64.whl
-RUN pip install torch_sparse-0.6.12-cp37-cp37m-linux_x86_64.whl
-RUN rm torch_sparse-0.6.12-cp37-cp37m-linux_x86_64.whl
+#RUN curl -so torch_sparse-0.6.12-cp37-cp37m-linux_x86_64.whl https://data.pyg.org/whl/torch-1.8.0%2Bcpu/torch_sparse-0.6.12-cp37-cp37m-linux_x86_64.whl
+#RUN pip install torch_sparse-0.6.12-cp37-cp37m-linux_x86_64.whl
+#RUN rm torch_sparse-0.6.12-cp37-cp37m-linux_x86_64.whl
 
-RUN pip install torch-geometric==2.0.1
+#RUN pip install torch-geometric==2.0.1
 RUN mkdir tmp
 
 COPY ./requirements.yaml .
@@ -60,6 +53,8 @@ RUN cd speos/speos/visualization && git clone -q https://github.com/fratajcz/gra
 RUN cd speos && pip install .
 
 RUN conda clean -a -y
-#RUN rm -rf tmp
+RUN rm -rf tmp && pip cache purge
+
+RUN mkdir -p /lustre/groups/ /lustre/scratch/ /mnt/home/icb/ /lustre/home/icb/ /localscratch/ /home/icb/
 
 CMD ["/bin/bash"]
