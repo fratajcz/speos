@@ -37,6 +37,10 @@ If this runs without error, you can now skip to the :ref:`Obtain Data` section.
 Installation
 ------------
 
+.. note::
+
+    These installation instructions have been tested under Ubuntu 20.04 and Rocky Linux 8.7. Other operating systems (i.e. MacOS, Windows) might require different package versions, especially for PyTorch and PyTorch Geometric.
+
 To Install Speos on your machine, first clone it with its submodules from github:
 
 .. code-block:: console
@@ -48,7 +52,7 @@ Next, you might want to create a new conda env.
 
 .. code-block:: console
 
-    $ conda create -n speos
+    $ conda create -y --name speos python=3.7 \
     $ conda activate speos
 
 Speos is built on Pytorch Geometric which in turn is built on Pytorch. To make sure Speos runs correctly, you must first install Pytorch and Pytorch geometric.
@@ -58,7 +62,9 @@ please see how to install `Pytorch <https://pytorch.org/get-started/locally/>`_ 
 .. code-block:: console
 
     $ conda install pytorch torchvision torchaudio cpuonly -c pytorch-lts -y
-    $ conda install pyg==2.0.1 -c pyg -y
+    $ conda install pyg==2.0.4 -c pyg -y
+
+If the last line (installing pyg with conda) did not work, i.e. if you work in a cluster with outdated dependencies, try ``pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric==2.0.4 -f https://data.pyg.org/whl/torch-1.8.0+cpu.html``instead.
 
 Then, install the remaining requirements with pip:
 
