@@ -44,6 +44,21 @@ class SimpleModelTest(unittest.TestCase):
         layers = [module for module in model.architectures[0].mp.modules() if not isinstance(module, nn.Sequential)]
         self.assertEqual("GCNConv", str(layers[1].__class__.__name__))
 
+    def test_assigns_from_import(self):
+        config = self.config.deepcopy()
+        config.model.mp.type = "GraphConv"  # a layer that isnt pre-implemented in speos but is imported dynamically
+        model = ModelBootstrapper(config, 90).get_model()
+        layers = [module for module in model.architectures[0].mp.modules() if not isinstance(module, nn.Sequential)]
+        self.assertEqual("GraphConv", str(layers[1].__class__.__name__))
+
+    def test_assigns_from_import_with_kwargs(self):
+        config = self.config.deepcopy()
+        config.model.mp.type = "GravNetConv"  # a layer that isnt pre-implemented in speos but is imported dynamically
+        config.model.mp.kwargs = {'space_dimensions': 1, 'propagate_dimensions': 1, 'k': 1}
+        model = ModelBootstrapper(config, 90).get_model()
+        layers = [module for module in model.architectures[0].mp.modules() if not isinstance(module, nn.Sequential)]
+        self.assertEqual("GravNetConv", str(layers[1].__class__.__name__))
+
     def test_repackage_into_one_sequential(self):
         model = ModelBootstrapper(self.config, 90, 1).get_model()
 

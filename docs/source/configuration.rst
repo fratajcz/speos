@@ -75,7 +75,7 @@ From the default config (excerpt):
         args: []                      # args passed to model initialization
         kwargs: {}                    # kwargs passed to model initialization
         
-First, the `model` keyword changes the highest-order model abstraction. All neural models (GNNs, MLPs etc) that have to be trained using gradient descent fall into the `SimpleModel`category. 
+First, the `model` keyword changes the highest-order model abstraction. All neural models (GNNs, MLPs etc) that have to be trained using gradient descent fall into the `SimpleModel` category. 
 On top of that, you also have `LogisticRegressionModel`, `RandomForestModel` and `SupportVectorModel` for which the respective scikit-learn models will be created and trained. Most of the settings we will be discussing here are only relevant for `SimpleModel`.
 `architecture` is only relevant for `model: SimpleModel` and defines the specific neural network architecture that we will use. All our experiments use the `GeneNetwork` architecture, which is automatically changed to `RelationalGeneNetwork` if we use more than one adjacency matrix.
 If you want to implement your own neural network from scratch, this is where you'd insert your model. `args` and `kwargs` lets you define additional arguments and keyword arguments for the initialization of the model.
@@ -126,8 +126,11 @@ This is where you can define which GNN layer you want to use, how many of them, 
 First, `type` can take 13 different forms: "gcn", "sgcn", "sage", "tag", "fac", "transformer", "cheb", "gcn2", "gin", "gat" and the relational layers "rgcn", "rgat" and "film".
 To see how they work in detail, check the `overview <https://pytorch-geometric.readthedocs.io/en/latest/modules/nn.html#convolutional-layers>`_ from PyTorch Geometric with the respective publications. Most of them should be easy to identify.
 
+If you feel like that is not enough and you would like to test a different layer, you can specify every layer that is implemented in `pyg_nn <https://pytorch-geometric.readthedocs.io/en/latest/modules/nn.html#convolutional-layers>`_ and refer to it by its class name (case sensitive). 
+For example, if you'd like to use `GraphConv` instead of `GCN`, then use `type: GraphConv` and Speos will try to dynamically import and use that layer. 
+
 `dim` and `n_layers` lets you define the width and depth of the GNN. `normalize` lets you pick either instance, graph or layer normalization applied after each GNN layer. To see their differences, check `here <https://pytorch-geometric.readthedocs.io/en/latest/modules/nn.html#normalization-layers>`_.
-`kwargs` lets you pass additional keyword arguments for specific layers.
+`kwargs` lets you pass additional keyword arguments for to the layer initialization.
 
 
 Advanced

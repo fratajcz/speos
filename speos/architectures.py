@@ -245,7 +245,17 @@ class GeneNetwork(nn.Module):
                 mp_layer = layers.FiLMTAGConv(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], self.num_adjacencies, **kwargs)
 
         else:
-            raise ValueError("Could not find layer instructions for type {}".format(self.gcnconv_parameters["type"]))
+            try:
+                mp_layer_uninitialized = getattr(pyg_nn, self.gcnconv_parameters["type"])
+            except AttributeError:
+                raise ValueError("Could not import layer {} from pyg_nn. Maybe stick to the layers that are predefined or check spelling.".format(self.gcnconv_parameters["type"]))
+            try:
+                mp_layer = mp_layer_uninitialized(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], num_relations=self.num_adjacencies, **kwargs)
+            except TypeError:
+                try:
+                    mp_layer = mp_layer_uninitialized(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], **kwargs)
+                except Exception:
+                    raise ValueError("Could not find layer instructions for type {}".format(self.gcnconv_parameters["type"]))
 
         return mp_layer
 
