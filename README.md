@@ -9,8 +9,3 @@ For the installation instructions please see the documentation.
 # Documentation
 
 https://speos.readthedocs.io/en/latest/index.html
-
-# Manuscript
-
-https://docs.google.com/document/d/1IQEPHh2GlGl8yvZXMKV6wAYbYuGK0xUnpJTx_WHW7P0/edit
-
