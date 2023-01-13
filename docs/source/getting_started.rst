@@ -64,9 +64,17 @@ please see how to install `Pytorch <https://pytorch.org/get-started/locally/>`_ 
     $ conda install pytorch torchvision torchaudio cpuonly -c pytorch-lts -y
     $ conda install pyg==2.0.4 -c pyg -y
 
-If the last line (installing pyg with conda) did not work, i.e. if you work on a cluster with limited dependencies, try ``pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric==2.0.4 -f https://data.pyg.org/whl/torch-1.8.0+cpu.html`` instead.
+.. note::
 
-Then, install the remaining requirements with pip:
+    If the last line (installing pyg with conda) did not work, i.e. if you work on a cluster with limited dependencies, try 
+
+    .. code-block:: console
+
+        $ pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric==2.0.4 -f https://data.pyg.org/whl/torch-1.8.0+cpu.html
+
+    instead.
+
+    Then, install the remaining requirements with pip:
 
 .. code-block:: console
 
