@@ -74,7 +74,7 @@ please see how to install `Pytorch <https://pytorch.org/get-started/locally/>`_ 
 
     instead.
 
-    Then, install the remaining requirements with pip:
+Then, install the remaining requirements with pip:
 
 .. code-block:: console
 
