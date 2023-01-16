@@ -9,3 +9,7 @@ For the installation instructions please see the documentation.
 # Documentation
 
 https://speos.readthedocs.io/en/latest/index.html
+
+# Preprint 
+
+Preprint available at https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1 
