@@ -1,0 +1,14 @@
+"background":
+    file: "./data/mgi/background.txt"
+"cardiovascular_disease":
+    file: "./data/mgi/cad_query.txt"
+"immune_dysregulation":
+    file: "./data/mgi/immune_dysreg_query.txt"
+"body_mass_disorder":
+    file: "./data/mgi/bm_disorder_query.txt"
+"monogenic_diabetes":
+    file: "./data/mgi/diabetes_query.txt"
+"insulin_disorder":
+    file: "./data/mgi/insulin_query.txt"
+
+
