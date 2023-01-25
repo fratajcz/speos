@@ -25,16 +25,7 @@ class PostProcessor:
         self.register_translation_table(translation_table)
 
         self.target = self.config.input.tag
-        self.consensus = self.config.pp.consensus
-
-        self.target2doid = {#"Immune_Dysregulation": "DOID2914",
-                            "Immune_Dysregulation": "immune_dysreg_query",
-                            "Cardiovascular": "cad_query",
-                            "Insulin_Disorder": "insulin_query",
-                            # "Monogenic_Diabetes": "DOID9744"}
-                            "Monogenic_Diabetes": "diabetes_query",
-                            "Body_Mass_Disorder": "DOID9970"}
-        
+        self.consensus = self.config.pp.consensus        
 
     def init_pp_table(self):
         unknown_genes, all_genes, positive_genes = self.get_unknown_genes()
@@ -592,12 +583,12 @@ class PostProcessor:
         from scipy.stats import fisher_exact
 
         unknown_genes, all_genes, positive_genes = self.get_unknown_genes(results_path)
-        background_ko_genes = set(self.get_mouse_knockout_genes("~/ppi-core-genes/data/mgi/background.txt"))
+        background_ko_genes = set(self.get_mouse_knockout_background())
         valid_background_ko_genes = self.return_only_valid(background_ko_genes, all_genes)
         unknown_background_ko_genes = self.return_only_valid(valid_background_ko_genes, unknown_genes)
         self.pp_table.add("Included in Mouse KO", valid_background_ko_genes, True, False)
 
-        ko_genes = set(self.get_mouse_knockout_genes("~/ppi-core-genes/data/mgi/{}.txt".format(self.get_doid())))
+        ko_genes = set(self.get_mouse_knockout_genes())
 
         mendelian_array = self.make_contingency_table(valid_background_ko_genes, positive_genes, ko_genes.intersection(all_genes))
         mendelian_ko_enrichment_result = fisher_exact(mendelian_array)
@@ -779,13 +770,28 @@ class PostProcessor:
         #df.rename(columns={hgnc_col: self.hgnc_key, entrez_col: self.entrez_key, ensembl_col: self.ensembl_key}, inplace=True)
         return df
 
-    def get_mouse_knockout_genes(self, path_to_table) -> list:
+    def get_mouse_knockout_genes(self, tag=None, mapping="./data/mgi/query_mapping.yaml") -> list:
         """ 
-            Reads the Mouse Knockout genes from path_to_table, 
+            Reads the Mouse Knockout genes from mapping file, 
             matches it against the mouse to human homologs (self.mouse2human) and returns the human homologs with a corresponding mouse KO gene 
 
             Mouse KO genes which do not have human homologs will not be returned.
         """
+        import yaml
+
+        tag = self.config.input.tag if tag is None else tag
+        with open(mapping, "r") as file:
+            mapping = yaml.load(file, Loader=yaml.SafeLoader)
+
+        path_to_table = None
+
+        for option, value in mapping.items():
+            if option.startswith(tag.lower()):
+                path_to_table = value["file"]
+
+        if path_to_table is None:
+            self.logger.error("Could not find mouse knockout genes for tag {} in mapping {}".format(tag, mapping))
+            return
 
         self.logger.info("Reading mouse knockout genes from {}".format(path_to_table))
         mouse_symbols = [entry.split("<")[0] for entry in pd.read_csv(path_to_table, sep="\t", header=0)["Allele Symbol"].tolist()]
@@ -799,8 +805,8 @@ class PostProcessor:
 
         return human_homolog_symbols
 
-    def get_mouse_knockout_background(self, path="~/ppi-core-genes/data/mgi/background.txt"):
-        return self.get_mouse_knockout_genes(path)
+    def get_mouse_knockout_background(self, tag="background"):
+        return self.get_mouse_knockout_genes(tag=tag)
 
     def load_drugtarget_graph(self, path_to_graph):
         import networkx as nx
