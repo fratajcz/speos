@@ -424,3 +424,80 @@ If we delete our description from :obj:`"extensions/datasets.json.py"` (i.e. tur
     test_input 2022-08-30 14:58:46,339 [INFO] speos.datasets: Data(x=[16852, 96], edge_index=[2, 158962], y=[16852], train_mask=[16852], test_mask=[16852], val_mask=[16852])
 
 And the part ``Data(x=[16852, 96], ...`` indicates that, without our "MyDataset", we have only 96 features. So, adding the 3 features beforehand was a success!
+
+Extending Postprocessing
+------------------------
+
+As you might have seen in our manuscript, there are several steps happening after the training of the models. The first is the establishment of model concordance, or overlap. This postprocessing step yield the convergence scores
+and is therefore independent of which disease we are looking at, only dependent on the predictions of the models.
+
+The rest of the postprocessing steps are external validations. Some of those, like Loss of Function (LoF) intolerance enrichment or drug target enrichment, are also disease-agnostic. A gene has a specific LoF intolreance Z-score that does not change wheter we look for genes for cardiovascular disease, immune dysregulation or any other disease.
+Thus, these external validations will not need any extensions to run, even if you completely customized the rest of Speos.
+
+However, some external validations, such as the enrichment of differentially expressed and mouse KO genes, requires disease dependent gene sets. In the following we will show you how you can add these sets for your own customized Speos runs.
+
+Adding Mouse Knockout Data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Mouse Knockout data is matched to the disease of a given run by the file ``data/mgi/query_mapping.yaml``. An excerpt of this file shows you how the mapping has to look like:
+
+.. code-block:: text
+
+    "cardiovascular_disease":
+        file: "./data/mgi/cad_query.txt"
+    "immune_dysregulation":
+        file: "./data/mgi/immune_dysreg_query.txt"
+
+In every line, a disease tag ``"cardiovascular_disease"`` is mapped to a file ``"./data/mgi/cad_query.txt"`` in yaml format. So, if you added your disease with the tag ``my_disease`` and want to add the mouse knockout genes obtained from the `MGI Database <https://www.informatics.jax.org/allele>`_ and saved at ``data/mgi/my_disease_query.txt`` then add the following lines to ``data/mgi/query_mapping.yaml``:
+
+.. code-block:: text
+
+    "my_disease":
+        file: "./data/mgi/my_disease_query.txt"
+
+and with the next run your freshly added mouse KO genes will automatically be selected for ``my_disease``.
+
+Adding Differential Gene Expression Data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Differential gene expression data is matched to the disease of a given run by the file ``data/dge/mapping.yaml``. An excerpt of this file shows you how the mapping has to look like:
+
+.. code-block:: text
+
+    "cardiovascular_disease":
+        "Coronary Artery Disease":
+            file: "./data/dge/cad.gemma"
+        "Atrial Fibrillation":
+            file: "./data/dge/af.gemma"
+        "Aortic Aneurysm":
+            file: "./data/dge/aa.gemma"
+        "Ischemia":
+            file: "./data/dge/is.gemma"
+        "Hypertension":
+            file: "./data/dge/hy.gemma"
+        "Atherosclerosis":
+            file: "./data/dge/ar.gemma"
+    "immune_dysregulation":
+        "Crohn's Disease":
+            file: "./data/dge/cro.gemma"
+        "Ulcerative Colitis":
+            file: "./data/dge/ulc.gemma"
+        "Lupus Erythematosus":
+            file: "./data/dge/lup.gemma"
+        "Rheumatoid Arthritis":
+            file: "./data/dge/rhe.gemma"
+        "Multiple Sclerosis":
+            file: "./data/dge/ms.gemma"
+
+In every line, a disease tag ``cardiovascular_disease`` is mapped to an array of disease subtypes, each linking to a file. 
+So, if you added your disease with the tag ``my_disease`` and want to add differentially expressed genes obtained for the subtypes ``Subtype A`` and ``Subtype B``from the `Gemma <https://gemma.msl.ubc.ca/phenotypes.html >`_ and saved at ``./data/dge/suba.gemma`` and ``./data/dge/subb.gemma`` then add the following lines to ``data/dge/mapping.yaml``:
+
+.. code-block:: text
+
+    "my_disease":
+        "Subtype A":
+            file: "./data/dge/suba.gemma"
+        "Subtype B":
+            file: "./data/dge/subb.gemma"
+
+and the next time you run preprocessing, the results will automatically contain your new enrichment analysis for differentially expressed genes!
