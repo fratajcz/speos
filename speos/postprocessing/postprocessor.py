@@ -1040,10 +1040,12 @@ class PostProcessor:
             # self.logger.info("Criterion: {}, Eligible Genes: {}, Kept Genes: {}".format(criterion,len(eligible_genes),len(kept_genes)))
             total_gene_set_sizes[criterion] = [len(eligible_gene_set) for eligible_gene_set in eligible_genes]
 
-            random_genes = {iteration: [total_genes[np.array(random.sample(range(len(total_genes)), len(nonrandom_genes)))].tolist() if len(nonrandom_genes) > 0 else [] for total_genes, nonrandom_genes in zip(eligible_genes, kept_genes)] for iteration in range(self.num_runs_for_random_experiments)}
+            #random_genes = {iteration: [total_genes[np.array(random.sample(range(len(total_genes)), len(nonrandom_genes)))].tolist() if len(nonrandom_genes) > 0 else [] for total_genes, nonrandom_genes in zip(eligible_genes, kept_genes)] for iteration in range(self.num_runs_for_random_experiments)}
+
 
             gene_counter, count_counter = self.count_overlap(kept_genes)
-            mean_counter, sd_counter = self.count_overlap(random_genes, get_mean_sd=True)
+            mean_counter, sd_counter = self.get_random_overlap(eligible_genes, kept_genes, algorithm="descriptive")
+            #mean_counter, sd_counter = self.count_overlap(random_genes, get_mean_sd=True)
 
             gene_counters.update({criterion: gene_counter})
             count_counters.update({criterion: count_counter})
@@ -1056,6 +1058,48 @@ class PostProcessor:
             pos_test_pvals, df = self.plot_overlap(count_counters, total_gene_set_sizes, plot_title, plot_name)
 
         return gene_counters["Unknown"], count_counters["Unknown"], pos_test_pvals, df
+
+    def get_random_overlap(self, eligible_genes, kept_genes, algorithm="descriptive", n_models = None):
+        """
+            Gets the same number of random genes as in kept_genes out of eligible genes and repeats this procedure self.num_runs_for_random_experiments times to get mean and standard deviation of overlaps
+
+            if algorithm="descriptive", then we sample from an actual list of gene symbols. If algorithm="fast", we recreate the sampling as a bernoulli experiment in scipy, which is much faster.
+        """
+        import scipy.stats as stats
+        if algorithm == "descriptive":
+            random_genes = {iteration: [total_genes[np.array(random.sample(range(len(total_genes)), len(nonrandom_genes)))].tolist() if len(nonrandom_genes) > 0 else [] for total_genes, nonrandom_genes in zip(eligible_genes, kept_genes)] for iteration in range(self.num_runs_for_random_experiments)}
+            mean_counter, sd_counter = self.count_overlap(random_genes, get_mean_sd=True)
+        elif algorithm == "fast":
+            n_models = self.config.crossval.n_folds if n_models is None else n_models
+            n_drawings = self.num_runs_for_random_experiments
+
+            b = []
+            results = []
+            for eligible_genes_one_fold, kept_genes_one_fold in zip(eligible_genes, kept_genes):
+                #TODO something seems to be redundant here, we don't need to traw n_models (loop) times n_models (stats.binom.rvs), one time n_models should be enough
+                results.append(stats.binom.rvs(1, len(kept_genes_one_fold)/len(eligible_genes_one_fold), size=(len(eligible_genes_one_fold), n_drawings)))
+                
+            results = np.array(results)
+
+            result = results.sum(axis=0)
+                
+            _, counts = zip(*[np.unique(result[:,i], return_counts=True) for i in range(result.shape[1])])
+
+                
+
+            for i in range(len(counts)):
+                if len(counts[i]) != n_models + 1:
+                    b.append(np.pad(counts[i], (0, n_models + 1 - len(counts[i])), 'constant', constant_values = 0))
+                else:
+                    b.append(counts[i])
+                        
+            b = np.array(b)
+
+            mean_counter = {i + 1: mean.item() for i, mean in enumerate(b.mean(axis=0)[1:])}
+            sd_counter = {i + 1: mean.item() for i, mean in enumerate(b.std(axis=0)[1:])}
+        else:
+            raise ValueError("'algorithm' keyword must be either 'descriptive' or 'fast'")
+        return  mean_counter, sd_counter
 
     def count_overlap(self, list_of_sets, get_mean_sd: bool = False):
         ''' Takes a list of gene sets and returns counts how often each gene occurs in each of the sets and how often each of the counts occurs in the total list.
