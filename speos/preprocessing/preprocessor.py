@@ -29,7 +29,7 @@ class PreProcessor:
         self.expression_files = expression_files
         self.num_random_features = 100
         self.features_list = []
-        self.logger = setup_logger(config, __name__)
+        self.logger_args = [config, __name__]
         self.pos_idx = []
         self.neg_idx = []
         self.hgnc_key, self.entrez_key, self.ensembl_key = "hgnc", "entrez", "ensembl"
@@ -67,7 +67,8 @@ class PreProcessor:
         if features:
             self.add_x_features(use_embeddings=use_embeddings)
 
-        self.logger.info(nx.info(self.G))
+        logger = setup_logger(*self.logger_args)
+        logger.info(nx.info(self.G))
 
     def get_data(self):
         if not self.graph_is_built:
@@ -84,7 +85,8 @@ class PreProcessor:
 
         X, y, adj = self.format_for_pygeo()
 
-        self.logger.info("Number of positives in ground truth {}: {}".format(
+        logger = setup_logger(*self.logger_args)
+        logger.info("Number of positives in ground truth {}: {}".format(
             self.ground_truth[0], y.sum()))
 
         return X, y, adj
@@ -143,7 +145,8 @@ class PreProcessor:
         if type(adjacency_list) not in [list, tuple, set]:
             adjacency_list = [adjacency_list]
         self.adjacency_list = adjacency_list
-        self.logger.info("Using Adjacency matrices: " + str([adjacency["name"] for adjacency in self.adjacency_list]))
+        logger = setup_logger(*self.logger_args)
+        logger.info("Using Adjacency matrices: " + str([adjacency["name"] for adjacency in self.adjacency_list]))
         self.adjacency_dict = {}
 
         if self.G is not None and wipe:
@@ -424,7 +427,8 @@ class PreProcessor:
         self.ground_truth = ground_truth
         self.mapping_list = mapping_list
 
-        self.logger.info("Using {} mappings with ground truth {} ".format(
+        logger = setup_logger(*self.logger_args)
+        logger.info("Using {} mappings with ground truth {} ".format(
             len(self.mapping_list), self.ground_truth[0]))
 
         if compile:
@@ -438,7 +442,8 @@ class PreProcessor:
             try:
                 adj.update({name: np.asarray((all_edges[:, 0][mask], all_edges[:, 1][mask]))})
             except ValueError as e:
-                self.logger.error(str(e) + ' Skipping adjacency {}'.format(name))
+                logger = setup_logger(*self.logger_args)
+                logger.error(str(e) + ' Skipping adjacency {}'.format(name))
                 continue
 
         X = []

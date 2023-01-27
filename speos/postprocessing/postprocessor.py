@@ -18,7 +18,7 @@ class PostProcessor:
 
     def __init__(self, config, translation_table="./data/hgnc_official_list.tsv"):
         self.config = config
-        self.logger = setup_logger(config, __name__)
+        self.logger_args = [config, __name__]
         self.num_runs_for_random_experiments = 1000
         self.outer_result = None   # is populated by overlap_analysis when pp is run
 
@@ -42,10 +42,11 @@ class PostProcessor:
         """Runs all tasks that are specified in the config as pp.tasks"""
 
         self.init_pp_table()
+        logger = setup_logger(*self.logger_args)
 
         # ensure overlap analysis is run first
         if "overlap_analysis" in self.config.pp.tasks:
-            self.logger.info("Applying concensus strategy: {}".format(self.consensus))
+            logger.info("Applying concensus strategy: {}".format(self.consensus))
             value = [self.overlap_analysis()]
             self.config.pp.tasks.remove("overlap_analysis")
 
@@ -54,12 +55,13 @@ class PostProcessor:
                 try:
                     value.append(getattr(self, function)())
                 except FileNotFoundError as e:
-                    self.logger.error("FileNotFoundError during handling of postprocessing task {}:".format(function))
-                    self.logger.error(e)
+                    
+                    logger.error("FileNotFoundError during handling of postprocessing task {}:".format(function))
+                    logger.error(e)
                     continue
                 except KeyError as e:
-                    self.logger.error("KeyError during handling of postprocessing task {}:".format(function))
-                    self.logger.error(e)
+                    logger.error("KeyError during handling of postprocessing task {}:".format(function))
+                    logger.error(e)
                     continue
         
         if save:
@@ -80,11 +82,11 @@ class PostProcessor:
             Returns the dataframe containing all relevant information."""
 
         from speos.postprocessing.goea import GOEA_Study
-
-        self.logger.info("Starting Pathway Enrichment Analysis.")
+        logger = setup_logger(*self.logger_args)
+        logger.info("Starting Pathway Enrichment Analysis.")
 
         if self.outer_result is None:
-            self.logger.warning("Pathway Enrichment Analysis is requested but results of outer overlap analysis are missing. Skipping it.")
+            logger.warning("Pathway Enrichment Analysis is requested but results of outer overlap analysis are missing. Skipping it.")
             return
 
         unknown_genes, all_genes, positive_genes = self.get_unknown_genes(results_path)
@@ -118,21 +120,21 @@ class PostProcessor:
         if self.config.pp.save:
             self.create_if_not_exists(self.config.pp.save_dir)
             tsv_path = os.path.join(self.config.pp.save_dir, self.config.name + "_pathwayea.tsv")
-            self.logger.info("Found {} significant terms, writing table to {}".format(len(df.index), tsv_path))
+            logger.info("Found {} significant terms, writing table to {}".format(len(df.index), tsv_path))
             df.to_csv(tsv_path, sep="\t")
 
         if self.config.pp.plot:
             self.create_if_not_exists(self.config.pp.plot_dir)
             image_path = os.path.join(self.config.pp.plot_dir, self.config.name + "_pathwayea.png")
-            self.logger.info("Saving plot to {}".format(image_path))
+            logger.info("Saving plot to {}".format(image_path))
             if len(df) > 0:
                 try:
                     goea.plot(df, image_path)
                 except Exception as e:
-                    self.logger.error("Something went wrong trying to plot:")
-                    self.logger.error(traceback.format_exc())
+                    logger.error("Something went wrong trying to plot:")
+                    logger.error(traceback.format_exc())
             else:
-                self.logger.info("Not Plotting Pathway Enrichment because no significant Terms have been found.")
+                logger.info("Not Plotting Pathway Enrichment because no significant Terms have been found.")
 
         return df
 
@@ -145,10 +147,11 @@ class PostProcessor:
         import yaml
         from scipy.stats import fisher_exact
 
-        self.logger.info("Starting Differential Gene Expression Enrichment Analysis.")
+        logger = setup_logger(*self.logger_args)
+        logger.info("Starting Differential Gene Expression Enrichment Analysis.")
 
         if self.outer_result is None:
-            self.logger.warning("Differential Gene Expression Enrichment Analysis is requested but results of outer overlap analysis are missing. Skipping it.")
+            logger.warning("Differential Gene Expression Enrichment Analysis is requested but results of outer overlap analysis are missing. Skipping it.")
             return
 
         phenotype = self.config.input.tag
@@ -162,10 +165,10 @@ class PostProcessor:
         subtypes = mapping[phenotype.lower()]
         num_phenotypes = len(list(subtypes.keys()))
 
-        self.logger.info("Found {} subtypes for phenotype {}: {}.".format(num_phenotypes, phenotype, list(subtypes.keys())))
+        logger.info("Found {} subtypes for phenotype {}: {}.".format(num_phenotypes, phenotype, list(subtypes.keys())))
 
         if num_phenotypes == 0:
-            self.logger.info("Skipping differentially expressed genes analysis.")
+            logger.info("Skipping differentially expressed genes analysis.")
             return None
         elif num_phenotypes == 1:
             phenotypes = list(subtypes.keys())
@@ -218,8 +221,8 @@ class PostProcessor:
             n_nonmendelians_without_de.append(array[1][1].item())
             is_enriched_result = fisher_exact(array)
 
-            self.logger.info("Total of {} {} DE genes, {} of them match with our translation table.".format(len(dge_genes), subtype, len(valid_dge_genes)))
-            self.logger.info("Found {} {} DE genes among the {} known positive genes (p: {:.2e}, OR: {}), leaving {} in {} Unknowns".format(
+            logger.info("Total of {} {} DE genes, {} of them match with our translation table.".format(len(dge_genes), subtype, len(valid_dge_genes)))
+            logger.info("Found {} {} DE genes among the {} known positive genes (p: {:.2e}, OR: {}), leaving {} in {} Unknowns".format(
                     len(valid_dge_genes.intersection(positive_genes)), subtype, len(positive_genes), is_enriched_result[1], round(is_enriched_result[0], 3), len(unknown_dge_genes), len(unknown_genes)))
 
             mendelian_odds_ratios.append(is_enriched_result[0])
@@ -236,8 +239,8 @@ class PostProcessor:
             n_noncandidate_without_de.append(array[1][1].item())
             is_enriched_result = fisher_exact(array)
 
-            self.logger.info("Fishers Exact Test for {} DE genes among Predicted Genes. p: {:.2e}, OR: {}".format(subtype, is_enriched_result[1], round(is_enriched_result[0], 3)))
-            self.logger.info("{} DE genes Confusion Matrix:\n".format(subtype) + str(array))
+            logger.info("Fishers Exact Test for {} DE genes among Predicted Genes. p: {:.2e}, OR: {}".format(subtype, is_enriched_result[1], round(is_enriched_result[0], 3)))
+            logger.info("{} DE genes Confusion Matrix:\n".format(subtype) + str(array))
 
             candidate_odds_ratios.append(is_enriched_result[0])
             candidate_pvals.append(is_enriched_result[1])
@@ -265,10 +268,11 @@ class PostProcessor:
 
         from speos.postprocessing.goea import GOEA_Study
 
-        self.logger.info("Starting HPO Enrichment Analysis.")
+        logger = setup_logger(*self.logger_args)
+        logger.info("Starting HPO Enrichment Analysis.")
 
         if self.outer_result is None:
-            self.logger.warning("HPO Enrichment Analysis is requested but results of outer overlap analysis are missing. Skipping it.")
+            logger.warning("HPO Enrichment Analysis is requested but results of outer overlap analysis are missing. Skipping it.")
             return
 
         unknown_genes, all_genes, positive_genes = self.get_unknown_genes(results_path)
@@ -301,21 +305,21 @@ class PostProcessor:
         if self.config.pp.save:
             self.create_if_not_exists(self.config.pp.save_dir)
             tsv_path = os.path.join(self.config.pp.save_dir, self.config.name + "_hpoea.tsv")
-            self.logger.info("Found {} significant terms, writing table to {}".format(len(df.index), tsv_path))
+            logger.info("Found {} significant terms, writing table to {}".format(len(df.index), tsv_path))
             df.to_csv(tsv_path, sep="\t")
 
         if self.config.pp.plot:
             self.create_if_not_exists(self.config.pp.plot_dir)
             image_path = os.path.join(self.config.pp.plot_dir, self.config.name + "_hpoea.png")
             if len(df) > 0:
-                self.logger.info("Saving plot to {}".format(image_path))
+                logger.info("Saving plot to {}".format(image_path))
                 try:
                     goea.plot(df, image_path)
                 except Exception as e:
-                    self.logger.error("Something went wrong trying to plot:")
-                    self.logger.error(traceback.format_exc())
+                    logger.error("Something went wrong trying to plot:")
+                    logger.error(traceback.format_exc())
             else:
-                self.logger.info("Not Plotting HPO Enrichment because no significant Terms have been found.")
+                logger.info("Not Plotting HPO Enrichment because no significant Terms have been found.")
 
         return df
 
@@ -327,10 +331,11 @@ class PostProcessor:
 
         from speos.postprocessing.goea import GOEA_Study
 
-        self.logger.info("Starting GO Enrichment Analysis.")
+        logger = setup_logger(*self.logger_args)
+        logger.info("Starting GO Enrichment Analysis.")
 
         if self.outer_result is None:
-            self.logger.warning("GO Enrichment Analysis is requested but results of outer overlap analysis are missing. Skipping it.")
+            logger.warning("GO Enrichment Analysis is requested but results of outer overlap analysis are missing. Skipping it.")
             return
 
         unknown_genes, all_genes, positive_genes = self.get_unknown_genes(results_path)
@@ -344,21 +349,21 @@ class PostProcessor:
             if self.config.pp.save:
                 self.create_if_not_exists(self.config.pp.save_dir)
                 path = os.path.join(self.config.pp.save_dir, self.config.name + "_goea_{}.tsv".format("_".join(task.split(" "))))
-                self.logger.info("Found {} significant terms for task {}, writing table to {}".format(len(df.index), task, path))
+                logger.info("Found {} significant terms for task {}, writing table to {}".format(len(df.index), task, path))
                 df.to_csv(path, sep="\t")
 
             if self.config.pp.plot:
                 self.create_if_not_exists(self.config.pp.plot_dir)
                 path = os.path.join(self.config.pp.plot_dir, self.config.name + "_goea_{}.png".format("_".join(task.split(" "))))
-                self.logger.info("Saving plot to {}".format(path))
+                logger.info("Saving plot to {}".format(path))
                 if len(df) > 0:
                     try:
                         goea.plot(df, path)
                     except Exception as e:
-                        self.logger.error("Something went wrong trying to plot:")
-                        self.logger.error(traceback.format_exc())
+                        logger.error("Something went wrong trying to plot:")
+                        logger.error(traceback.format_exc())
                 else:
-                    self.logger.info("Not Plotting Go Enrichment fo {} because no significant Terms have been found.".format(task))
+                    logger.info("Not Plotting Go Enrichment fo {} because no significant Terms have been found.".format(task))
 
             goea.reset()
 
@@ -371,8 +376,10 @@ class PostProcessor:
             Returns a tuple of results from statistical test. First result is from a Fisher's exact test on a contingency table of is_drug_target and is_predicted_as_core_gene.
             Second result is from a Mann Whitney U test of the degree distribution of predicted genes vs non-predicted genes in a compound-gene-interaction network."""
 
+        logger = setup_logger(*self.logger_args)
+
         if self.outer_result is None:
-            self.logger.warning("Drug Target Analysis is requested but results of outer overlap analysis are missing. Skipping it.")
+            logger.warning("Drug Target Analysis is requested but results of outer overlap analysis are missing. Skipping it.")
             return
 
         from scipy.stats import fisher_exact, mannwhitneyu
@@ -420,8 +427,8 @@ class PostProcessor:
         is_drug_target_result = fisher_exact(array)
         drug_target_results.append(is_drug_target_result)
 
-        self.logger.info("Total of {} drug targets, {} of them match with our translation table.".format(len(drug_targets), len(drug_targets.intersection(all_genes))))
-        self.logger.info("Found {} drug targets genes among the {} known positive genes (p: {:.2e}, OR: {}), leaving {} in {} Unknowns".format(
+        logger.info("Total of {} drug targets, {} of them match with our translation table.".format(len(drug_targets), len(drug_targets.intersection(all_genes))))
+        logger.info("Found {} drug targets genes among the {} known positive genes (p: {:.2e}, OR: {}), leaving {} in {} Unknowns".format(
             len(drug_targets.intersection(positive_genes)), len(positive_genes), is_drug_target_result[1], round(is_drug_target_result[0], 3), len(unknown_drug_targets), len(unknown_genes)))
 
         array = self.make_contingency_table(unknown_genes, predicted_genes, unknown_drug_targets)
@@ -432,8 +439,8 @@ class PostProcessor:
         df["OR DT"] = [drug_target_results[0][0], drug_target_results[1][0], np.nan]
         df["pval DT unadjusted"] = [drug_target_results[0][1], drug_target_results[1][1], np.nan]
 
-        self.logger.info("Fishers Exact Test for Drug Targets among Predicted Genes. p: {:.2e}, OR: {}".format(is_drug_target_result[1], round(is_drug_target_result[0], 3)))
-        self.logger.info("Drug Targets Confusion Matrix:\n" + str(array))
+        logger.info("Fishers Exact Test for Drug Targets among Predicted Genes. p: {:.2e}, OR: {}".format(is_drug_target_result[1], round(is_drug_target_result[0], 3)))
+        logger.info("Drug Targets Confusion Matrix:\n" + str(array))
 
         positive_genes_and_drug_targets = positive_genes.intersection(drug_targets)
         predicted_genes_and_drug_targets = predicted_genes.intersection(drug_targets)
@@ -470,13 +477,13 @@ class PostProcessor:
         pvals = fdr(pvals)
         df["pval xDC adjusted (FDR)"] = [pvals[2], pvals[1], pvals[0]]
 
-        self.logger.info("U-Test for number of Drug interactions in Predicted Genes vs Non-Predicted Genes. q: {:.2e}, U: {}".format(pvals[0], round(u_stats[0], 3)))
-        self.logger.info("U-Test for number of Drug interactions in Mendelian Genes vs Non-Predicted Genes. q: {:.2e}, U: {}".format(pvals[1], round(u_stats[1], 3)))
-        self.logger.info("U-Test for number of Drug interactions in Mendelian Genes vs Predicted Genes. q: {:.2e}, U: {}".format(pvals[2], round(u_stats[2], 3)))
+        logger.info("U-Test for number of Drug interactions in Predicted Genes vs Non-Predicted Genes. q: {:.2e}, U: {}".format(pvals[0], round(u_stats[0], 3)))
+        logger.info("U-Test for number of Drug interactions in Mendelian Genes vs Non-Predicted Genes. q: {:.2e}, U: {}".format(pvals[1], round(u_stats[1], 3)))
+        logger.info("U-Test for number of Drug interactions in Mendelian Genes vs Predicted Genes. q: {:.2e}, U: {}".format(pvals[2], round(u_stats[2], 3)))
 
-        self.logger.info("0, 25, 50, 75 and 99% quantiles for Mendelians: {}".format(np.quantile(positive_degrees, (0, 0.25, 0.5, 0.75, 0.99))))
-        self.logger.info("0, 25, 50, 75 and 99% quantiles for Predicted Genes: {}".format(np.quantile(predicted_degrees, (0, 0.25, 0.5, 0.75, 0.99))))
-        self.logger.info("0, 25, 50, 75 and 99% quantiles for Non-Predicted Genes: {}".format(np.quantile(not_predicted_degrees, (0, 0.25, 0.5, 0.75, 0.99))))
+        logger.info("0, 25, 50, 75 and 99% quantiles for Mendelians: {}".format(np.quantile(positive_degrees, (0, 0.25, 0.5, 0.75, 0.99))))
+        logger.info("0, 25, 50, 75 and 99% quantiles for Predicted Genes: {}".format(np.quantile(predicted_degrees, (0, 0.25, 0.5, 0.75, 0.99))))
+        logger.info("0, 25, 50, 75 and 99% quantiles for Non-Predicted Genes: {}".format(np.quantile(not_predicted_degrees, (0, 0.25, 0.5, 0.75, 0.99))))
 
         if plot:
             self.make_boxplot(not_predicted_degrees, predicted_degrees, positive_degrees, plot=plot)
@@ -484,8 +491,10 @@ class PostProcessor:
         return drug_target_results, pvals, (not_predicted_degrees, predicted_degrees, positive_degrees), df
 
     def druggable(self, results_path=None):
+
+        logger = setup_logger(*self.logger_args)
         if self.outer_result is None:
-            self.logger.warning("Druggable Gene Analysis is requested but results of outer overlap analysis are missing. Skipping it.")
+            logger.warning("Druggable Gene Analysis is requested but results of outer overlap analysis are missing. Skipping it.")
             return
 
         from scipy.stats import fisher_exact
@@ -516,16 +525,16 @@ class PostProcessor:
         total_druggable = []
         mendelian_druggable_enrichment_result = fisher_exact(array)
         total_druggable.append(mendelian_druggable_enrichment_result)
-        self.logger.info("Total of {} druggable genes, {} of them match with our translation table.".format(len(druggable_genes), len(valid_druggable_genes)))
-        self.logger.info("Found {} druggable genes among the {} known positive genes (p: {:.2e}, OR: {}), leaving {} in {} Unknowns".format(
+        logger.info("Total of {} druggable genes, {} of them match with our translation table.".format(len(druggable_genes), len(valid_druggable_genes)))
+        logger.info("Found {} druggable genes among the {} known positive genes (p: {:.2e}, OR: {}), leaving {} in {} Unknowns".format(
             len(druggable_genes.intersection(positive_genes)), len(positive_genes), mendelian_druggable_enrichment_result[1], round(mendelian_druggable_enrichment_result[0], 3), len(unknown_druggable_genes), len(unknown_genes)))
 
         array = self.make_contingency_table(unknown_genes, predicted_genes, unknown_druggable_genes)
         druggable_enrichment_result = fisher_exact(array)
         total_druggable.append(druggable_enrichment_result)
 
-        self.logger.info("Fishers Exact Test for Druggable Genes among Predicted Genes. p: {:.2e}, OR: {}".format(druggable_enrichment_result[1], round(druggable_enrichment_result[0], 3)))
-        self.logger.info("Druggable Genes Confusion Matrix:\n" + str(array))
+        logger.info("Fishers Exact Test for Druggable Genes among Predicted Genes. p: {:.2e}, OR: {}".format(druggable_enrichment_result[1], round(druggable_enrichment_result[0], 3)))
+        logger.info("Druggable Genes Confusion Matrix:\n" + str(array))
 
         df["OR Dr"] = [mendelian_druggable_enrichment_result[0], druggable_enrichment_result[0], np.nan]
         df["pval Dr unadjusted"] = [mendelian_druggable_enrichment_result[1], druggable_enrichment_result[1], np.nan]
@@ -557,8 +566,8 @@ class PostProcessor:
         mendelian_druggable_enrichment_result = fisher_exact(array)
         leftover_druggable.append(mendelian_druggable_enrichment_result)
         
-        self.logger.info("Total of {} druggable genes which are not yet Drug Targets, {} of them match with our translation table.".format(len(druggable_genes), len(valid_druggable_genes)))
-        self.logger.info("Found {} druggable non drug target genes among the {} known positive genes (p: {:.2e}, OR: {}), leaving {} in {} Unknowns".format(
+        logger.info("Total of {} druggable genes which are not yet Drug Targets, {} of them match with our translation table.".format(len(druggable_genes), len(valid_druggable_genes)))
+        logger.info("Found {} druggable non drug target genes among the {} known positive genes (p: {:.2e}, OR: {}), leaving {} in {} Unknowns".format(
             len(druggable_genes.intersection(positive_genes)), len(positive_genes), mendelian_druggable_enrichment_result[1], round(mendelian_druggable_enrichment_result[0], 3), len(unknown_druggable_genes), len(unknown_genes)))
 
         predicted_genes = set(self.outer_result[0].keys())
@@ -567,8 +576,8 @@ class PostProcessor:
         druggable_enrichment_result = fisher_exact(array)
         leftover_druggable.append(druggable_enrichment_result)
 
-        self.logger.info("Fishers Exact Test for Druggable Non Drug Target Genes among Predicted Genes. p: {:.2e}, OR: {}".format(druggable_enrichment_result[1], round(druggable_enrichment_result[0], 3)))
-        self.logger.info("Druggable Genes Confusion Matrix:\n" + str(array))
+        logger.info("Fishers Exact Test for Druggable Non Drug Target Genes among Predicted Genes. p: {:.2e}, OR: {}".format(druggable_enrichment_result[1], round(druggable_enrichment_result[0], 3)))
+        logger.info("Druggable Genes Confusion Matrix:\n" + str(array))
 
         df["OR Dr-"] = [mendelian_druggable_enrichment_result[0], druggable_enrichment_result[0], np.nan]
         df["pval Dr- unadjusted"] = [mendelian_druggable_enrichment_result[1], druggable_enrichment_result[1], np.nan]
@@ -576,8 +585,10 @@ class PostProcessor:
         return total_druggable, leftover_druggable, df
 
     def mouseKO(self, results_path=None):
+        logger = setup_logger(*self.logger_args)
+
         if self.outer_result is None:
-            self.logger.warning("Mouse KO Analysis is requested but results of outer overlap analysis are missing. Skipping it.")
+            logger.warning("Mouse KO Analysis is requested but results of outer overlap analysis are missing. Skipping it.")
             return
 
         from scipy.stats import fisher_exact
@@ -597,8 +608,8 @@ class PostProcessor:
         self.pp_table.add("Is Mouse KO", valid_ko_genes, True, False)
         unknown_ko_genes = self.return_only_valid(ko_genes, unknown_background_ko_genes)
 
-        self.logger.info("Total of {} Mouse KO genes, {} of them match with our translation table.".format(len(ko_genes), len(ko_genes.intersection(all_genes))))
-        self.logger.info("Found {} Mouse KO genes among the {} known positive genes (p: {:.2e}, OR: {}), leaving {} in {} Unknowns".format(
+        logger.info("Total of {} Mouse KO genes, {} of them match with our translation table.".format(len(ko_genes), len(ko_genes.intersection(all_genes))))
+        logger.info("Found {} Mouse KO genes among the {} known positive genes (p: {:.2e}, OR: {}), leaving {} in {} Unknowns".format(
             len(ko_genes.intersection(positive_genes)), len(positive_genes), mendelian_ko_enrichment_result[1], round(mendelian_ko_enrichment_result[0], 3), len(unknown_ko_genes), len(unknown_background_ko_genes)))
 
         predicted_genes = set(self.outer_result[0].keys())
@@ -607,14 +618,15 @@ class PostProcessor:
 
         ko_enrichment_result = fisher_exact(array)
 
-        self.logger.info("Fishers Exact Test for mouse KO Genes among Predicted Genes. p: {:.2e}, OR: {}".format(ko_enrichment_result[1], round(ko_enrichment_result[0], 3)))
-        self.logger.info("Mouse KO Confusion Matrix:\n" + str(array))
+        logger.info("Fishers Exact Test for mouse KO Genes among Predicted Genes. p: {:.2e}, OR: {}".format(ko_enrichment_result[1], round(ko_enrichment_result[0], 3)))
+        logger.info("Mouse KO Confusion Matrix:\n" + str(array))
 
         return mendelian_ko_enrichment_result, ko_enrichment_result, mendelian_array, array
 
     def lof_intolerance(self, results_path=None, plot=True):
+        logger = setup_logger(*self.logger_args)
         if self.outer_result is None:
-            self.logger.warning("LoF Intolerance Analysis is requested but results of outer overlap analysis are missing. Skipping it.")
+            logger.warning("LoF Intolerance Analysis is requested but results of outer overlap analysis are missing. Skipping it.")
             return
 
         from scipy.stats import fisher_exact
@@ -639,8 +651,8 @@ class PostProcessor:
 
         unknown_pli_genes = self.return_only_valid(pli_genes, unknown_genes)
 
-        self.logger.info("Total of {} genes with significant LoF Intolerance, {} of them match with our translation table.".format(len(pli_genes), len(pli_genes.intersection(all_genes))))
-        self.logger.info("Found {} LoF Intolerance genes among the {} known positive genes (p: {:.2e}, OR: {}), leaving {} in {} Unknowns".format(
+        logger.info("Total of {} genes with significant LoF Intolerance, {} of them match with our translation table.".format(len(pli_genes), len(pli_genes.intersection(all_genes))))
+        logger.info("Found {} LoF Intolerance genes among the {} known positive genes (p: {:.2e}, OR: {}), leaving {} in {} Unknowns".format(
             len(pli_genes.intersection(positive_genes)), len(positive_genes), pli_enrichment_result[1], round(pli_enrichment_result[0], 3), len(unknown_pli_genes), len(unknown_genes)))
 
         predicted_genes = set(self.outer_result[0].keys())
@@ -649,8 +661,8 @@ class PostProcessor:
 
         pli_enrichment_result = fisher_exact(array)
 
-        self.logger.info("Fishers Exact Test for genes with significant LoF Intolerance among Predicted Genes. p: {:.2e}, OR: {}".format(pli_enrichment_result[1], round(pli_enrichment_result[0], 3)))
-        self.logger.info("LoF Intolerance Confusion Matrix:\n" + str(array))
+        logger.info("Fishers Exact Test for genes with significant LoF Intolerance among Predicted Genes. p: {:.2e}, OR: {}".format(pli_enrichment_result[1], round(pli_enrichment_result[0], 3)))
+        logger.info("LoF Intolerance Confusion Matrix:\n" + str(array))
 
         tukeys = []
 
@@ -665,7 +677,7 @@ class PostProcessor:
                                         predicted,
                                         not_predicted)
 
-            self.logger.info("ANOVA for {} in Predicted Genes vs Non-Predicted Genes (Unknowns). p: {:.2e}, F: {}".format(description, result_predicted[1], round(result_predicted[0], 3)))
+            logger.info("ANOVA for {} in Predicted Genes vs Non-Predicted Genes (Unknowns). p: {:.2e}, F: {}".format(description, result_predicted[1], round(result_predicted[0], 3)))
 
             df = pd.DataFrame({'score': mendelian + predicted + not_predicted,
                                'group': np.repeat(['Mendelian', 'Candidate Gene', 'Noncandidate Gene'], repeats=[len(mendelian), len(predicted), len(not_predicted)])})
@@ -674,7 +686,7 @@ class PostProcessor:
                                       groups=df['group'],
                                       alpha=0.05)
 
-            self.logger.info(tukey.summary())
+            logger.info(tukey.summary())
             
             if plot:
                 tukey.plot_simultaneous(comparison_name="Candidate Gene")
@@ -761,11 +773,13 @@ class PostProcessor:
         return mouse2human
 
     def get_druggable_genes(self, path_to_table) -> list:
-        self.logger.info("Reading druggable genes from {}".format(path_to_table))
+        logger = setup_logger(*self.logger_args)
+        logger.info("Reading druggable genes from {}".format(path_to_table))
         return pd.read_csv(path_to_table, sep="\t", header=None).iloc[:, 0].tolist()
 
     def get_translation_table(self, sep="\t") -> pd.DataFrame:
-        self.logger.info("Reading translation table from {}".format(self.path_to_translation_table))
+        logger = setup_logger(*self.logger_args)
+        logger.info("Reading translation table from {}".format(self.path_to_translation_table))
         df = pd.read_csv(self.path_to_translation_table, sep=sep, header=0, usecols=[self.hgnc_col, self.entrez_col, self.ensembl_col])
         #df.rename(columns={hgnc_col: self.hgnc_key, entrez_col: self.entrez_key, ensembl_col: self.ensembl_key}, inplace=True)
         return df
@@ -778,6 +792,7 @@ class PostProcessor:
             Mouse KO genes which do not have human homologs will not be returned.
         """
         import yaml
+        logger = setup_logger(*self.logger_args)
 
         tag = self.config.input.tag if tag is None else tag
         with open(mapping, "r") as file:
@@ -790,10 +805,10 @@ class PostProcessor:
                 path_to_table = value["file"]
 
         if path_to_table is None:
-            self.logger.error("Could not find mouse knockout genes for tag {} in mapping {}".format(tag, mapping))
+            logger.error("Could not find mouse knockout genes for tag {} in mapping {}".format(tag, mapping))
             return
 
-        self.logger.info("Reading mouse knockout genes from {}".format(path_to_table))
+        logger.info("Reading mouse knockout genes from {}".format(path_to_table))
         mouse_symbols = [entry.split("<")[0] for entry in pd.read_csv(path_to_table, sep="\t", header=0)["Allele Symbol"].tolist()]
         human_homolog_symbols = set()
 
@@ -812,7 +827,8 @@ class PostProcessor:
         import networkx as nx
         import pandas as pd
 
-        self.logger.info("Reading compound drug interaction graph from {}".format(path_to_graph))
+        logger = setup_logger(*self.logger_args)
+        logger.info("Reading compound drug interaction graph from {}".format(path_to_graph))
         df = pd.read_table(path_to_graph, sep="\t", names=["Compound", "edge", "Gene"])
 
         graph = nx.from_pandas_edgelist(df, source="Compound", target="Gene", edge_attr="edge", create_using=nx.MultiDiGraph)
@@ -879,7 +895,8 @@ class PostProcessor:
 
             Returns a dictionary that maps the counts to the genes and a list of runs that have been considered for the analysis.
         """
-        self.logger.info("Starting Overlap Analysis.")
+        logger = setup_logger(*self.logger_args)
+        logger.info("Starting Overlap Analysis.")
         gene_counters, count_counters, all_pos_pvals, dfs = list(zip(*[self.check_overlap(results_paths, self.config.pp.cutoff_value, self.config.pp.cutoff_type, plot=self.config.pp.plot) for results_paths in self.results_paths]))
         
         if write:
@@ -916,7 +933,7 @@ class PostProcessor:
                 # most_often_predicted = sorted(count2gene[np.max(list(count2gene.keys()))])
                 most_often_predicted, consensus_score = self.get_consensus_genes(count2gene, pos_pvals)
                 most_often_predicted_list.append(most_often_predicted)
-                self.logger.info("Consensus Score for Outer Crossval #{}: {}; Returned {} Candidate Genes".format(i, consensus_score, len(most_often_predicted)))
+                logger.info("Consensus Score for Outer Crossval #{}: {}; Returned {} Candidate Genes".format(i, consensus_score, len(most_often_predicted)))
                 np.savetxt(handle, most_often_predicted, fmt='%s')
 
         if len(gene_counters) > 1:
@@ -926,12 +943,12 @@ class PostProcessor:
                 json.dump(outer_result, fp, skipkeys=True, indent=2)
 
             self.outer_result = outer_result
-            self.logger.info("Outer Crossvalidation results in {} candidate genes in total. Results written to {}".format(total, os.path.join(pu.postprocessing_results_path(self.config), str(self.config.name) + "outer_results.json")))
+            logger.info("Outer Crossvalidation results in {} candidate genes in total. Results written to {}".format(total, os.path.join(pu.postprocessing_results_path(self.config), str(self.config.name) + "outer_results.json")))
             candidate_genes, consensus_score = list(zip(*outer_result[0].items()))
             self.pp_table.add("Candidate", index=candidate_genes, values=True, remaining=False)
             self.pp_table.add("CS", index=candidate_genes, values=consensus_score, remaining=0)
 
-        self.logger.info("Finished Overlap Analysis")
+        logger.info("Finished Overlap Analysis")
         return count2gene,
 
     def load_outer_results(self, path=None):
@@ -1013,6 +1030,8 @@ class PostProcessor:
         """takes all results files given in results_paths and checks their overlap in predictions.
         cutoff types are: top (int), bottom (int), split (float)"""
 
+        logger = setup_logger(*self.logger_args)
+
         results_tables = [self.read_results_file(path) for path in results_paths]
 
         count_counters = {}
@@ -1034,10 +1053,9 @@ class PostProcessor:
                     eligible_genes = [table["hgnc"][(table["truth"] == 1) & (table["test"] == 1)].to_numpy() for table in results_tables]
                     kept_genes = [table["hgnc"][(table["probability"] > self.config.pp.cutoff_value) & (table["truth"] == 1) & (table["test"] == 1)].tolist() for table in results_tables]
             else:
-                self.logger.error("Cutoff Type {} not in implemented cutoff types 'top', 'bottom' or 'split'".format(self.config.pp.cutoff_type))
+                logger.error("Cutoff Type {} not in implemented cutoff types 'top', 'bottom' or 'split'".format(self.config.pp.cutoff_type))
                 raise ValueError
 
-            # self.logger.info("Criterion: {}, Eligible Genes: {}, Kept Genes: {}".format(criterion,len(eligible_genes),len(kept_genes)))
             total_gene_set_sizes[criterion] = [len(eligible_gene_set) for eligible_gene_set in eligible_genes]
 
             #random_genes = {iteration: [total_genes[np.array(random.sample(range(len(total_genes)), len(nonrandom_genes)))].tolist() if len(nonrandom_genes) > 0 else [] for total_genes, nonrandom_genes in zip(eligible_genes, kept_genes)] for iteration in range(self.num_runs_for_random_experiments)}
@@ -1232,7 +1250,8 @@ class PostProcessor:
         fig.set_size_inches(7, 4)
         fig.set_dpi(300)
         fig.tight_layout()
-        self.logger.info("Plotting overlap plot to {}".format(plot_name))
+        logger = setup_logger(*self.logger_args)
+        logger.info("Plotting overlap plot to {}".format(plot_name))
         plt.savefig(plot_name)
         plt.close()
 

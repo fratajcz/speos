@@ -7,17 +7,19 @@ from speos.utils.logger import setup_logger
 
 class Pipeline:
     def __init__(self, config_path: str = ""):
+        """Abstract class for Pipelines"""
         self.config = Config()
+        self.logger_args = self.config, __name__
 
         if config_path != "":
             self.config.parse_yaml(config_path)
-            self.logger = setup_logger(self.config, __name__)
+            logger = setup_logger(*self.logger_args)
             try:
                 self.config.save()
             except FileNotFoundError:
-                self.logger.warning("Failed saving config. Please check write permissions.")
+                logger.warning("Failed saving config. Please check write permissions.")
         else:
-            self.logger = setup_logger(self.config, __name__)
+            logger = setup_logger(*self.logger_args)
         # here the necessary modules for the pipeline should be initialized
 
     def run(self):
@@ -92,7 +94,8 @@ class CVTrainingPipeline(Pipeline):
     def __init__(self, config_path: str = ""):
         super(CVInferencePipeline, self).__init__(config_path)
         if self.config.pp.switch:
-            self.logger.info("Found train switch is 'on' in the provided config, turning it off to do inference-only.")
+            logger = setup_logger(*self.logger_args)
+            logger.info("Found train switch is 'on' in the provided config, turning it off to do inference-only.")
             self.config.pp.switch = False
 
         self.crossval = CVWrapper(self.config)
@@ -105,7 +108,8 @@ class CVInferencePipeline(Pipeline):
     def __init__(self, config_path: str = ""):
         super(CVInferencePipeline, self).__init__(config_path)
         if self.config.training.switch:
-            self.logger.info("Found train switch is 'on' in the provided config, turning it off to do inference-only.")
+            logger = setup_logger(*self.logger_args)
+            logger.info("Found train switch is 'on' in the provided config, turning it off to do inference-only.")
             self.config.training.switch = False
 
         self.crossval = CVWrapper(self.config, self.logger)
@@ -120,7 +124,8 @@ class OuterCVInferencePipeline(Pipeline):
     def __init__(self, config_path: str = ""):
         super(OuterCVInferencePipeline, self).__init__(config_path)
         if self.config.training.switch:
-            self.logger.info("Found train switch is 'on' in the provided config, turning it off to do inference-only.")
+            logger = setup_logger(*self.logger_args)
+            logger.info("Found train switch is 'on' in the provided config, turning it off to do inference-only.")
             self.config.training.switch = False
 
         self.crossval = OuterCVWrapper(self.config, self.logger)
@@ -134,12 +139,13 @@ class OuterCVInferencePipeline(Pipeline):
 class PostProcessPipeline(Pipeline):
     def __init__(self, config_path: str = ""):
         super(PostProcessPipeline, self).__init__(config_path)
+        logger = setup_logger(*self.logger_args)
         if self.config.training.switch:
-            self.logger.info("Found train switch is 'on' in the provided config, turning it off to do postprocessing-only.")
+            logger.info("Found train switch is 'on' in the provided config, turning it off to do postprocessing-only.")
             self.config.training.switch = False
 
         if self.config.inference.switch:
-            self.logger.info("Found inference switch is 'on' in the provided config, turning it off to do postprocessing-only.")
+            logger.info("Found inference switch is 'on' in the provided config, turning it off to do postprocessing-only.")
             self.config.inference.switch = False
         self.postprocessor = PostProcessor(self.config)
 

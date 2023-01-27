@@ -18,7 +18,8 @@ class GeneDataset(InMemoryDataset):
         self.config = config
         self.holdout_size = holdout_size
         self.preprocessor = PreProcessor(config, mappings, adjacencies)
-        logger = setup_logger(config, __name__)
+        self.logger_args = [config, __name__]
+        logger = setup_logger(*self.logger_args)
         self.is_multigraph = False
         super(GeneDataset, self).__init__(self.root, transform, pre_transform)
         if self.save:
@@ -38,7 +39,7 @@ class GeneDataset(InMemoryDataset):
                 self.data = self._data
             del self._data
 
-        logger = setup_logger(config, __name__)
+        logger = setup_logger(*self.logger_args)
         logger.info(self.data)
 
     @property
@@ -99,7 +100,7 @@ class GeneDataset(InMemoryDataset):
             if len(adj.keys()) == 1:
                 adj = np.asarray(list(adj.values())).squeeze()
             else:
-                logger = setup_logger(self.config, __name__)
+                logger = setup_logger(*self.logger_args)
                 logger.warning("Adjacency data contains {} matrices. Trying to handle them as a single matrix.".format(len(adj.keys())))
                 adj = np.concatenate(list(adj.values()), 1).squeeze()
 
