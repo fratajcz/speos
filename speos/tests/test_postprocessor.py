@@ -31,6 +31,85 @@ class PostProcessorTest(unittest.TestCase):
         shutil.rmtree(self.config.model.save_dir, ignore_errors=True)
         shutil.rmtree(self.config.inference.save_dir, ignore_errors=True)
 
+    def test_random_overlap_descriptive_algorithm(self):
+        import numpy as np
+
+        config = self.config.copy()
+        config.crossval.n_folds = 5
+
+        pp = PostProcessor(config)
+        pp.num_runs_for_random_experiments = 100
+
+        eligible_genes = np.asarray([str(x) for x in range(0, 100)])
+        kept_genes = np.asarray([str(x) for x in range(0, 100, 10)])
+
+        eligible_genes = [eligible_genes] * config.crossval.n_folds
+        kept_genes = [kept_genes] * config.crossval.n_folds
+
+        mean_counter, sd_counter = pp.get_random_overlap(eligible_genes, kept_genes, algorithm="descriptive")
+
+
+    def test_random_overlap_fast_algorithm(self):
+        import numpy as np
+
+        config = self.config.copy()
+        config.crossval.n_folds = 5
+
+        pp = PostProcessor(config)
+        pp.num_runs_for_random_experiments = 100
+
+        eligible_genes = np.asarray([str(x) for x in range(0, 100)])
+        kept_genes = np.asarray([str(x) for x in range(0, 100, 10)])
+
+        eligible_genes = [eligible_genes] * config.crossval.n_folds
+        kept_genes = [kept_genes] * config.crossval.n_folds
+
+        mean_counter, sd_counter = pp.get_random_overlap(eligible_genes, kept_genes, algorithm="fast")
+
+
+    def test_random_overlap_both_algorithms_identical_results(self):
+        import numpy as np
+
+        config = self.config.copy()
+        config.crossval.n_folds = 5
+
+        pp = PostProcessor(config)
+        pp.num_runs_for_random_experiments = 100
+
+        eligible_genes = np.asarray([str(x) for x in range(0, 100)])
+        kept_genes = np.asarray([str(x) for x in range(0, 100, 10)])
+
+        eligible_genes = [eligible_genes] * config.crossval.n_folds
+        kept_genes = [kept_genes] * config.crossval.n_folds
+
+        mean_counter_fast, sd_counter_fast = pp.get_random_overlap(eligible_genes, kept_genes, algorithm="fast")
+        mean_counter_descriptive, sd_counter_descriptive = pp.get_random_overlap(eligible_genes, kept_genes, algorithm="descriptive")
+
+        for fast, descriptive in zip((mean_counter_fast, sd_counter_fast), (mean_counter_descriptive, sd_counter_descriptive)):
+            fast_values = list(fast.values())
+            descriptive_values = list(descriptive.values())
+            self.assertTrue(np.allclose(list(fast.values()), list(descriptive.values()), atol=0.5, rtol=0.1))
+        
+    def test_random_overlap_fast_faster_than_descriptive(self):
+        import timeit
+        import numpy as np
+
+        config = self.config.copy()
+        config.crossval.n_folds = 10
+
+        pp = PostProcessor(config)
+        pp.num_runs_for_random_experiments = 100
+
+        eligible_genes = np.asarray([str(x) for x in range(0, 1000)])
+        kept_genes = np.asarray([str(x) for x in range(0, 1000, 10)])
+
+        eligible_genes = [eligible_genes] * config.crossval.n_folds
+        kept_genes = [kept_genes] * config.crossval.n_folds
+
+        fast = timeit.timeit(lambda: pp.get_random_overlap(eligible_genes, kept_genes, algorithm="fast"), number=10)
+        descriptive = timeit.timeit(lambda: pp.get_random_overlap(eligible_genes, kept_genes, algorithm="descriptive"), number=10)
+        self.assertLess(fast, descriptive)
+
     def test_drugtarget(self):
 
         with open(self.test_outer_results, "r") as file:
