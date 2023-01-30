@@ -4,9 +4,9 @@ Introduction
 What is Speos about?
 --------------------
 
-Recently, `Boyle et al (2017)<https://pubmed.ncbi.nlm.nih.gov/28622505/>`_ have proposed the omnigenic model to structure the genetic influence on any trait. They postulate that core genes influence the phenotype directly by their protein expression, while others, the peripheral genes, influence the phenotype indirectly by influencing the core genes.
+Recently, `Boyle et al (2017) <https://pubmed.ncbi.nlm.nih.gov/28622505/>`_ have proposed the omnigenic model to structure the genetic influence on any trait. They postulate that core genes influence the phenotype directly by their protein expression, while others, the peripheral genes, influence the phenotype indirectly by influencing the core genes.
 
-Several works have `expanded<https://pubmed.ncbi.nlm.nih.gov/31051098/>`_ this idea or `argued<https://pubmed.ncbi.nlm.nih.gov/29906445/>`_ against it, which is why we won't do that here.
+Several works have `expanded <https://pubmed.ncbi.nlm.nih.gov/31051098/>`_ this idea or `argued <https://pubmed.ncbi.nlm.nih.gov/29906445/>`_ against it, which is why we won't do that here.
 
 The bottom line is that under the assumption of the omnigenic model, knowing all core genes that influence a trait, or say, a disease, gives us an idea about which proteins are most likely involved in the disease etiology and also pointers where to look for treatment.
 
@@ -15,11 +15,11 @@ It is hard to make a claim that a gene is a core gene, except for rare examples 
 We have therefore developed Speos to find yet undiscovered core genes for common complex diseases using rare Mendelian disorder genes as "true positive" core genes during training.
 As input data we have implemented tissue-specific gene expression and GWAS z-scores as well as several types of biological networks. 
 
-`We have shown<https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1>`_ that by utilizing these ingredients carefully, Speos enables the prediction of promising core gene candidates for five common complex diseases.
+`We have shown <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1>`_ that by utilizing these ingredients carefully, Speos enables the prediction of promising core gene candidates for five common complex diseases.
 
 As we know, some diseases are more relevant to some researchers than others. Also, several disease have specific, disease-relevant input feautures that can help identify core genes. 
 For this reason, we have made Speos completely extensible, from the set of core genes used for training, to the input features, the networks as well as the actual methods that are used during training!
-We would be very happy if Speos can help you on your research journey. If you are interested in using speos but don't know how or don't know you way around a command line interface, get in touch with us via our `GitHub issue page<https://github.com/fratajcz/speos/issues>`_ and we'll find a solution.
+We would be very happy if Speos can help you on your research journey. If you are interested in using speos but don't know how or don't know you way around a command line interface, get in touch with us via our `GitHub issue page <https://github.com/fratajcz/speos/issues>`_ and we'll find a solution.
 
 What do I need to run Speos?
 ----------------------------
