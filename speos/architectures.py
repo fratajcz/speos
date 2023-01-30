@@ -243,6 +243,10 @@ class GeneNetwork(nn.Module):
                 mp_layer = pyg_nn.FiLMConv(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], self.num_adjacencies, **kwargs)
             elif self.gcnconv_parameters["type"] == "filmtag":
                 mp_layer = layers.FiLMTAGConv(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], self.num_adjacencies, **kwargs)
+            elif self.gcnconv_parameters["type"] == "mlpfilm":
+                mp_layer = layers.MLPFiLM(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], self.num_adjacencies, **kwargs)
+            elif self.gcnconv_parameters["type"] == "filmfilm":
+                mp_layer = layers.FiLMFiLM(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], self.num_adjacencies, **kwargs)
 
         else:
             try:

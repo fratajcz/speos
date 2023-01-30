@@ -1,4 +1,4 @@
-from speos.layers import RTAGConv, FiLMTAGConv, RGATConv, RGATTAGConv
+from speos.layers import RTAGConv, FiLMTAGConv, RGATConv, RGATTAGConv, MLPFiLM, FiLMFiLM
 from torch.nn.functional import binary_cross_entropy_with_logits as loss_function
 from speos.utils.config import Config
 from speos.architectures import RelationalGeneNetwork
@@ -73,6 +73,35 @@ class FiLMTAGConvTest(unittest.TestCase):
 
         rtag = FiLMTAGConv(in_channels=10, out_channels=10, K=3, num_relations=2)
         x = rtag.forward(x_input, edges.T.long(), edge_types.long())
+        self.assertTrue(not torch.allclose(x, x_input))
+
+
+class MLPFiLMTest(unittest.TestCase):
+
+    def test_init(self):
+        filmtag = MLPFiLM(in_channels=10, out_channels=10, num_relations=3)
+
+    def test_forward(self):
+        edges = torch.LongTensor([[0, 1], [0, 2], [2, 3], [2, 4]])
+        edge_types = torch.LongTensor([0, 1, 0, 1])
+        x_input = torch.rand((5, 10))
+
+        mlpfilm = MLPFiLM(in_channels=10, out_channels=10, num_relations=2)
+        x = mlpfilm.forward(x_input, edges.T.long(), edge_types.long())
+        self.assertTrue(not torch.allclose(x, x_input))
+
+class FiLMFiLMTest(unittest.TestCase):
+
+    def test_init(self):
+        filmfilm = FiLMFiLM(in_channels=10, out_channels=10, num_relations=3)
+
+    def test_forward(self):
+        edges = torch.LongTensor([[0, 1], [0, 2], [2, 3], [2, 4]])
+        edge_types = torch.LongTensor([0, 1, 0, 1])
+        x_input = torch.rand((5, 10))
+
+        filmfilm = FiLMFiLM(in_channels=10, out_channels=10, num_relations=2)
+        x = filmfilm.forward(x_input, edges.T.long(), edge_types.long())
         self.assertTrue(not torch.allclose(x, x_input))
 
 
