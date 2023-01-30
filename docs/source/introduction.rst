@@ -24,7 +24,7 @@ We would be very happy if Speos can help you on your research journey. If you ar
 What do I need to run Speos?
 ----------------------------
 
-Apart from compute resources (which highly depend on the model that you choose) you'll need only one thing to use Speos: A labeled set of known (or assumed) core genes for the disease or trait that you are interested in. That's it. The set should consist of at least 100 genes (our smallest set has roughly 120 genes), but can in theory be smaller. If you are uncertain how to obtain such genes, you can check `OMIM<https://www.omim.org/>`_ for genes that produce the phenotype that you are interested in, but there are several other ways to come up with genes for training.
+Apart from compute resources (which highly depend on the model that you choose) you'll need only one thing to use Speos: A labeled set of known (or assumed) core genes for the disease or trait that you are interested in. That's it. The set should consist of at least 100 genes (our smallest set has roughly 120 genes), but can in theory be smaller. If you are uncertain how to obtain such genes, you can check `OMIM <https://www.omim.org/>`_ for genes that produce the phenotype that you are interested in, but there are several other ways to come up with genes for training.
 
 Second, it is great if you can map some GWAS traits to your disease. In our work, we use several GWAS traits related to cardiovascular health, such as HDL, LDL, TRIG etc., and map it to the disease genes for cardiovascular disease. You can check the Extensions page on how to do that, but it is not a must.
 
