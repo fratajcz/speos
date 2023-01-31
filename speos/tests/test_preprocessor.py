@@ -606,6 +606,53 @@ class DummyPreProcessorTest(unittest.TestCase):
 
         print(metrics)
 
+    def test_label_extension(self):
+        config = Config()
+        mapping = [ {"name": "UNK-immune_dysregulation",
+                         "ground_truth": "Immune_Dysregulation_genes.bed",
+                         "features_file": "",
+                         "match_type": "perfect",
+                         "significant": "True",
+                         "function": "test_preprocess_labels",
+                         "args": ["./speos/tests/files/dummy_graph/labels.tsv"],
+                         "kwargs": {}
+                         }]
+
+        mapping_file_path = "speos/tests/files/mappings.json"
+        with open(mapping_file_path, "w") as file:
+            json.dump(mapping, file)
+        gwasmapper = GWASMapper(mapping_file=mapping_file_path)
+        mappings = gwasmapper.get_mappings(tags="immune_dysregulation", fields="name")
+        adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
+
+        prepro = PreProcessor(config, mappings, adjacencies)
+        prepro.build_graph(features=False)
+        pos, neg = prepro.find_pos_and_neg_idx()
+        self.assertEqual(len(pos), 3)
+
+    def test_label_extension_other_symbol(self):
+        config = Config()
+        mapping = [{"name": "UNK-immune_dysregulation",
+                         "ground_truth": "Immune_Dysregulation_genes.bed",
+                         "features_file": "",
+                         "match_type": "perfect",
+                         "significant": "True",
+                         "function": "test_preprocess_labels",
+                         "args": ["./speos/tests/files/dummy_graph/labels_ensembl.tsv"],
+                         "kwargs": {},
+                         "symbol": "ensembl"}]
+
+        mapping_file_path = "speos/tests/files/mappings.json"
+        with open(mapping_file_path, "w") as file:
+            json.dump(mapping, file)
+        gwasmapper = GWASMapper(mapping_file=mapping_file_path)
+        mappings = gwasmapper.get_mappings(tags="immune_dysregulation", fields="name")
+        adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
+
+        prepro = PreProcessor(config, mappings, adjacencies)
+        prepro.build_graph(features=False)
+        pos, neg = prepro.find_pos_and_neg_idx()
+        self.assertEqual(len(pos), 3)
 
 if __name__ == '__main__':
     unittest.main(warnings='ignore')

@@ -289,11 +289,13 @@ class PreProcessor:
         feature_df_list = [pd.read_csv(mapping["features_file"], sep=" ", header=0)
                            for mapping in self.mapping_list if mapping["features_file"] != ""]
 
-        columns = feature_df_list[0].columns.tolist()
-        column_indices = [columns.index(feature) for feature in gwas_features]
+        if len(feature_df_list) > 0:
 
-        for feature_df in feature_df_list:
-            feature_df.index = feature_df["GENE"].tolist()
+            columns = feature_df_list[0].columns.tolist()
+            column_indices = [columns.index(feature) for feature in gwas_features]
+
+            for feature_df in feature_df_list:
+                feature_df.index = feature_df["GENE"].tolist()
 
         if use_embeddings is None:
             use_embeddings = self.config.input.use_embeddings
@@ -373,16 +375,31 @@ class PreProcessor:
         if not self.graph_is_built:
             self.build_graph(features=False)
 
-        mendelian_genes = pd.read_csv(self.mapping_list[0]["ground_truth"], sep="\t", names=[
+        try:
+            known_positives_set = getattr(hooks, self.mapping_list[0]["function"])(*self.mapping_list[0]["args"], **self.mapping_list[0]["kwargs"])
+        except KeyError:
+            known_positives_df = pd.read_csv(self.mapping_list[0]["ground_truth"], sep="\t", names=[
                                       "chromosome", "start", "end", "symbol", "strand"])
+            known_positives_set = set(known_positives_df["symbol"].tolist())
 
-        mendelian_genes_set = set(mendelian_genes["symbol"].tolist())
+        try:
+            if self.mapping_list[0]["symbol"].lower() == "entrez":
+                translator = self.entrez2id
+            elif self.mapping_list[0]["symbol"].lower() == "ensembl":
+                translator = self.ensembl2id
+            elif self.mapping_list[0]["symbol"].lower() == "hgnc":
+                raise KeyError
+            else:
+                raise ValueError("We only support translation of extension-labels from entrez and ensembl to hgnc.")
+            known_positives_set = set([self.id2hgnc[translator[symbol]] for symbol in known_positives_set])
+        except KeyError:
+            pass
 
         self.pos_idx = []
         self.neg_idx = []
 
         for node in self.G.nodes(data=True):
-            if node[1][self.hgnc_key] in mendelian_genes_set:
+            if node[1][self.hgnc_key] in known_positives_set:
                 node[1]["y"] = 1
                 self.pos_idx.append(node[0])
             else:

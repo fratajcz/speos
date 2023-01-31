@@ -3,6 +3,117 @@ Extending Speos
 
 The strength of Speos lies in its ability to be customized and extended. See the following sections on how to add your own network, additional GWAS data and new phenotype labels!
 
+Adding New Label Sets
+---------------------
+
+You might be aware that we have already implemented core genes for 20 different disorders. You can check  :doc:`here <./configuration>` if you are unsure what they are and how to use them.
+However, chances are you have your very own set of assumed core genes that you want to use as known positives for training with Speos.
+
+To do that, follow these instructions:
+
+What Are Label Sets?
+~~~~~~~~~~~~~~~~~~~~
+
+Label sets are nothing other than a list of gene labels that are used as ground truth ("real") positives during training. In our minimal example here, our label set consists only of three genes which we store at ``extensions/labels.txt``:
+
+.. code-block:: text
+
+    BEND7
+    POTEF
+    AADAC
+
+Note that these genes are represented by HGNC symbols. Other symbols, such as Entrez and Ensembl IDs are also possible. 
+
+.. note:: 
+
+    In this example we use only three positive genes for brevity. Be aware that our smallest tested label set contains roughly 120 genes. From how the training works we estimate that 100 genes should be enough, but more are definitely beneficial.
+
+How Do I Add My Label Set?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Before you start, the file ``extensions/mapping.json`` should be empty except for an empty JSON list ("[]"). If the list is not empty but already contains a definition, just add to that list by seperating the entries (enclosed in "{}") with a comma. This is the place where we will put our definition for the label set.
+Open the file and edit it to the following:
+
+.. code-block:: json
+
+    [{"name": "UNK-my_labels", 
+      "ground_truth": "my_labels", 
+      "features_file": "", 
+      "function": "test_preprocess_labels", 
+      "args": ["./extensions/labels.txt"], 
+      "kwargs": {}
+      }]
+
+In this case, it is more or less irrelevant what you put in as `name` or `ground_truth`, as long as its not empty. The `features_file` is set to an empty string, unless you want to add GWAS data, which you can learn about further below.
+Since Speos can't know how you structured the labels in your file, you have to give it a function that reads the label file and returns the labels as a python set. `args` and `kwargs` defines the arguments and keyword arguments which are fed to the function in order to return the right labels.
+To make this work, all we now have to do is write the function `test_preprocess_labels` which reads `./extensions/labels.txt` from `args` and returns a set of HGNC identifiers. We add this function definition to the file ``extensions/preprocessing.py``:
+
+.. code-block:: python
+
+    def test_preprocess_labels(path) -> set:
+        import pandas as pd
+
+        return set(pd.read_csv(path, sep="\t", header=None, names=["0"])["0"].tolist())
+
+This function takes the path stored in `args`, reads the file, extracts the only column and transforms the contents into a set before returning them. You can test if it works as follows:
+
+.. code-block:: console
+
+    $ python
+    Python 3.7.12 | packaged by conda-forge | (default, Oct 26 2021, 06:08:21) 
+    [GCC 9.4.0] on linux
+    Type "help", "copyright", "credits" or "license" for more information.
+    >>> from extensions.preprocessing import test_preprocess_labels
+    >>> test_preprocess_labels("./extensions/labels.txt")
+    {'POTEF', 'BEND7', 'AADAC'}
+
+Just what we wanted. Now, we can go ahead and actually use them for training.
+
+How Do I Use My Label Set?
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Now that the label sat "my_labels" has been added to the extensions, lets craft a config file to use them.
+Lets create the file ``config_my_labels.yaml`` and fill it with the following content:
+
+.. code-block:: text
+
+    name: test_adjacency_multiple
+
+    input:
+        tag: my_labels
+
+This will now sift through all extensions label definitions and inbuilt label definitions and return those with "my_labels" in the field `name`. Be careful to not use the same name twice, as duplicate entries are not allowed!
+
+Lets test or newly added label set by running a quick training job:
+
+.. code-block:: console
+
+    $python training.py -c config_my_labels.yaml
+    test_my_labels 2023-01-31 16:41:46,549 [INFO] speos.experiment: Starting run test_my_labels
+    test_my_labels 2023-01-31 16:41:46,551 [INFO] speos.experiment: Cuda is available: False
+    test_my_labels 2023-01-31 16:41:46,551 [INFO] speos.experiment: CUDA set to auto, no CUDA device detected, setting to CPU
+    test_my_labels 2023-01-31 16:41:46,551 [INFO] speos.experiment: Using device(s): ['cpu']
+    test_my_labels 2023-01-31 16:41:46,559 [INFO] speos.preprocessing.preprocessor: Using Adjacency matrices: ['BioPlex30293T']
+    test_my_labels 2023-01-31 16:41:46,560 [INFO] speos.preprocessing.preprocessor: Using 1 mappings with ground truth my_labels 
+    Processing...
+    test_my_labels 2023-01-31 16:41:57,257 [INFO] speos.preprocessing.preprocessor: Name: 
+    Type: MultiDiGraph
+    Number of nodes: 18638
+    Number of edges: 185052
+    Average in degree:   9.9287
+    Average out degree:   9.9287
+    Done!
+    test_my_labels 2023-01-31 16:41:57,575 [INFO] speos.preprocessing.preprocessor: Number of positives in ground truth my_labels: 3
+    test_my_labels 2023-01-31 16:41:58,066 [INFO] speos.preprocessing.datasets: Loading Processed Data from ./data/processed/test_my_labels.pt
+    test_my_labels 2023-01-31 16:41:58,130 [INFO] speos.preprocessing.datasets: Data(x=[18638, 72], edge_index=[2, 185052], y=[18638], train_mask=[18638], test_mask=[18638], val_mask=[18638])
+    test_my_labels 2023-01-31 16:41:58,214 [INFO] speos.experiment: Cuda is available: False
+    test_my_labels 2023-01-31 16:41:58,214 [INFO] speos.experiment: CUDA set to auto, no CUDA device detected, setting to CPU
+    test_my_labels 2023-01-31 16:41:58,289 [INFO] speos.experiment: Created new ResultsHandler pointing to ./results/test_my_labels.h5
+    test_my_labels 2023-01-31 16:41:58,309 [INFO] speos.experiment: Received data with 3 train positives, 16771 train negatives, 0 val positives, 932 val negatives, 0 test positives and 932 test negatives
+
+As you can see from the logging output: It worked! We now have three labeled positives. As you can see trom the last line, though, all our positives have been partitioned to the training set, leaving none for the validation and test sets.
+This is of course impractical and would result in nonsense results. We therefore advise to have at least 100 true positives in your label set!
+
 Additonal Networks
 ------------------
 
