@@ -2,7 +2,7 @@ import numpy as np
 import os
 
 from speos.explanation import InputExplainer
-from speos.datasets import DatasetBootstrapper
+from speos.preprocessing.datasets import DatasetBootstrapper
 from speos.preprocessing.mappers import GWASMapper, AdjacencyMapper
 from speos.helpers import EarlyStopper, LRScheduler, CheckPointer
 from speos.utils.logger import setup_logger
@@ -37,13 +37,7 @@ class Experiment:
         logger.info("Starting run {}".format(self.name))
         logger.info("Using device(s): {}".format(self.devices))
 
-        mappings = GWASMapper().get_mappings(
-            config.input.tag, fields=config.input.field)
-
-        adjacencies = AdjacencyMapper(config.input.adjacency_mappings, blacklist=self.config.input.adjacency_blacklist).get_mappings(config.input.adjacency, fields=config.input.adjacency_field)
-
-        self.dataset = DatasetBootstrapper(
-            mappings, adjacencies, holdout_size=config.input.holdout_size, name=self.name, config=self.config).get_dataset()
+        self.dataset = DatasetBootstrapper(holdout_size=config.input.holdout_size, name=self.name, config=self.config).get_dataset()
 
         node_data = self.dataset.data
 
@@ -53,17 +47,8 @@ class Experiment:
             input_dim = node_data.x.shape[1]
 
         self.model = ModelBootstrapper(
-            config, input_dim, len(adjacencies)).get_model()
+            config, input_dim, self.dataset.num_relations).get_model()
 
-        """
-        if self.dataset.is_multigraph:
-            try:
-                logger.info("Detected Heterogeneous Dataset, converting {} to a heterogeneous Model:".format(self.model.architectures[-1]))
-                self.model.architectures[-1] = to_hetero(self.model.architectures[-1], self.dataset.data.metadata(), aggr="sum")
-            except AssertionError:
-                logger.error("Failed converting {} to a heterogeneous Model. Exiting.".format(self.config.model.architecture))
-                exit(1)
-        """
         logger.info(self.model.architectures[-1])
 
         self.model = self.model.to(self.devices[0])

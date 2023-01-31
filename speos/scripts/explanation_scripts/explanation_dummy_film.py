@@ -1,6 +1,6 @@
 from speos.utils.config import Config
 from speos.models import ModelBootstrapper
-from speos.datasets import DatasetBootstrapper
+from speos.preprocessing.datasets import DatasetBootstrapper
 from speos.preprocessing.mappers import GWASMapper, AdjacencyMapper
 import speos.utils.nn_utils as nn_utils
 from speos.helpers import CheckPointer

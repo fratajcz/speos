@@ -15,4 +15,13 @@
     "sep": " ",
     "symbol": "hgnc",
     "weight": "None",
+    "directed": "False"},
+{"name": "DummyUndirectedOtherGraph",
+    "type": "ppi",
+    "file_path": "speos/tests/files/dummy_graph/edgelist.txt",
+    "source": "geneA",
+    "target": "geneB",
+    "sep": " ",
+    "symbol": "hgnc",
+    "weight": "None",
     "directed": "False"}]

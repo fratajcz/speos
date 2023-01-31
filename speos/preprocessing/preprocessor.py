@@ -591,3 +591,6 @@ class PreProcessor:
                 logger.warning("Could not find function {} for additional input {} in extensions/preprocessing.py".format(addtl_input["function"], addtl_input["name"]))    
 
             logger.info("Using {} additional node data sources: {}".format(len(self.additional_inputs), [input["name"] for input in self.additional_inputs]))
+
+    def get_num_relations(self):
+        return len(self.adjacency_list)

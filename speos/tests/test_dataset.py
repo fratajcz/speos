@@ -1,7 +1,7 @@
 import unittest
 from speos.utils.config import Config
 from speos.preprocessing.mappers import GWASMapper, AdjacencyMapper
-from speos.datasets import MultiGeneDataset, GeneDataset
+from speos.preprocessing.datasets import MultiGeneDataset, GeneDataset
 import shutil
 
 
@@ -24,25 +24,21 @@ class MultiGeneDatasetTest(unittest.TestCase):
         pass
 
     def test_one_adjacency(self):
-        mappings = GWASMapper(self.config.input.gene_sets, self.config.input.gwas).get_mappings(
-            self.config.input.tag, fields=self.config.input.field)
+        
+        config = self.config.copy()
+        config.input.adjacency = "BioPlex 3.0 293T"
 
-        tag = "BioPlex 3.0 293T"
-        adjacencies = AdjacencyMapper(self.config.input.adjacency_mappings).get_mappings(tag)
+        self.dataset = MultiGeneDataset(holdout_size=self.config.input.holdout_size, name=self.config.name, config=config)
 
-        self.dataset = MultiGeneDataset(
-            mappings, adjacencies, holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config)
+        self.assertEqual(self.dataset.num_relations, 1)
 
     def test_multiple_adjacencies(self):
-        mappings = GWASMapper(self.config.input.gene_sets, self.config.input.gwas).get_mappings(
-            self.config.input.tag, fields=self.config.input.field)
+        config = self.config.copy()
+        config.input.adjacency = "BioPlex"
 
-        tag = "BioPlex"
-        adjacencies = AdjacencyMapper(self.config.input.adjacency_mappings).get_mappings(tag)
+        self.dataset = MultiGeneDataset(holdout_size=self.config.input.holdout_size, name=self.config.name, config=config)
 
-        self.dataset = MultiGeneDataset(
-            mappings, adjacencies, holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config)
-
+        self.assertEqual(self.dataset.num_relations, 2)
 
 class GeneDatasetTest(unittest.TestCase):
 
@@ -63,24 +59,21 @@ class GeneDatasetTest(unittest.TestCase):
         pass
 
     def test_one_adjacency(self):
-        mappings = GWASMapper(self.config.input.gene_sets, self.config.input.gwas).get_mappings(
-            self.config.input.tag, fields=self.config.input.field)
+        config = self.config.copy()
+        config.input.adjacency = "BioPlex 3.0 293T"
 
-        tag = "BioPlex 3.0 293T"
-        adjacencies = AdjacencyMapper(self.config.input.adjacency_mappings).get_mappings(tag)
+        self.dataset = GeneDataset(holdout_size=self.config.input.holdout_size, name=self.config.name, config=config)
 
-        self.dataset = GeneDataset(
-            mappings, adjacencies, holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config)
+        self.assertEqual(self.dataset.num_relations, 1)
 
     def test_multiple_adjacencies(self):
-        mappings = GWASMapper(self.config.input.gene_sets, self.config.input.gwas).get_mappings(
-            self.config.input.tag, fields=self.config.input.field)
+        config = self.config.copy()
+        config.input.adjacency = "BioPlex"
 
-        tag = "BioPlex"
-        adjacencies = AdjacencyMapper(self.config.input.adjacency_mappings).get_mappings(tag)
+        self.dataset = GeneDataset(holdout_size=self.config.input.holdout_size, name=self.config.name, config=config)
 
-        self.dataset = GeneDataset(
-            mappings, adjacencies, holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config)
+        # this results in 2 relations by definition, but they are not distinguishable in the data, for this use MultiGeneDataset
+        self.assertEqual(self.dataset.num_relations, 2)
 
 
 if __name__ == '__main__':

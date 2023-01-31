@@ -1,4 +1,4 @@
-from datasets import Preprocessor
+from speos.preprocessing.datasets import Preprocessor
 import pandas as pd
 import numpy as np
 import umap

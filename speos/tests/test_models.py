@@ -2,7 +2,7 @@ import unittest
 from speos.utils.config import Config
 from speos.models import ModelBootstrapper
 from speos.architectures import RelationalGeneNetwork
-from speos.datasets import DatasetBootstrapper, MultiGeneDataset, GeneDataset
+from speos.preprocessing.datasets import DatasetBootstrapper, MultiGeneDataset, GeneDataset
 from speos.experiment import Experiment, InferenceEngine
 from speos.preprocessing.mappers import GWASMapper, AdjacencyMapper
 from torch_geometric.nn import GCNConv

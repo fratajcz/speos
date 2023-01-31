@@ -1,5 +1,5 @@
 from speos.benchmark import TestBench
-from speos.datasets import DatasetBootstrapper
+from speos.preprocessing.datasets import DatasetBootstrapper
 from speos.preprocessing.mappers import GWASMapper, AdjacencyMapper
 import numpy as np
 
