@@ -54,7 +54,7 @@ class GWASMapperTest(unittest.TestCase):
                          "features_file": "FOO.genes.out",
                          "match_type": "perfect",
                          "significant": "True"}]
-        self.mapper = GWASMapper(self.config.input.gene_sets, self.config.input.gwas, mapping_file=self.mapping_file_path)
+        self.mapper = GWASMapper(mapping_file=self.mapping_file_path)
 
     def tearDown(self) -> None:
         os.remove(self.mapping_file_path)
@@ -103,6 +103,25 @@ class GWASMapperTest(unittest.TestCase):
 
         os.remove(mapping_file_path)
 
+    def test_empty_list_labels(self):
+        mapping = [{"name": "UNK-immune_dysregulation",
+                      "ground_truth": "Immune_Dysregulation_genes.bed",
+                      "features_file": "",
+                      "match_type": "perfect",
+                      "significant": "False"}]
+
+        #GWASMapper(self.config.input.gene_sets, self.config.input.gwas, mapping_file=self.mapping_file_path, extension_mappings=mapping_file_path)
+        mapping_file_path = "speos/tests/files/mappings_extension.json"
+        with open(mapping_file_path, "w") as file:
+            json.dump(mapping, file)
+
+        mapper = GWASMapper(mapping_file=mapping_file_path)
+
+        after_mappings = mapper.get_mappings(tags="immune_dysregulation", fields="name")
+
+        self.assertEqual(1, len(after_mappings))
+
+        os.remove(mapping_file_path)
 
 class AdjacencyMapperTest(unittest.TestCase):
     def setUp(self):

@@ -78,6 +78,7 @@ class GWASMapper(Mapper):
         super().__init__(**kwargs)
 
         self.mapping_list = []
+        self.backup_mapping = None
 
         for mapping in [mapping_file, extension_mappings]:
             with open(mapping, "r") as file:
@@ -88,9 +89,18 @@ class GWASMapper(Mapper):
         for mapping in self.mapping_list:
             if mapping["features_file"] == "":
                 mappings_to_delete.append(mapping)
+                self.backup_mapping = mapping
 
         for mapping in mappings_to_delete:
             del self.mapping_list[self.mapping_list.index(mapping)]
+
+    def get_mappings(self, *args, **kwargs):
+        """ Returns mappings fitting the description. If the description returns no mappings due to missing GWAS files, just return one of them so we have the mapping to the labels """
+
+        mappings = super().get_mappings(*args, **kwargs)
+        if len(mappings) == 0:
+            mappings = [self.backup_mapping]
+        return mappings
             
 
 class AdjacencyMapper(Mapper):
