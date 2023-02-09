@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='speos',
-    version='0.2.2',
+    version='0.2.3',
     author='Florin Ratajczak',
     author_email='florin.ratajczak@helmholtz-muenchen.de',
     description='We good to go',
@@ -17,6 +17,7 @@ setup(
     },
     license='MIT',
     packages=find_packages(exclude=["speos.scripts","speos.tests"]),
+    package_data={'': ['LICENSE.md', "speos/adjacencies.json", "speos/mapping.json", "speos/utils/config_default.yaml"]},
     #package_dir={"": "coregenes"},
     install_requires=[],
 )

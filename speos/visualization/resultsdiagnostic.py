@@ -14,6 +14,10 @@ parser.add_argument('--config', "-c", type=str,
                     help='Path to the config that should be used for the run.')
 parser.add_argument('--cutoff', "-k", type=int, default=1,
                     help='cutoff convergence score.')
+parser.add_argument('--comparison', "-d", type=str, default=">=",
+                    help='comparison operacor for cutoff, either ">=" or "==".')
+parser.add_argument('--handle', type=int, default=0,
+                    help='if --comparison "==", how to handle all genes with CS != cutoff. 0: exclude none, 1: exclude higher CS, 2: exclude all with CS > 0')
 
 args = parser.parse_args()
 
@@ -37,6 +41,29 @@ class ResultsDiagnostic(GraphDiagnostic):
         with open(os.path.join(self.config.pp.save_dir, str(self.config.name) + "outer_results.json"), "r") as file:
             self.results = json.load(file)[0]
 
+    def get_candidates(self, n = None, comparison = None):
+        global args
+        if n is None:
+            n = args.cutoff 
+        if comparison is None:
+            comparison = args.comparison
+        if comparison == "==":
+            assert args.handle in [0,1,2], ("Can only use values 0, 1 or 2 for handle argument")
+
+        all_keys = list(self.prepro.hgnc2id.keys())
+
+        mighty_keys = []
+        for key in all_keys:
+            if key in self.results.keys():
+                if comparison == "==":
+                    if self.results[key] == args.cutoff:
+                        mighty_keys.append(key)
+                elif comparison == ">=":
+                    if self.results[key] >= args.cutoff:
+                        mighty_keys.append(key)
+        return mighty_keys
+        
+
     def get_degrees(self, graph=None):
         if graph is None:
             graph = self.G
@@ -47,9 +74,10 @@ class ResultsDiagnostic(GraphDiagnostic):
         disconnected_and_negative = 0
         bins = {convergence_score: [] for convergence_score in range(12)}
         global args
+        candidates = set(self.get_candidates())
         for key in all_keys:
             degree = graph.degree[self.prepro.hgnc2id[key]]
-            if key in self.results.keys() and self.results[key] >= args.cutoff:
+            if key in candidates:
                 bins[self.results[key]].append(degree)
                 if degree > 0:
                     connected_and_positive += 1
@@ -71,7 +99,7 @@ class ResultsDiagnostic(GraphDiagnostic):
 
         return bins
 
-    def get_homophily(self, graph=None):
+    def get_homophily_per_cs(self, graph=None):
         import numpy as np
         if graph is None:
             graph = self.G
@@ -92,12 +120,12 @@ class ResultsDiagnostic(GraphDiagnostic):
 
         return bins_absolute, bins_relative
 
-    def plot_homophily(self, graph=None):
+    def plot_homophily_per_cs(self, graph=None):
         import seaborn as sns
         import matplotlib.pyplot as plt
         import numpy as np
         from scipy.stats import spearmanr
-        absolute, relative = self.get_homophily()
+        absolute, relative = self.get_homophily_per_cs()
         for i, (method, bins) in enumerate(zip(["Absolute", "Relative"], (absolute, relative))):
             fig, ax = plt.subplots()
             x = [[bin_number] * len(bin_content) for bin_number, bin_content in bins.items()]
@@ -132,7 +160,19 @@ class ResultsDiagnostic(GraphDiagnostic):
         ax.text(1, np.max(y) - (0.05 * (np.max(y) - np.min(y))), "r={:.2f}, p={:.3f}".format(r, p))
         plt.savefig("Results_degrees_{}.png".format(self.config.name), dpi=450)
 
+    def plot_results_homophily(self):
+        candidates = set(self.get_candidates())
+        global args
+        graph = self.G.copy()
+        for node in graph.nodes(data=True):
+            if node[1]["hgnc"] in candidates:
+                node[1]["y"] = 1
+            else:
+                node[1]["y"] = 0
 
+        fig, ax = super().check_homophily(graph = graph) 
+        
+        fig.savefig("homophily_results_{}_{}_{}_handle{}.png".format(self.config.name, args.comparison, args.cutoff, args.handle), dpi=350)
 
 
 
@@ -140,5 +180,6 @@ config = Config()
 config.parse_yaml(args.config)
 diagnostic = ResultsDiagnostic(config=config)
 
-diagnostic.plot_degrees()
-diagnostic.plot_homophily()
+#diagnostic.plot_degrees()
+#diagnostic.plot_homophily()
+diagnostic.plot_results_homophily()
