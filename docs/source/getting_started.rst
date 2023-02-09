@@ -58,6 +58,7 @@ Next, you might want to create a new conda env.
 Speos is built on Pytorch Geometric which in turn is built on Pytorch. To make sure Speos runs correctly, you must first install Pytorch and Pytorch geometric.
 Note that these following lines install the CPU version of the packages. Since the GPU version depend very much on the hardware configuration of the system, 
 please see how to install `Pytorch <https://pytorch.org/get-started/locally/>`_ and `Pytorch Geoemtric <https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html>`_ GPU versions for your hardware stack. 
+If your machine/cluster has GPU capabilities, it is highly recommended to use the respective CUDA versions, as this will speed up the training a lot!
 
 .. code-block:: console
 
@@ -70,9 +71,9 @@ please see how to install `Pytorch <https://pytorch.org/get-started/locally/>`_ 
 
     .. code-block:: console
 
-        $ pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric==2.0.4 -f https://data.pyg.org/whl/torch-1.8.0+cpu.html
+        $ pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric==2.0.4 -f https://data.pyg.org/whl/torch-{1}.0+{2}.html
 
-    instead.
+    instead. Replace the placeholder ${1}$ with the pytorch version you just installed (i.e. 1.8, 1.13 etc) and ${2}$ with the CUDA version (i.e. cpu for CPU only or cu116 for CUDA 11.6 etc.)
 
 Then, install the remaining requirements with pip:
 
