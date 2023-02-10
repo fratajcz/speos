@@ -71,6 +71,17 @@ Model Settings
 Most of Speos' usefulness is that it lets you pick, choose and configure across a wide range of models, including GNNs, MLPs and non-neural models.
 To accomplish that, the config file hosts an array of settings that can be tweaked to fit your needs. Here, we will walk through the most important of them.
 
+The general model architecture is shown here in A:
+
+.. image:: https://raw.githubusercontent.com/fratajcz/speos/master/docs/img/S6.png
+  :width: 600
+  :alt: Model Architecture
+
+We can not only modulate the depth of the modules r, s and t, we can also modulate the way the features are aggregated in the message passing module by choosing graph convolution layers. Furthermore, we can modify the width, i.e. the hidden dimension of the modules.
+Finally, we can choose different information flows (as shown in C).
+
+Let's walk through the relevant settings and see what they mean.
+
 General
 ~~~~~~~
 
