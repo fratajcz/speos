@@ -1,0 +1,16 @@
+name: cardiovascular_bioplex
+
+crossval:
+  n_folds: 4
+
+input:
+  adjacency: BioPlex30293T
+  tag: Cardiovascular_Disease
+
+model:
+  pre_mp:
+    n_layers: 2
+  mp:
+    n_layers: 2
+  post_mp:
+    n_layers: 2   

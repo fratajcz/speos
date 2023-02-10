@@ -1,0 +1,28 @@
+name: layers
+
+metrics: 
+  - mean_rank_filtered
+  - auroc
+  - auprc
+
+parameters:
+  - name: gcn
+    model:
+      mp:
+        type: gcn
+  - name: gat
+    model:
+      mp:
+        type: gat
+  - name: gin
+    model:
+      mp:
+        type: gin
+  - name: graphsage
+    model:
+      mp:
+        type: sage
+  - name: mlp
+    model:
+      mp:
+        n_layers: 0

@@ -16,7 +16,7 @@ Welcome to Speos's documentation!
    api
    configuration
    extension
-   inputs
+   benchmarking
 
 
 
