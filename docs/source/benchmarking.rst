@@ -131,12 +131,12 @@ Once your benchmark is finished, you should end up with a results file that cont
     :caption: cardiovascular_bioplex_layers.tsv
 
     	mean_rank_filtered	auroc	auprc
-    bm_disorder_gpu_benchmark_breadthrep0_fold_0	6058.653846153846	0.6573416453300679	0.016763970872865765
-    bm_disorder_gpu_benchmark_breadthrep0_fold_1	3677.68	0.7798784370477568	0.04156103030017034
-    bm_disorder_gpu_benchmark_breadthrep0_fold_2	6085.64	0.6379849449913145	0.0181314460851689
-    bm_disorder_gpu_benchmark_breadthrep0_fold_3	4449.44	0.7437521713954836	0.019851396078300727
-    bm_disorder_gpu_benchmark_breadthrep1_fold_0	5781.961538461538	0.6683179338750974	0.017543154801648458
-    bm_disorder_gpu_benchmark_breadthrep1_fold_1	3671.04	0.7760115774240232	0.029372573541881476
+    cardiovascular_bioplex_layers_gcnrep0_fold0	6058.653846153846	0.6573416453300679	0.016763970872865765
+    cardiovascular_bioplex_layers_gcnrep0_fold_1	3677.68	0.7798784370477568	0.04156103030017034
+    cardiovascular_bioplex_layers_gcnrep0_fold_2	6085.64	0.6379849449913145	0.0181314460851689
+    cardiovascular_bioplex_layers_gcnrep0_fold_3	4449.44	0.7437521713954836	0.019851396078300727
+    cardiovascular_bioplex_layers_gcnrep1_fold_0	5781.961538461538	0.6683179338750974	0.017543154801648458
+    cardiovascular_bioplex_layers_gcnrep1_fold_1	3671.04	0.7760115774240232	0.029372573541881476
 
 you can now go ahead, read the table and produce some informative figures. Since you know that we have 16 models per setting, each 16-row block belongs to one setting. Here is the necessary code in python:
 
