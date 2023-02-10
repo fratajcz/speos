@@ -211,7 +211,7 @@ you can now go ahead, read the table and produce some informative figures. Since
 
 Which produces the following figure:
 
-.. image:: https://github.com/fratajcz/speos/blob/master/hpo_configs/demo/benchmark_cardiovascular_bioplex_layers.png
+.. image:: https://raw.githubusercontent.com/fratajcz/speos/master/hpo_configs/demo/benchmark_cardiovascular_bioplex_layers.png
   :width: 600
   :alt: Benchmark Results
 
