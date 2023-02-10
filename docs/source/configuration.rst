@@ -13,7 +13,16 @@ So, lets first go through the most basic settings that let you configure the ess
 Input Data
 ----------
 
-There are several ways in which the input data can be changed using the respective keys in the config file. Lets go through the most important settings you should know about.
+.. image:: https://raw.githubusercontent.com/fratajcz/speos/master/docs/img/input.png
+  :width: 600
+  :alt: Input Data
+
+There are several ways in which the input data can be changed using the respective keys in the config file. With Speos, input data can fundamentally be split into three categories: Labels, node features and networks. 
+Labels are shown as nodes of different color, and in Speos nodes are either known positives (usually Mendelian disorder genes) or they are unlabeled genes. The goal is to extract likely positive candidates from the unlabeled genes.
+The second type are node feautures, which are shown as stacks above the nodes. They consist of disease-specific feauters (from GWAS) and disease unspecific features (median gene expression per tissue).
+The last data type, the networks, are the connections between the genes. They can have directionality and different types. 
+
+Lets go through the most important settings you should know when manipulating input data.
 
 Adjacency Matrices (Networks)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
