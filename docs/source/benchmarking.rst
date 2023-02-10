@@ -13,6 +13,7 @@ Let's say you want to predict core genes for the ground truth gene set of Cardio
 .. code-block:: text
     :caption: config_cardiovascular_bioplex.yaml
     :linenos:
+
     name: cardiovascular_bioplex
 
     crossval:
@@ -37,6 +38,7 @@ Now, let's define our parameter file which contains the settings that should cha
 .. code-block:: text
     :linenos:
     :caption: parameters_layers.yaml
+
     name: layers
 
     metrics: 
@@ -77,6 +79,7 @@ Starting a Benchmark Run
 You can now go ahead and start a benchmark run from the command line:
 
 .. code-block:: console
+
     python benchmarking.py -c config_cardiovascular_bioplex.yaml -p parameters_layers.yaml
 
 This will start a 4-fold crossvalidation for each of the total of five parameter settings that we have described above. For statistical rigor, each fold is repeated 4 times, so that we obtain 4 * 4 * 5 = 80 models in total, 16 per parameter setting.
@@ -87,6 +90,7 @@ For example, for the first 16 models, the model description in the logging outpu
 
 .. code-block:: text
     :caption: logging output
+
     cardiovascular_bioplex_layers_gcnrep0_fold_0 2023-02-10 14:18:29,616 [INFO] speos.experiment (0): GeneNetwork(
     (pre_mp): Sequential(
         (0): Linear(96, 50, bias=True)
@@ -125,6 +129,7 @@ Once your benchmark is finished, you should end up with a results file that cont
 .. code-block:: text
     :linenos:
     :caption: cardiovascular_bioplex_layers.tsv
+    
     	mean_rank_filtered	auroc	auprc
     bm_disorder_gpu_benchmark_breadthrep0_fold_0	6058.653846153846	0.6573416453300679	0.016763970872865765
     bm_disorder_gpu_benchmark_breadthrep0_fold_1	3677.68	0.7798784370477568	0.04156103030017034
@@ -137,6 +142,7 @@ you can now go ahead, read the table and produce some informative figures. Since
 
 .. code-block:: python
     :linenos:
+
     import pandas as pd 
     import matplotlib.pyplot as plt
 
@@ -177,7 +183,7 @@ Which produces the following figure:
 
 
 For mean rank, lowest is best, while for AUROC and AUPRC, highest is best. As you can see, the MLP clearly performs best, with GraphSAGE being a close follower. This is likely due to GraphSAGEs ability to seperate the self-information from the neighborhood information and thus being aple to replicate an MLP.
-As we can see here relatively clearly, the network that we have chosen, Bioplex 3.0 293T, is not very favorable for the selected graph convolutions, as the MLP performs best and does not use it. 
+As we can see here relatively clearly, the network that we have chosen, Bioplex 3.0 293T, is not very favorable for the selected graph convolutions, as the MLP which does not use it performs best. 
 
 With this type of analysis, it is fast and easy to ascertain which parts of the input or neural network should be placed more attention upon. Here, using a different network or tesiting a wider range of graph convolutions might improve performance.
 
