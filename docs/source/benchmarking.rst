@@ -211,9 +211,12 @@ you can now go ahead, read the table and produce some informative figures. Since
 
 Which produces the following figure:
 
+.. image:: https://github.com/fratajcz/speos/blob/master/hpo_configs/demo/benchmark_cardiovascular_bioplex_layers.png
+  :width: 600
+  :alt: Benchmark Results
 
-For mean rank, lowest is best, while for AUROC and AUPRC, highest is best. As you can see, the MLP clearly performs best, with GraphSAGE being a close follower. This is likely due to GraphSAGEs ability to seperate the self-information from the neighborhood information and thus being aple to replicate an MLP.
-As we can see here relatively clearly, the network that we have chosen, Bioplex 3.0 293T, is not very favorable for the selected graph convolutions, as the MLP which does not use it performs best. 
+For mean rank, lowest is best, while for AUROC and AUPRC, highest is best. As you can see, the MLP performs best overall, while GCN performs well measured in mean rank with GraphSAGE as follow-up. This is likely due to GraphSAGEs ability to seperate the self-information from the neighborhood information and thus being aple to replicate an MLP.
+As we can see here relatively clearly, the network that we have chosen, Bioplex 3.0 293T, is not very favorable for the selected graph convolutions, as the MLP which does not use it often performs best. 
 
 With this type of analysis, it is fast and easy to ascertain which parts of the input or neural network should be placed more attention upon. Here, using a different network or tesiting a wider range of graph convolutions might improve performance.
 
