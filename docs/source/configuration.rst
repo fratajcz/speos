@@ -78,7 +78,8 @@ The general model architecture is shown here in A:
   :alt: Model Architecture
 
 We can not only modulate the depth of the modules r, s and t, we can also modulate the way the features are aggregated in the message passing module by choosing graph convolution layers. Furthermore, we can modify the width, i.e. the hidden dimension of the modules.
-Finally, we can choose different information flows (as shown in C).
+Furthermore, we can choose different information flows (as shown in C).
+Finally, we can choose to not use graph convolutions at all, or ditch the neural network approach alltogether and use logistic regression or random forest models instead!
 
 Let's walk through the relevant settings and see what they mean.
 
@@ -95,10 +96,10 @@ From the default config (excerpt):
         args: []                      # args passed to model initialization
         kwargs: {}                    # kwargs passed to model initialization
         
-First, the `model` keyword changes the highest-order model abstraction. All neural models (GNNs, MLPs etc) that have to be trained using gradient descent fall into the `SimpleModel` category. 
-On top of that, you also have `LogisticRegressionModel`, `RandomForestModel` and `SupportVectorModel` for which the respective scikit-learn models will be created and trained. Most of the settings we will be discussing here are only relevant for `SimpleModel`.
-`architecture` is only relevant for `model: SimpleModel` and defines the specific neural network architecture that we will use. All our experiments use the `GeneNetwork` architecture, which is automatically changed to `RelationalGeneNetwork` if we use more than one adjacency matrix.
-If you want to implement your own neural network from scratch, this is where you'd insert your model. `args` and `kwargs` lets you define additional arguments and keyword arguments for the initialization of the model.
+First, the :obj:`model` keyword changes the highest-order model abstraction. All neural models (GNNs, MLPs etc) that have to be trained using gradient descent fall into the :obj:`SimpleModel` category. 
+On top of that, you also have :obj:`LogisticRegressionModel`, :obj:`RandomForestModel` and :obj:`SupportVectorModel` for which the respective scikit-learn models will be created and trained. Most of the settings we will be discussing here are only relevant for :obj:`SimpleModel`.
+:obj:`architecture` is only relevant for :obj:`model: SimpleModel` and defines the specific neural network architecture that we will use. All our experiments use the :obj:`GeneNetwork` architecture, which is automatically changed to :obj:`RelationalGeneNetwork` if we use more than one adjacency matrix.
+If you want to implement your own neural network from scratch, this is where you'd insert your model. :obj:`args` and :obj:`kwargs` lets you define additional arguments and keyword arguments for the initialization of the model.
 
 Pre- and Post-Message Passing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -121,8 +122,8 @@ From the default config (excerpt):
             act:  elu
 
 
-`dim` lets you control the hidden dimension across the layers. while `n_layers` controls the number of layers. if you set it to 0, pre_mp will only contain one mandatory layer fitting the input space to the GNNs hidden space and post_mp will contain only two mandatory layers fitting the hidden space to the output space.
-`act` lets you defince the activation function (nonlinearity). At the moment, only elu and relu are implemented
+:obj:`dim` lets you control the hidden dimension across the layers. while :obj:`n_layers` controls the number of layers. if you set it to 0, pre_mp will only contain one mandatory layer fitting the input space to the GNNs hidden space and post_mp will contain only two mandatory layers fitting the hidden space to the output space.
+:obj:`act` lets you defince the activation function (nonlinearity). At the moment, only elu and relu are implemented
 
 Message Passing (GNN)
 ~~~~~~~~~~~~~~~~~~~~~
@@ -143,14 +144,14 @@ From the default config (excerpt):
             kwargs: {}
 
 This is where you can define which GNN layer you want to use, how many of them, and how the normalization should look like. 
-First, `type` can take 13 different forms: "gcn", "sgcn", "sage", "tag", "fac", "transformer", "cheb", "gcn2", "gin", "gat" and the relational layers "rgcn", "rgat" and "film".
+First, :obj:`type` can take 13 different forms: "gcn", "sgcn", "sage", "tag", "fac", "transformer", "cheb", "gcn2", "gin", "gat" and the relational layers "rgcn", "rgat" and "film".
 To see how they work in detail, check the `overview <https://pytorch-geometric.readthedocs.io/en/latest/modules/nn.html#convolutional-layers>`_ from PyTorch Geometric with the respective publications. Most of them should be easy to identify.
 
 If you feel like that is not enough and you would like to test a different layer, you can specify every layer that is implemented in `pyg_nn <https://pytorch-geometric.readthedocs.io/en/latest/modules/nn.html#convolutional-layers>`_ and refer to it by its class name (case sensitive). 
-For example, if you'd like to use `GraphConv` instead of `GCN`, then use `type: GraphConv` and Speos will try to dynamically import and use that layer. 
+For example, if you'd like to use :obj:`GraphConv` instead of :obj:`GCN`, then use :obj:`type: GraphConv` and Speos will try to dynamically import and use that layer. 
 
-`dim` and `n_layers` lets you define the width and depth of the GNN. `normalize` lets you pick either instance, graph or layer normalization applied after each GNN layer. To see their differences, check `here <https://pytorch-geometric.readthedocs.io/en/latest/modules/nn.html#normalization-layers>`_.
-`kwargs` lets you pass additional keyword arguments for to the layer initialization.
+:obj:`dim` and :obj:`n_layers` lets you define the width and depth of the GNN. :obj:`normalize` lets you pick either instance, graph or layer normalization applied after each GNN layer. To see their differences, check `here <https://pytorch-geometric.readthedocs.io/en/latest/modules/nn.html#normalization-layers>`_.
+:obj:`kwargs` lets you pass additional keyword arguments for to the layer initialization.
 
 
 Advanced
@@ -168,8 +169,8 @@ From the default config (excerpt):
         skip_mp: False    # boolean, use skip connections that skip message passing
         concat_after_mp: False  # boolean, concatenate pre_mp and mp features and feed them both into post_mp
 
-`loss` manages which loss will be used during training. All our experiments use binary cross entropy ("bce"), but feel free experimenting with mean squared error ("mse"), LambdaLoss ("lambdaloss"), NeuralNDCG ("neuralndcg"), ApproxNDCG ("approxndcg"), UPU ("upu") and NNPU ("nnpu") loss.
+:obj:`loss` manages which loss will be used during training. All our experiments use binary cross entropy ("bce"), but feel free experimenting with mean squared error ("mse"), LambdaLoss ("lambdaloss"), NeuralNDCG ("neuralndcg"), ApproxNDCG ("approxndcg"), UPU ("upu") and NNPU ("nnpu") loss.
 We have not found this to make a big difference, but it might in your case.
 
-`skip_mp` will add the output of pre-message passing to the output of the message passing before feeding it into the post-message passing, while `concat_after_mp` will concatenate the latent feature matrices instead of adding them.
+:obj:`skip_mp` will add the output of pre-message passing to the output of the message passing before feeding it into the post-message passing, while :obj:`concat_after_mp` will concatenate the latent feature matrices instead of adding them (as shown above in C).
 This will let information bypass the GNN which might be helpful for some layers and architectures.
