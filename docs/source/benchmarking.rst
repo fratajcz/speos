@@ -153,15 +153,19 @@ Once your benchmark is finished, you should end up with a results file that cont
 
 .. code-block:: text
     :linenos:
-    :caption: cardiovascular_bioplex_layers.tsv
+    :caption: cardiovascular_bioplex_layers.tsv (excerpt)
 
     	mean_rank_filtered	auroc	auprc
-    cardiovascular_bioplex_layers_gcnrep0_fold0	6058.653846153846	0.6573416453300679	0.016763970872865765
-    cardiovascular_bioplex_layers_gcnrep0_fold_1	3677.68	0.7798784370477568	0.04156103030017034
-    cardiovascular_bioplex_layers_gcnrep0_fold_2	6085.64	0.6379849449913145	0.0181314460851689
-    cardiovascular_bioplex_layers_gcnrep0_fold_3	4449.44	0.7437521713954836	0.019851396078300727
-    cardiovascular_bioplex_layers_gcnrep1_fold_0	5781.961538461538	0.6683179338750974	0.017543154801648458
-    cardiovascular_bioplex_layers_gcnrep1_fold_1	3671.04	0.7760115774240232	0.029372573541881476
+    cardiovascular_bioplex_layers_gcnrep0_fold_0	4564.465753424657	0.7219986772833233	0.09942463304915276
+    cardiovascular_bioplex_layers_gcnrep0_fold_1	4040.698630136986	0.756248526676969	0.10327804520571236
+    cardiovascular_bioplex_layers_gcnrep0_fold_2	4641.061643835616	0.7265872600120485	0.09991497873219687
+    cardiovascular_bioplex_layers_gcnrep0_fold_3	4694.719178082192	0.7177997066450142	0.10446095107626235
+    cardiovascular_bioplex_layers_gcnrep1_fold_0	4796.246575342466	0.7074864454281149	0.10056511842585074
+    cardiovascular_bioplex_layers_gcnrep1_fold_1	4171.1506849315065	0.7459352654600697	0.10285002052022037
+    cardiovascular_bioplex_layers_gcnrep1_fold_2	4637.979452054795	0.7265921710888184	0.10789162541122363
+    cardiovascular_bioplex_layers_gcnrep1_fold_3	4463.965753424657	0.7322366353230834	0.10068480452471852
+    cardiovascular_bioplex_layers_gcnrep2_fold_0	4598.13698630137	0.7225045181906282	0.10322404255324502
+    cardiovascular_bioplex_layers_gcnrep2_fold_1	4339.6164383561645	0.7373899918803531	0.10049459022467615
 
 you can now go ahead, read the table and produce some informative figures. Since you know that we have 16 models per setting, each 16-row block belongs to one setting. Here is the necessary code in python:
 

@@ -6,6 +6,10 @@ metrics:
   - auprc
 
 parameters:
+  - name: gcn
+    model:
+      mp:
+        type: gcn
   - name: gat
     model:
       mp:
