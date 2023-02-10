@@ -91,6 +91,8 @@ For example, for the first 16 models, the model description in the logging outpu
 .. code-block:: text
     :caption: logging output
 
+    [...]
+
     cardiovascular_bioplex_layers_gcnrep0_fold_0 2023-02-10 14:18:29,616 [INFO] speos.experiment (0): GeneNetwork(
     (pre_mp): Sequential(
         (0): Linear(96, 50, bias=True)
@@ -117,9 +119,32 @@ For example, for the first 16 models, the model description in the logging outpu
         (4): ELU(alpha=1.0)
         (5): InstanceNorm(50)
     )
-    )
+    
+    [...]
 
 While for subsequent runs, the ```(mp)``` part should change, for example to:
+
+.. code-block:: text
+    :caption: logging output (continued)
+
+    [...]
+
+    cardiovascular_bioplex_layers_gatrep0_fold_0 2023-02-10 14:42:13,746 [INFO] speos.experiment (0): GeneNetwork(
+
+    [...]
+
+    (mp): Sequential(
+        (0): GATConv(50, 50, heads=1)
+        (1): ELU(alpha=1.0)
+        (2): InstanceNorm(50)
+        (3): GATConv(50, 50, heads=1)
+        (4): ELU(alpha=1.0)
+        (5): InstanceNorm(50)
+    )
+
+    [...]
+
+Which shows that in the second setting, the GCN layers have been replaced by GAT layers!
 
 Evaluating the Benchmark
 ------------------------
