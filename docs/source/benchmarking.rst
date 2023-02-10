@@ -1,7 +1,7 @@
 Benchmarking
 ============
 
-Often in machine learning applications, a considerable amount of effort is placed on finding the right models and hyperparameters. While it is generally possible to make use of general hyperparameter search frameworks liek `[scikit-learn's ParamterGrid](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.ParameterGrid.html)`_ in order to manipulate Speos' configs and thus create a blueprint for a hyperparmeter search, we also have inbuilt benchmarking capabilities directly in Speos.
+Often in machine learning applications, a considerable amount of effort is placed on finding the right models and hyperparameters. While it is generally possible to make use of general hyperparameter search frameworks liek `scikit-learn's ParamterGrid <https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.ParameterGrid.html>`_ in order to manipulate Speos' configs and thus create a blueprint for a hyperparmeter search, we also have inbuilt benchmarking capabilities directly in Speos.
 
 To use the unbuilt benchmarking feautures, you will need to wrte two files, a config file that contains the shared settings between all runs (i.e. the label set etc.) and a parameter file which details the individual runs and which settings should deviate from the shared settings in which run. Let's come up with a simple benchmarking case together.
 
@@ -129,7 +129,7 @@ Once your benchmark is finished, you should end up with a results file that cont
 .. code-block:: text
     :linenos:
     :caption: cardiovascular_bioplex_layers.tsv
-    
+
     	mean_rank_filtered	auroc	auprc
     bm_disorder_gpu_benchmark_breadthrep0_fold_0	6058.653846153846	0.6573416453300679	0.016763970872865765
     bm_disorder_gpu_benchmark_breadthrep0_fold_1	3677.68	0.7798784370477568	0.04156103030017034
@@ -166,13 +166,14 @@ you can now go ahead, read the table and produce some informative figures. Since
     metric_names = ["Mean Rank (filtered)", "AUROC", "AUPRC"]
 
     for ax, metric, name in zip(axes, metrics, metric_names):
+        ax.grid(True, zorder=-1)
+
         for i, run in enumerate(metric):
             jitter = np.random.uniform(-0.2, 0.2, len(run)) + i
             bp = ax.boxplot(run, positions=[i], widths=0.8, showfliers=False, zorder=1)
             ax.scatter(jitter, run, zorder=2)
 
         ax.set_ylabel(name)
-        ax.grid(True)
         ax.set_xticks(range(len(methods)), methods)
         ax.set_xlabel('Method')
     
