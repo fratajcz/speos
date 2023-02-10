@@ -200,7 +200,7 @@ class GeneNetwork(nn.Module):
             kwargs = self.gat_kwargs
 
             if self.nheads is None:
-                raise ValueError("The number of attention heads defaults to None, please specify the number of heads explicitely in the config.")
+                raise ValueError("The number of attention heads defaults to None, please specify the number of heads explicitely in the config using nheads keyword under mp.")
             if i == self.gcnconv_num_layers - 1:
                 # if its the last layer, use only one head (dim_out = dim_hid) and dont concat
                 mp_layer = pyg_nn.GATConv(self.gcnconv_parameters["dim"] * self.nheads, self.gcnconv_parameters["dim"], heads=1, concat=False, **kwargs)

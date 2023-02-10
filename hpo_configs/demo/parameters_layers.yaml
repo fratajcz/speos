@@ -1,4 +1,4 @@
-name: layers
+name: layers_add
 
 metrics: 
   - mean_rank_filtered
@@ -6,14 +6,11 @@ metrics:
   - auprc
 
 parameters:
-  - name: gcn
-    model:
-      mp:
-        type: gcn
   - name: gat
     model:
       mp:
         type: gat
+        nheads: 1
   - name: gin
     model:
       mp:
