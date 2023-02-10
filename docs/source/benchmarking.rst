@@ -31,7 +31,7 @@ Let's say you want to predict core genes for the ground truth gene set of Cardio
         post_mp:
             n_layers: 2     
 
-Save these settings in ```config_cardiovascular_bioplex.yaml```. We have now defined our input and the model depth: The preprocessing network, the message passing network and the postproscessing network are all defined as having a depth of two, each.
+Save these settings in :obj:`config_cardiovascular_bioplex.yaml`. We have now defined our input and the model depth: The preprocessing network, the message passing network and the postproscessing network are all defined as having a depth of two, each.
 
 Now, let's define our parameter file which contains the settings that should change between the individual runs:
 
@@ -68,9 +68,9 @@ Now, let's define our parameter file which contains the settings that should cha
             mp:
                 n_layers: 0
 
-and save these settings as ```parameters_layers.yaml```. The first `name` tag defines the name of the while benchmarking array and should be descriptive of what this array is about. then, the `metrics` section defines an array of metrics that should be obtained and recorded for these runs.
-The `parameters` section is where it gets interesting. It contains a list of mini-configs, each with an individual `name` tag that describes this individual parameter setting, followed by the settings which should be changed from the shared settings for this indivudal benchmark run.
-As you see, we have four different graph convolutions selected and now want to see which of those layers provides the best performance, as measured by the three metrics we have chosen. The last parameter setting, `mlp`, answers the question about the performance difference if we use no graph convolution at all, therefore we have set the `n_layers` tag for the message passing module to 0, leaving only the fully connected layers in pre- and post-message passing.
+and save these settings as  :obj:`parameters_layers.yaml`. The first  :obj:`name` tag defines the name of the while benchmarking array and should be descriptive of what this array is about. then, the  :obj:`metrics` section defines an array of metrics that should be obtained and recorded for these runs.
+The  :obj:`parameters` section is where it gets interesting. It contains a list of mini-configs, each with an individual  :obj:`name` tag that describes this individual parameter setting, followed by the settings which should be changed from the shared settings for this indivudal benchmark run.
+As you see, we have four different graph convolutions selected and now want to see which of those layers provides the best performance, as measured by the three metrics we have chosen. The last parameter setting,  :obj:`mlp`, answers the question about the performance difference if we use no graph convolution at all, therefore we have set the  :obj:`n_layers` tag for the message passing module to 0, leaving only the fully connected layers in pre- and post-message passing.
 While this might not directly answer our question which convolution is best, it is always important to have a contrast setting in case *no* convolution is actually the best.
 
 Starting a Benchmark Run
@@ -84,7 +84,7 @@ You can now go ahead and start a benchmark run from the command line:
 
 This will start a 4-fold crossvalidation for each of the total of five parameter settings that we have described above. For statistical rigor, each fold is repeated 4 times, so that we obtain 4 * 4 * 5 = 80 models in total, 16 per parameter setting.
 
-Each of the runs has an individual name, such as ```cardiovascular_bioplex_layers_gcn_rep0_fold0```, which is put together from the individual name tags of config, parameter file, parameter setting, repetition and fold. You can watch the output of the benchmark run to see the changes your settings make.
+Each of the runs has an individual name, such as  :obj:`cardiovascular_bioplex_layers_gcn_rep0_fold0`, which is put together from the individual name tags of config, parameter file, parameter setting, repetition and fold. You can watch the output of the benchmark run to see the changes your settings make.
 
 For example, for the first 16 models, the model description in the logging output should look like the following:
 
@@ -122,7 +122,7 @@ For example, for the first 16 models, the model description in the logging outpu
     
     [...]
 
-While for subsequent runs, the ```(mp)``` part should change, for example to:
+While for subsequent runs, the  :obj:`(mp)` part should change, for example to:
 
 .. code-block:: text
     :caption: logging output (continued)
@@ -149,7 +149,7 @@ Which shows that in the second setting, the GCN layers have been replaced by GAT
 Evaluating the Benchmark
 ------------------------
 
-Once your benchmark is finished, you should end up with a results file that contains detailed performance results for all models and metrics. In our case, it is called ```cardiovascular_bioplex_layers.tsv```` and should look more or less like this:
+Once your benchmark is finished, you should end up with a results file that contains detailed performance results for all models and metrics. In our case, it is called  :obj:`cardiovascular_bioplex_layers.tsv` and should look more or less like this:
 
 .. code-block:: text
     :linenos:
