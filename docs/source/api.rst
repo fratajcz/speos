@@ -47,13 +47,15 @@ We can modify the config from above to explicitely tell Speos to save inference 
 .. code-block:: text
 
     inference:
-        save_dir: ~/my_results/
+        save_dir: ~/results/
+        save_sorted: True
+        save_tsv: True
 
 and re-run only the inference:
 
 >>> python inference.py -c my_config.yaml
 
-which will save all the results of the inference to :obj:`~/my_results/` without training the model again.
+which will save all the results of the inference to :obj:`~/results/` without training the model again.
 This assumes that the model has not been moved/deleted since it has been trained and that the config settings for the model save path are the same like when it was trained.
 
 The Nested Crossvalidation
@@ -83,6 +85,8 @@ Let's first draft a suitable config file:
       positive_only: True
     
     inference:
+      save_dir: ~/results/
+      save_sorted: True
       save_tsv: True
 
 and save it as :obj:`my_crossval_config.yaml`. 
