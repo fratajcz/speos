@@ -107,6 +107,7 @@ You might have notived that :obj:`speos/data` is empty. This is because Speos is
 .. code-block:: console
 
     $ ./download_data.sh
+    $ tar xzvf data.tar.gz
 
 Test it
 -------
