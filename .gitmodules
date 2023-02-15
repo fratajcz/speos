@@ -1,9 +1,9 @@
 [submodule "speos/visualization/graphdiagnostic"]
 	path = speos/visualization/graphdiagnostic
-	url = git@github.com:fratajcz/graphdiagnostic.git
+	url = https://github.com:fratajcz/graphdiagnostic.git
 [submodule "speos/losses"]
 	path = speos/losses
-	url = git@github.com:fratajcz/losses.git
+	url = https://github.com:fratajcz/losses.git
 [submodule "speos/postprocessing/lightgoea"]
 	path = speos/postprocessing/lightgoea
-	url = git@github.com:fratajcz/lightgoea.git
+	url = https://github.com:fratajcz/lightgoea.git
