@@ -26,6 +26,7 @@ class Experiment:
         torch.set_default_dtype(torch.float64)
 
         self.config = config
+        self.config.save()
         self.name = self.config.name
         self.logger_name = __name__ + " ({})".format(id) if id is not None else __name__
 

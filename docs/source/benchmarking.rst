@@ -80,7 +80,7 @@ You can now go ahead and start a benchmark run from the command line:
 
 .. code-block:: console
 
-    python benchmarking.py -c config_cardiovascular_bioplex.yaml -p parameters_layers.yaml
+    python run_benchmark.py -c config_cardiovascular_bioplex.yaml -p parameters_layers.yaml
 
 This will start a 4-fold crossvalidation for each of the total of five parameter settings that we have described above. For statistical rigor, each fold is repeated 4 times, so that we obtain 4 * 4 * 5 = 80 models in total, 16 per parameter setting.
 

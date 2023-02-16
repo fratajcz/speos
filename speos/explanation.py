@@ -306,7 +306,8 @@ class Explainer(pyg.nn.models.Explainer):
         edge_mask = edge_mask[hard_edge_mask]
 
         if threshold is not None:
-            edge_mask = (edge_mask >= threshold).to(torch.float)
+            #edge_mask = (edge_mask >= threshold).to(torch.float)
+            edge_mask[edge_mask <= threshold] = 0
 
         if y is None:
             y = torch.zeros(edge_index.max().item() + 1,
@@ -319,7 +320,7 @@ class Explainer(pyg.nn.models.Explainer):
                 cmap = mpl.cm.get_cmap(colormap)
                 my_cmap = cmap(np.arange(cmap.N))
                 half_the_numbers = int(cmap.N / 2)
-                my_cmap[:, -1] = np.concatenate((np.linspace(0.1, 1, half_the_numbers), np.ones((int(cmap.N - half_the_numbers),))))
+                my_cmap[:, -1] = np.concatenate((np.linspace(0, 1, half_the_numbers), np.ones((int(cmap.N - half_the_numbers),))))
                 my_cmap = ListedColormap(my_cmap)
                 norm = mpl.colors.Normalize(vmin=0, vmax=1)
                 mapper = mpl.cm.ScalarMappable(norm=norm, cmap=my_cmap)
@@ -350,6 +351,10 @@ class Explainer(pyg.nn.models.Explainer):
         pos_cmap = mpl.cm.get_cmap("Reds")
         pos_norm = mpl.colors.Normalize(vmin=0, vmax=1)
         pos_mapper = mpl.cm.ScalarMappable(norm=pos_norm, cmap=pos_cmap)
+
+        if threshold is not None:
+            #edge_mask = (edge_mask >= threshold).to(torch.float)
+            node_alpha[node_alpha <= threshold] = 0
 
         node_colors = np.asarray([mapper.to_rgba(value) if y == 0 else pos_mapper.to_rgba(value) for y, value in zip(y, node_alpha[subset].detach().cpu().numpy())])
 
