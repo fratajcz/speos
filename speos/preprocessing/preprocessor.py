@@ -49,7 +49,7 @@ class PreProcessor:
             Args:
                 features (bool): If features should be added to nodes. This leads to longer compilation times, but it changes the number and indices of nodes, 
                     as nodes with missing features will be removed from the graph.
-                use_embeddings (bool): If node embeddings should be added to node features. If None, the respective setting will be read from the config provided during initialization.
+                use_embeddings (bool): If node embeddings should be added to node features. If :obj:`None`, the respective setting will be read from the config provided during initialization.
            """
 
 
@@ -58,7 +58,7 @@ class PreProcessor:
         self._build_conversion_dicts()
 
         if len(self.expression_files) > 0:
-            self.build_expression_table()
+            self._build_expression_table()
 
         self.G = nx.MultiDiGraph()
 
@@ -73,7 +73,7 @@ class PreProcessor:
         self._add_y_label()
 
         if features:
-            self.add_x_features(use_embeddings=use_embeddings)
+            self._add_x_features(use_embeddings=use_embeddings)
 
         logger = setup_logger(*self.logger_args)
         logger.info(nx.info(self.G))
@@ -90,7 +90,7 @@ class PreProcessor:
 
         if not self.has_features:
             # if features arent loaded yet
-            self.add_x_features()
+            self._add_x_features()
 
         if not self.has_labels:
             # if labels arent loaded yet
@@ -251,7 +251,7 @@ class PreProcessor:
 
         return new_adjacency
 
-    def build_expression_table(self) -> None:
+    def _build_expression_table(self) -> None:
         self.expression_table = None
 
         for expression_file in self.expression_files:
@@ -268,7 +268,7 @@ class PreProcessor:
                 if self.config.input.log_expression:
                     new_expression_table = np.log(new_expression_table + (new_expression_table[new_expression_table > 0].min() / 2))
 
-                self.join_expression_tables(new_expression_table)
+                self._join_expression_tables(new_expression_table)
 
             if "human_protein_atlas" in expression_file.lower():
                 raw_table = pd.read_csv(
@@ -285,16 +285,16 @@ class PreProcessor:
                 if self.config.input.log_expression:
                     new_expression_table = np.log(new_expression_table + (new_expression_table[new_expression_table > 0].min() / 2))
 
-                self.join_expression_tables(new_expression_table)
+                self._join_expression_tables(new_expression_table)
 
-    def join_expression_tables(self, new_table) -> None:
+    def _join_expression_tables(self, new_table) -> None:
         if self.expression_table is None:
             self.expression_table = new_table
         else:
             self.expression_table = self.expression_table.join(
                 new_table, how="inner")
 
-    def add_x_features(self, gwas_features=["NSNPS", "ZSTAT", "P"], use_embeddings=None, dummy=False) -> None:
+    def _add_x_features(self, gwas_features=["NSNPS", "ZSTAT", "P"], use_embeddings=None, dummy=False) -> None:
         ''' this removes nodes that do not have all the features that we request.
             Thus, node indices before and after this method call can change and usually do.
         '''
@@ -537,8 +537,8 @@ class PreProcessor:
 
     def get_feature_names(self):
         if len(self.features_list) == 0:
-            self.build_expression_table()
-            self.add_x_features(dummy=True)
+            self._build_expression_table()
+            self._add_x_features(dummy=True)
         return self.features_list
 
     @property
@@ -559,6 +559,11 @@ class PreProcessor:
         return df
 
     def get_graph(self, features=False):
+        """ 
+            Returns:
+                networkx.MultiDiGraph: The graph object holding all input adjacencies, node labels and input features.
+        """
+
         if not self.graph_is_built:
             self.build_graph(features=features)
 
@@ -568,6 +573,15 @@ class PreProcessor:
         return self.G
 
     def dump_edgelist(self, path, symbol="hgnc"):
+        """dumps the edgelist that is currently held by the graph in tabstop-seperated format. 
+        If you need other formats, call self.get_graph() and write the edgelists from the graph object.
+
+            Args:
+                path (str): Path to the file where the edgelist will be written to.
+            Args:
+                symbol (str): Specify in which vocabulary/symbol the genes should be identified. Either 'hgnc', 'entrez' or 'ensembl'.
+
+        """
         import gzip
 
         if symbol == "hgnc":
