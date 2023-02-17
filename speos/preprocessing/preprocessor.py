@@ -179,7 +179,7 @@ class PreProcessor:
             raise ValueError("Currently only handling for entrez, ensembl and hgnc symbols is implemented, you passed symbol of type {}".format(mapping["symbol"]))
 
         if self.config.input.randomize_adjacency_percent > 0:
-            adjacency = self.xswap(adjacency, self.config.input.randomize_adjacency_percent / 100)
+            adjacency = self.__xswap(adjacency, self.config.input.randomize_adjacency_percent / 100)
 
         for _, series in adjacency.iterrows():
             try:
@@ -194,7 +194,7 @@ class PreProcessor:
         return edge_list
     
     @classmethod
-    def xswap(self, adjacency: pd.DataFrame, randomize_factor: float) -> pd.DataFrame:
+    def __xswap(self, adjacency: pd.DataFrame, randomize_factor: float) -> pd.DataFrame:
         """ Does X Swaps on the adjacency until randomize_factor rows have been changed.
             Assumes that adjacency is a pandas Dataframe with one edge per row and the tail node being the last element of each row.
             If there is an uneven number of edges to reach the threshold, the last edge will remain unswapped """
