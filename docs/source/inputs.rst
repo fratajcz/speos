@@ -21,7 +21,7 @@ Preprocessor
 The Preprocessor is a rather extensive class that strings together all preprocessing operations, such as reading files, building the graph from edgelists and normalizing input features.
 It has a few useful functions for users, such as :obj:`get_data()`, :obj:`get_graph()` or :obj:`get_feature_names()`
 
-.. autoclass:: speos.preprocessing.preprocessor.Preprocessor
+.. autoclass:: speos.preprocessing.preprocessor.PreProcessor
     :members:
     :inherited-members:
 
