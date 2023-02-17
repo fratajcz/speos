@@ -173,6 +173,7 @@ you can now go ahead, read the table and produce some informative figures. Since
     :linenos:
 
     import pandas as pd 
+    import numpy as np
     import matplotlib.pyplot as plt
 
     results = pd.read_csv("cardiovascular_bioplex_layers.tsv", sep="\t", header=0)
@@ -185,9 +186,9 @@ you can now go ahead, read the table and produce some informative figures. Since
 
     for start in range(0, len(results), stride):
         method_results = results.iloc[start:start+stride, :]
-        mean_ranks.append(results["mean_rank_filtered"])
-        auroc.append(results["auroc"])
-        auroc.append(results["auprc"])
+        mean_ranks.append(method_results["mean_rank_filtered"])
+        auroc.append(method_results["auroc"])
+        auprc.append(method_results["auprc"])
 
     fig, axes = plt.subplots(3, 1)
 
