@@ -19,5 +19,5 @@ setup(
     packages=find_packages(exclude=["speos.scripts","speos.tests"]),
     package_data={'': ['LICENSE.md', "speos/adjacencies.json", "speos/mapping.json", "speos/utils/config_default.yaml"]},
     #package_dir={"": "coregenes"},
-    install_requires=[],
+    install_requires=["torch", "torch-sparse", "torch-scatter", "torch-geometric", "captum", "networkx", "h5py", "igraph", "matplotlib", "seaborn", "statsmodels", "scikit-learn", "pandas", "tensorboard", "pyyaml"],
 )
