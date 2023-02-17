@@ -21,6 +21,7 @@ Welcome to Speos's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Package Reference
+   
    inputs
 
 
