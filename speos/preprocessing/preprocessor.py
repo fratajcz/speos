@@ -44,6 +44,14 @@ class PreProcessor:
         self.read_extension_inputs(extension_inputs)
 
     def build_graph(self, features=True, use_embeddings=None):
+        """Builds the graph given the adjacency matrices and input features specified during initialization.
+
+            Args:
+                features (bool): If features should be added to nodes. This leads to longer compilation times, but it changes the number and indices of nodes, 
+                    as nodes with missing features will be removed from the graph.
+                use_embeddings (bool): If node embeddings should be added to node features. If None, the respective setting will be read from the config provided during initialization.
+           """
+
 
         self._read_translation_table()
 
@@ -58,11 +66,11 @@ class PreProcessor:
 
         self.G.add_nodes_from(node_list)
 
-        self.add_adjacencies()
+        self._add_adjacencies()
 
         self.graph_is_built = True
 
-        self.add_y_label()
+        self._add_y_label()
 
         if features:
             self.add_x_features(use_embeddings=use_embeddings)
@@ -71,6 +79,11 @@ class PreProcessor:
         logger.info(nx.info(self.G))
 
     def get_data(self):
+        """ Returns the data in the same format produced by self.format_for_pygeo(), but compiles the data beforehand (i.e. builds the graph etc.) if that has not happened yet.
+        
+            Returns:
+                tuple(Tensor, Tensor, Tensor): returns input matrix X, ground truth y and adjacency matrix adj as pytorch tensors.
+        """
         if not self.graph_is_built:
             # if graph has not been set up first
             self.build_graph()
@@ -81,7 +94,7 @@ class PreProcessor:
 
         if not self.has_labels:
             # if labels arent loaded yet
-            self.add_y_label()
+            self._add_y_label()
 
         X, y, adj = self.format_for_pygeo()
 
@@ -126,7 +139,7 @@ class PreProcessor:
         """ Returns True if all of the adjacency matrices is directed """
         return all([_adjacency["directed"] for _adjacency in self.adjacency_list])
 
-    def reindex(self) -> None:
+    def _reindex(self) -> None:
         del self.ensembl2id
         del self.entrez2id
         del self.hgnc2id
@@ -153,17 +166,17 @@ class PreProcessor:
             self.G.remove_edges_from(list(self.G.edges()))
 
         if compile:
-            self.add_adjacencies()
+            self._add_adjacencies()
 
-    def add_adjacencies(self) -> None:
+    def _add_adjacencies(self) -> None:
         for adjacency_mapping in self.adjacency_list:
             self.adjacency_dict.update({adjacency_mapping["name"]: len(self.adjacency_dict.keys())})
 
-            edge_list = self.handle_ppi(adjacency_mapping)
+            edge_list = self._handle_ppi(adjacency_mapping)
 
             self.G.add_edges_from(edge_list)
 
-    def handle_ppi(self, mapping: dict) -> list:
+    def _handle_ppi(self, mapping: dict) -> list:
         edge_list = []
         adjacency = pd.read_csv(mapping["file_path"], sep=mapping["sep"], header=0, usecols=[mapping["target"], mapping["source"]])
 
@@ -179,7 +192,7 @@ class PreProcessor:
             raise ValueError("Currently only handling for entrez, ensembl and hgnc symbols is implemented, you passed symbol of type {}".format(mapping["symbol"]))
 
         if self.config.input.randomize_adjacency_percent > 0:
-            adjacency = self.__xswap(adjacency, self.config.input.randomize_adjacency_percent / 100)
+            adjacency = self._xswap(adjacency, self.config.input.randomize_adjacency_percent / 100)
 
         for _, series in adjacency.iterrows():
             try:
@@ -367,11 +380,11 @@ class PreProcessor:
 
         if not dummy:
             # reindex so indices don't skip numbers after deletion of nodes
-            self.reindex()
+            self._reindex()
 
         self.has_features = True
 
-    def add_y_label(self) -> None:
+    def _add_y_label(self) -> None:
         if not self.graph_is_built:
             self.build_graph(features=False)
 
@@ -419,7 +432,7 @@ class PreProcessor:
                 else:
                     self.neg_idx.append(node[0])
         except (KeyError, AttributeError):
-            self.add_y_label()
+            self._add_y_label()
 
         return self.pos_idx, self.neg_idx
 
@@ -427,7 +440,7 @@ class PreProcessor:
         """
         Goes through mapping list and extracts new ground truth.
 
-        If compile is set to true, calls self.add_y_label and adds labels to nodes in the graph.
+        If compile is set to true, calls self._add_y_label and adds labels to nodes in the graph.
         To do this, the graph has to be already built.
 
         Explicitely call this method only when you want to plot the same adjacency with different labels.
@@ -449,7 +462,7 @@ class PreProcessor:
             len(self.mapping_list), self.ground_truth[0]))
 
         if compile:
-            self.add_y_label()
+            self._add_y_label()
 
     def format_for_pygeo(self):
         all_edges = np.asarray(self.G.edges)
