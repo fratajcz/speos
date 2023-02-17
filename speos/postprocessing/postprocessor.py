@@ -1071,8 +1071,18 @@ class PostProcessor:
                 return doid
 
     def check_overlap(self, results_paths: list, cutoff_value, cutoff_type: str, plot=True):
-        """takes all results files given in results_paths and checks their overlap in predictions.
-        cutoff types are: top (int), bottom (int), split (float)"""
+        """Checks the overlap of multiple runs and returns them
+        
+            Args:
+                results_paths (list): Paths to the results files that should be compared for overlap (i.e. all results files from one outer cv run)
+                cutoff_value (int/float): Value which is depends on :obj:`cutoff_type` .
+                cutoff_type (str): Type of cutoff that should be applied to find candidates. See :doc:`api` for possible values.
+                plot (bool): If we overlap bins should be plotted.
+
+            Returns:
+                tuple([..., pd.DataFrame]): Multiple results, most of which are summarized in the DataFrame at the end (i.e. tuple[-1]) 
+                
+        """
 
         logger = setup_logger(*self.logger_args)
 
