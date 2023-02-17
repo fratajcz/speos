@@ -585,7 +585,6 @@ class PreProcessor:
 
             Args:
                 path (str): Path to the file where the edgelist will be written to.
-            Args:
                 symbol (str): Specify in which vocabulary/symbol the genes should be identified. Either 'hgnc', 'entrez' or 'ensembl'.
 
         """

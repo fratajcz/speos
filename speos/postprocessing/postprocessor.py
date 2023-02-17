@@ -30,7 +30,7 @@ class PostProcessor:
     def init_pp_table(self):
         unknown_genes, all_genes, positive_genes = self.get_unknown_genes()
         self.pp_table = PostProcessingTable(index=all_genes)
-        included_genes = self.read_results_file()["hgnc"].tolist()
+        included_genes = self._read_results_file()["hgnc"].tolist()
         self.pp_table.add("Is Included", index=included_genes, values=True, remaining=False)
         self.pp_table.add("Mendelian", index=positive_genes, values=True, remaining=False)
 
@@ -38,8 +38,15 @@ class PostProcessor:
         path = os.path.join(pu.postprocessing_results_path(self.config), self.config.name + "_pp_table.tsv")
         self.pp_table.save(path)
 
-    def run(self, save=True):
-        """Runs all tasks that are specified in the config as pp.tasks"""
+    def run(self):
+        """Runs all tasks that are specified in the config as pp.tasks
+        
+            Returns:
+                list: The results of all individual tasks, in the same order as specified in the config file.
+                
+        """
+
+        save = self.config.pp.save
 
         self.init_pp_table()
         logger = setup_logger(*self.logger_args)
@@ -76,10 +83,20 @@ class PostProcessor:
         self.ensembl_col = ensembl_col
 
     def pathway(self, results_path=None, plot=True, save=True) -> pd.DataFrame:
-        """ Runs Pathway enrichment on the results of the outer crossvalidation.
+        """ 
+            Runs Pathway enrichment on the results of the outer crossvalidation.
             Uses only unknown genes as background, mendelians are removed.
 
-            Returns the dataframe containing all relevant information."""
+            Args:
+                results_path (str): The path to a resultsfile so the positive labels can be extracted. 
+                    This is not necessary if the task :obj:`overlap_analysis` has been run before, then the results paths are already known to the postprocessor.
+                plot (bool): If plots should be produced. If True, then the plots are placed in :obj:`config.pp.plot_dir`.
+                save (bool): If results should be saved. If True, then the results are placed in the plots in :obj:`config.pp.save_dir`.
+
+            Returns:
+                pandas.DataFrame: contains the results of the Pathway Enrichment Analysis
+
+        """
 
         from speos.postprocessing.goea import GOEA_Study
         logger = setup_logger(*self.logger_args)
@@ -142,7 +159,15 @@ class PostProcessor:
         """ Runs Differential Gene Expression enrichment on the results of the outer crossvalidation.
             Uses only unknown genes as background, mendelians are removed.
 
-            Returns the dataframe containing all relevant information."""
+            Args:
+                results_path (str): The path to a resultsfile so the positive labels can be extracted. 
+                    This is not necessary if the task :obj:`overlap_analysis` has been run before, then the results paths are already known to the postprocessor.
+                plot (bool): If plots should be produced. If True, then the plots are placed in :obj:`config.pp.plot_dir`.
+                save (bool): If results should be saved. If True, then the results are placed in the plots in :obj:`config.pp.save_dir`.
+
+            Returns:
+                pandas.DataFrame: contains the results of the Differential Gene Expression Enrichment Analysis.
+        """
 
         import yaml
         from scipy.stats import fisher_exact
@@ -204,9 +229,9 @@ class PostProcessor:
             if subtype != "Union":
                 dge_genes = set(pd.read_csv(values["file"], header=0, comment='#', index_col=False, sep="\t")["Symbol"].to_list())
                 dge_genes_union.update(dge_genes)
-                valid_dge_genes = self.return_only_valid(dge_genes, all_genes)
+                valid_dge_genes = self._return_only_valid(dge_genes, all_genes)
                 valid_union_genes.update(valid_dge_genes)
-                unknown_dge_genes = self.return_only_valid(dge_genes, unknown_genes)
+                unknown_dge_genes = self._return_only_valid(dge_genes, unknown_genes)
                 unknown_union_genes.update(unknown_dge_genes)
             else:
                 dge_genes = dge_genes_union
@@ -264,7 +289,15 @@ class PostProcessor:
         """ Runs HPO Term enrichment on the results of the outer crossvalidation.
             Uses only unknown genes as background, mendelians are removed.
 
-            Returns the dataframe containing all relevant information."""
+            Args:
+                results_path (str): The path to a resultsfile so the positive labels can be extracted. 
+                    This is not necessary if the task :obj:`overlap_analysis` has been run before, then the results paths are already known to the postprocessor.
+                plot (bool): If plots should be produced. If True, then the plots are placed in :obj:`config.pp.plot_dir`.
+                save (bool): If results should be saved. If True, then the results are placed in the plots in :obj:`config.pp.save_dir`.
+
+            Returns:
+                pandas.DataFrame: contains the results of the HPO Enrichment Analysis
+        """
 
         from speos.postprocessing.goea import GOEA_Study
 
@@ -302,13 +335,13 @@ class PostProcessor:
 
         df = goea.analyze(list(self.outer_result[0].keys()), set(unknown_genes), task)
 
-        if self.config.pp.save:
+        if save:
             self.create_if_not_exists(self.config.pp.save_dir)
             tsv_path = os.path.join(self.config.pp.save_dir, self.config.name + "_hpoea.tsv")
             logger.info("Found {} significant terms, writing table to {}".format(len(df.index), tsv_path))
             df.to_csv(tsv_path, sep="\t")
 
-        if self.config.pp.plot:
+        if plot:
             self.create_if_not_exists(self.config.pp.plot_dir)
             image_path = os.path.join(self.config.pp.plot_dir, self.config.name + "_hpoea.png")
             if len(df) > 0:
@@ -327,7 +360,15 @@ class PostProcessor:
         """ Runs GO Term enrichment on the results of the outer crossvalidation.
             Uses only unknown genes as background, mendelians are removed.
 
-            Returns the dataframe containing all relevant information."""
+            Args:
+                results_path (str): The path to a resultsfile so the positive labels can be extracted. 
+                    This is not necessary if the task :obj:`overlap_analysis` has been run before, then the results paths are already known to the postprocessor.
+                plot (bool): If plots should be produced. If True, then the plots are placed in :obj:`config.pp.plot_dir`.
+                save (bool): If results should be saved. If True, then the results are placed in the plots in :obj:`config.pp.save_dir`.
+
+            Returns:
+                pandas.DataFrame: contains the results of the GO Term Enrichment Analysis
+        """
 
         from speos.postprocessing.goea import GOEA_Study
 
@@ -346,13 +387,13 @@ class PostProcessor:
 
             df = goea.analyze(list(self.outer_result[0].keys()), set(unknown_genes), task)
 
-            if self.config.pp.save:
+            if save:
                 self.create_if_not_exists(self.config.pp.save_dir)
                 path = os.path.join(self.config.pp.save_dir, self.config.name + "_goea_{}.tsv".format("_".join(task.split(" "))))
                 logger.info("Found {} significant terms for task {}, writing table to {}".format(len(df.index), task, path))
                 df.to_csv(path, sep="\t")
 
-            if self.config.pp.plot:
+            if plot:
                 self.create_if_not_exists(self.config.pp.plot_dir)
                 path = os.path.join(self.config.pp.plot_dir, self.config.name + "_goea_{}.png".format("_".join(task.split(" "))))
                 logger.info("Saving plot to {}".format(path))
@@ -369,12 +410,19 @@ class PostProcessor:
 
         return df
 
-    def drugtarget(self, results_path=None, plot=True) -> tuple:
+    def drugtarget(self, results_path=None, plot=True, save=True) -> tuple:
         """ Takes the results of the outer crossvalidation and analyzes if there is an enrichment of drug targets among the predicted genes.
-            For this to work, self.outer_result has to be populated by running self.overlap_analysis() first on an outer crossvalidation run.
 
-            Returns a tuple of results from statistical test. First result is from a Fisher's exact test on a contingency table of is_drug_target and is_predicted_as_core_gene.
-            Second result is from a Mann Whitney U test of the degree distribution of predicted genes vs non-predicted genes in a compound-gene-interaction network."""
+            Args:
+                results_path (str): The path to a resultsfile so the positive labels can be extracted. 
+                    This is not necessary if the task :obj:`overlap_analysis` has been run before, then the results paths are already known to the postprocessor.
+                plot (bool): If plots should be produced. If True, then the plots are placed in :obj:`config.pp.plot_dir`.
+                save (bool): If results should be saved. If True, then the results are placed in the plots in :obj:`config.pp.save_dir`.
+
+            Returns:
+                tuple([...], pd.DataFrame): Returns a tuple of various results, most of which are summarized in the DataFrame at the end (tuple[-1]).
+
+            """
 
         logger = setup_logger(*self.logger_args)
 
@@ -406,11 +454,11 @@ class PostProcessor:
 
         df["Group N"] = [len(positive_genes), len(predicted_genes), len(not_predicted_genes)]
 
-        unknown_drug_targets = self.return_only_valid(drug_targets, unknown_genes)
-        valid_drug_targets = self.return_only_valid(drug_targets, all_genes)
-        noncandidate_drug_targets = self.return_only_valid(drug_targets, not_predicted_genes)
-        candidate_drug_targets = self.return_only_valid(drug_targets, predicted_genes)
-        mendelian_drug_targets = self.return_only_valid(drug_targets, positive_genes)
+        unknown_drug_targets = self._return_only_valid(drug_targets, unknown_genes)
+        valid_drug_targets = self._return_only_valid(drug_targets, all_genes)
+        noncandidate_drug_targets = self._return_only_valid(drug_targets, not_predicted_genes)
+        candidate_drug_targets = self._return_only_valid(drug_targets, predicted_genes)
+        mendelian_drug_targets = self._return_only_valid(drug_targets, positive_genes)
 
         assert len(valid_drug_targets) == len(noncandidate_drug_targets) + len(candidate_drug_targets) + len(mendelian_drug_targets)
 
@@ -488,9 +536,28 @@ class PostProcessor:
         if plot:
             self.make_boxplot(not_predicted_degrees, predicted_degrees, positive_degrees, plot=plot)
 
+        if save:
+                self.create_if_not_exists(self.config.pp.save_dir)
+                path = os.path.join(self.config.pp.save_dir, self.config.name + "_drugtarget.tsv")
+                df.to_csv(path, sep="\t")
+
         return drug_target_results, pvals, (not_predicted_degrees, predicted_degrees, positive_degrees), df
 
-    def druggable(self, results_path=None):
+    def druggable(self, results_path=None, plot=False, save=True):
+        """ Takes the results of the outer crossvalidation and analyzes if there is an enrichment of druggable genes among the predicted genes.
+
+            Args:
+                results_path (str): The path to a resultsfile so the positive labels can be extracted. 
+                    This is not necessary if the task :obj:`overlap_analysis` has been run before, then the results paths are already known to the postprocessor.
+                plot (bool): If plots should be produced. If True, then the plots are placed in :obj:`config.pp.plot_dir`.
+                save (bool): If results should be saved. If True, then the results are placed in the plots in :obj:`config.pp.save_dir`.
+
+            Returns:
+                tuple(list[ResultA, ResultB], list[ResultC, ResultD], pd.DataFrame): Returns a tuple of various results, most of which are summarized in the DataFrame at the end (tuple[-1]).
+                    ResultA is the enrichment of druggable genes in positively labeled genes, ResultB is the enrichment in the candidates.
+                    ResultC is the entrichment of druggable genes among the non-drug-target genes in the positively labeled genes, ResultsD is the same enrichment in the candidates.
+        """
+
 
         logger = setup_logger(*self.logger_args)
         if self.outer_result is None:
@@ -509,11 +576,11 @@ class PostProcessor:
         df["Group N"] = [len(positive_genes), len(predicted_genes), len(not_predicted_genes)]
 
         druggable_genes = set(self.get_druggable_genes("/home/icb/florin.ratajczak/ppi-core-genes/data/dgidb/druggable_genome.tsv"))
-        unknown_druggable_genes = self.return_only_valid(druggable_genes, unknown_genes)
-        positive_druggable_genes = self.return_only_valid(druggable_genes, positive_genes)
-        predicted_druggable_genes = self.return_only_valid(druggable_genes, predicted_genes)
-        noncandidate_druggable_genes = self.return_only_valid(druggable_genes, not_predicted_genes)
-        valid_druggable_genes = self.return_only_valid(druggable_genes, all_genes)
+        unknown_druggable_genes = self._return_only_valid(druggable_genes, unknown_genes)
+        positive_druggable_genes = self._return_only_valid(druggable_genes, positive_genes)
+        predicted_druggable_genes = self._return_only_valid(druggable_genes, predicted_genes)
+        noncandidate_druggable_genes = self._return_only_valid(druggable_genes, not_predicted_genes)
+        valid_druggable_genes = self._return_only_valid(druggable_genes, all_genes)
 
         assert len(valid_druggable_genes) == len(positive_druggable_genes) + len(predicted_druggable_genes) + len(noncandidate_druggable_genes)
 
@@ -584,7 +651,22 @@ class PostProcessor:
 
         return total_druggable, leftover_druggable, df
 
-    def mouseKO(self, results_path=None):
+    def mouseKO(self, results_path=None, plot=False, save=True):
+        """ Takes the results of the outer crossvalidation and analyzes if there is an enrichment of mouse KO genes among the predicted genes.
+            Genes that have not been tested in mouse KO experiments at all have been excluded.
+
+            Args:
+                results_path (str): The path to a resultsfile so the positive labels can be extracted. 
+                    This is not necessary if the task :obj:`overlap_analysis` has been run before, then the results paths are already known to the postprocessor.
+                plot (bool): If plots should be produced. If True, then the plots are placed in :obj:`config.pp.plot_dir`.
+                save (bool): If results should be saved. If True, then the results are placed in the plots in :obj:`config.pp.save_dir`.
+
+            Returns:
+                tuple(ResultA, ResultB, ArrayA, ArrayB): Returns a tuple of various results.
+                    ResultA is the enrichment of mouse KO genes in positively labeled genes, ResultB is the enrichment in the candidates.
+                    ArrayA is the contingency table of the mouse KO genes with positively Labeled Genes, ArrayB is the contingency table of mouse KO genes with candidate genes.
+        """
+
         logger = setup_logger(*self.logger_args)
 
         if self.outer_result is None:
@@ -595,8 +677,8 @@ class PostProcessor:
 
         unknown_genes, all_genes, positive_genes = self.get_unknown_genes(results_path)
         background_ko_genes = set(self.get_mouse_knockout_background())
-        valid_background_ko_genes = self.return_only_valid(background_ko_genes, all_genes)
-        unknown_background_ko_genes = self.return_only_valid(valid_background_ko_genes, unknown_genes)
+        valid_background_ko_genes = self._return_only_valid(background_ko_genes, all_genes)
+        unknown_background_ko_genes = self._return_only_valid(valid_background_ko_genes, unknown_genes)
         self.pp_table.add("Included in Mouse KO", valid_background_ko_genes, True, False)
 
         ko_genes = set(self.get_mouse_knockout_genes())
@@ -604,9 +686,9 @@ class PostProcessor:
         mendelian_array = self.make_contingency_table(valid_background_ko_genes, positive_genes, ko_genes.intersection(all_genes))
         mendelian_ko_enrichment_result = fisher_exact(mendelian_array)
 
-        valid_ko_genes = self.return_only_valid(ko_genes, all_genes)
+        valid_ko_genes = self._return_only_valid(ko_genes, all_genes)
         self.pp_table.add("Is Mouse KO", valid_ko_genes, True, False)
-        unknown_ko_genes = self.return_only_valid(ko_genes, unknown_background_ko_genes)
+        unknown_ko_genes = self._return_only_valid(ko_genes, unknown_background_ko_genes)
 
         logger.info("Total of {} Mouse KO genes, {} of them match with our translation table.".format(len(ko_genes), len(ko_genes.intersection(all_genes))))
         logger.info("Found {} Mouse KO genes among the {} known positive genes (p: {:.2e}, OR: {}), leaving {} in {} Unknowns".format(
@@ -623,7 +705,24 @@ class PostProcessor:
 
         return mendelian_ko_enrichment_result, ko_enrichment_result, mendelian_array, array
 
-    def lof_intolerance(self, results_path=None, plot=True):
+    def lof_intolerance(self, results_path=None, plot=True, save=False):
+        """ Takes the results of the outer crossvalidation and analyzes if there is an enrichment of loss of function and missense mutation intolerant genes among the predicted genes.
+            Genes for which we have no LoF or missense information have been excluded.
+
+            Args:
+                results_path (str): The path to a resultsfile so the positive labels can be extracted. 
+                    This is not necessary if the task :obj:`overlap_analysis` has been run before, then the results paths are already known to the postprocessor.
+                plot (bool): If plots should be produced. If True, then the plots are placed in :obj:`config.pp.plot_dir`.
+                save (bool): If results should be saved. If True, then the results are placed in the plots in :obj:`config.pp.save_dir`.
+
+            Returns:
+                tuple(list[ResultA, ArrayA, ResultB, ArrayB], list[ResultC, ResultD]): Returns a tuple of various results.
+                    ResultA is the enrichment of genes with pLI > 0.8 in positively labeled genes, ResultB is the enrichment in the candidates.
+                    Array A and ArrayB are the contingency tables for ResultA and ResultB.
+                    ResultC is the result of a tukey's HSD test for LoF mutation intolerance among positives, candidates and noncandidates.
+                    ResultD is the result of a tukey's HSD test for Missense mutation intolerance among positives, candidates and noncandidates.
+        """
+
         logger = setup_logger(*self.logger_args)
         if self.outer_result is None:
             logger.warning("LoF Intolerance Analysis is requested but results of outer overlap analysis are missing. Skipping it.")
@@ -643,26 +742,26 @@ class PostProcessor:
         pli_genes = set(pli_table["gene"][pli_table["pLI"] > 0.9].tolist())
         all_pli_genes = set(pli_table["gene"].tolist())
 
-        array = self.make_contingency_table(all_genes, positive_genes, pli_genes.intersection(all_genes))
-        pli_enrichment_result = fisher_exact(array)
+        array_mendelian = self.make_contingency_table(all_genes, positive_genes, pli_genes.intersection(all_genes))
+        pli_enrichment_result_mendelian = fisher_exact(array_mendelian)
 
-        valid_pli_genes = self.return_only_valid(pli_genes, all_genes)
+        valid_pli_genes = self._return_only_valid(pli_genes, all_genes)
         self.pp_table.add("pLI>0.9", valid_pli_genes, True, False)
 
-        unknown_pli_genes = self.return_only_valid(pli_genes, unknown_genes)
+        unknown_pli_genes = self._return_only_valid(pli_genes, unknown_genes)
 
         logger.info("Total of {} genes with significant LoF Intolerance, {} of them match with our translation table.".format(len(pli_genes), len(pli_genes.intersection(all_genes))))
         logger.info("Found {} LoF Intolerance genes among the {} known positive genes (p: {:.2e}, OR: {}), leaving {} in {} Unknowns".format(
-            len(pli_genes.intersection(positive_genes)), len(positive_genes), pli_enrichment_result[1], round(pli_enrichment_result[0], 3), len(unknown_pli_genes), len(unknown_genes)))
+            len(pli_genes.intersection(positive_genes)), len(positive_genes), pli_enrichment_result_mendelian[1], round(pli_enrichment_result_mendelian[0], 3), len(unknown_pli_genes), len(unknown_genes)))
 
         predicted_genes = set(self.outer_result[0].keys())
 
-        array = self.make_contingency_table(unknown_genes, predicted_genes, unknown_pli_genes)
+        array_candidates = self.make_contingency_table(unknown_genes, predicted_genes, unknown_pli_genes)
 
-        pli_enrichment_result = fisher_exact(array)
+        pli_enrichment_result_candidates = fisher_exact(array_candidates)
 
-        logger.info("Fishers Exact Test for genes with significant LoF Intolerance among Predicted Genes. p: {:.2e}, OR: {}".format(pli_enrichment_result[1], round(pli_enrichment_result[0], 3)))
-        logger.info("LoF Intolerance Confusion Matrix:\n" + str(array))
+        logger.info("Fishers Exact Test for genes with significant LoF Intolerance among Predicted Genes. p: {:.2e}, OR: {}".format(pli_enrichment_result_candidates[1], round(pli_enrichment_result_candidates[0], 3)))
+        logger.info("LoF Intolerance Confusion Matrix:\n" + str(array_candidates))
 
         tukeys = []
 
@@ -695,7 +794,7 @@ class PostProcessor:
 
             tukeys.append(tukey)
 
-        return pli_enrichment_result, tukeys
+        return [pli_enrichment_result_mendelian, array_mendelian, pli_enrichment_result_candidates, array_candidates], tukeys
 
     def get_unknown_genes(self, results_path=None):
         #translation_table = self.get_translation_table()
@@ -712,16 +811,7 @@ class PostProcessor:
 
         return unlabeled_genes, all_genes, positive_genes
 
-    def get_previous_symbols(self):
-        translation_table = self.get_translation_table()
-        previous_to_current = dict()
-        for previous, current in zip(translation_table["prev_symbol", "symbol"]):
-            if previous != "":
-                previous_to_current[previous] = current
-        
-        return previous_to_current
-
-    def return_only_valid(self, subset: set, super_set: set) -> set:
+    def _return_only_valid(self, subset: set, super_set: set) -> set:
         """check if each entry in subset are present in super_set and return only those wo are"""
 
         return subset.intersection(super_set)
@@ -878,13 +968,13 @@ class PostProcessor:
 
     def get_true_positives(self, results_path=None):
 
-        table = self.read_results_file(results_path)
+        table = self._read_results_file(results_path)
 
         return table["hgnc"][table["truth"] == 1].tolist()
 
     def get_unlabeled_genes(self, results_path=None):
 
-        table = self.read_results_file(results_path)
+        table = self._read_results_file(results_path)
 
         return table["hgnc"][table["truth"] == 0].tolist()
 
@@ -937,7 +1027,7 @@ class PostProcessor:
                 np.savetxt(handle, most_often_predicted, fmt='%s')
 
         if len(gene_counters) > 1:
-            outer_result = self.count_overlap(most_often_predicted_list)
+            outer_result = self._count_overlap(most_often_predicted_list)
             total = str(np.sum(list(outer_result[1].values())))
             with open(os.path.join(self.config.pp.save_dir, str(self.config.name) + "outer_results.json"), 'w') as fp:
                 json.dump(outer_result, fp, skipkeys=True, indent=2)
@@ -976,7 +1066,7 @@ class PostProcessor:
                 if pval > 0.05:
                     return len(pvals) - i + 1
 
-    def read_results_file(self, results_file=None):
+    def _read_results_file(self, results_file=None):
         """Reads and returns the specified results file.
            If no results file is specified, reads the first.
            If a list is passed as results_file, the first element is read."""
@@ -992,47 +1082,13 @@ class PostProcessor:
             if self.target.lower() in tag.lower():
                 return doid
 
-    def compare(self, compare_file: str, compare_column: str, join_column_compare: str, split_column: str = "probability", split_value: float = 0.7, join_column_results: str = "ensembl"):
-        """compares the true positives, false positives, true negatives etc of a results file given a new comparison metric.
-
-        Args:
-            compare_file (str): path to the file that contains the values that should be compared between groups.
-            compare_column (str): the column in the file that contains the values that should be compared between groups..
-            join_column_compare (str): the column in the compare_file on which the results_file and the compare_file should be joined on (common column).
-            split_column (str): the column in the results_file that should be used to split into pos/neg prediction.
-            split_value (float): the cutoff value on which split_column should be split into positive and negative predictions.
-            join_column_results (str): the column in the results_file that should be used to join the results_file and the compare_file.
-
-        """
-        compare_table = pd.read_csv(compare_file, header=0, sep="\t")
-        compare_table.index = compare_table[join_column_compare]
-        joined_table = self.results_table.join(compare_table, on=join_column_results, how="inner")
-
-        true_positive = joined_table[(joined_table["truth"] == 1) & (joined_table[split_column] > split_value)][compare_column].tolist()
-        false_positive = joined_table[(joined_table["truth"] == 0) & (joined_table[split_column] > split_value)][compare_column].tolist()
-
-        true_negative = joined_table[(joined_table["truth"] == 0) & (joined_table[split_column] < split_value)][compare_column].tolist()
-        false_negative = joined_table[(joined_table["truth"] == 1) & (joined_table[split_column] < split_value)][compare_column].tolist()
-
-        all_values = true_positive + false_positive + true_negative + false_negative
-        all_labels = ["TP"] * len(true_positive) + ["FP"] * len(false_positive) + ["TN"] * len(true_negative) + ["FN"] * len(false_negative)
-
-        fig, ax = plt.subplots()
-
-        sns.violinplot(ax=ax, x=all_labels, y=all_values, split=False, cut=0)
-
-        pval_tp_fp = mannwhitneyu(true_positive, false_positive)[1]
-        pval_tn_fp = mannwhitneyu(true_negative, false_positive)[1]
-
-        return pval_tp_fp, pval_tn_fp, fig
-
     def check_overlap(self, results_paths: list, cutoff_value, cutoff_type: str, plot=True):
         """takes all results files given in results_paths and checks their overlap in predictions.
         cutoff types are: top (int), bottom (int), split (float)"""
 
         logger = setup_logger(*self.logger_args)
 
-        results_tables = [self.read_results_file(path) for path in results_paths]
+        results_tables = [self._read_results_file(path) for path in results_paths]
 
         count_counters = {}
         gene_counters = {}
@@ -1061,9 +1117,9 @@ class PostProcessor:
             #random_genes = {iteration: [total_genes[np.array(random.sample(range(len(total_genes)), len(nonrandom_genes)))].tolist() if len(nonrandom_genes) > 0 else [] for total_genes, nonrandom_genes in zip(eligible_genes, kept_genes)] for iteration in range(self.num_runs_for_random_experiments)}
 
 
-            gene_counter, count_counter = self.count_overlap(kept_genes)
+            gene_counter, count_counter = self._count_overlap(kept_genes)
             mean_counter, sd_counter = self.get_random_overlap(eligible_genes, kept_genes, algorithm="descriptive")
-            #mean_counter, sd_counter = self.count_overlap(random_genes, get_mean_sd=True)
+            #mean_counter, sd_counter = self._count_overlap(random_genes, get_mean_sd=True)
 
             gene_counters.update({criterion: gene_counter})
             count_counters.update({criterion: count_counter})
@@ -1086,7 +1142,7 @@ class PostProcessor:
         import scipy.stats as stats
         if algorithm == "descriptive":
             random_genes = {iteration: [total_genes[np.array(random.sample(range(len(total_genes)), len(nonrandom_genes)))].tolist() if len(nonrandom_genes) > 0 else [] for total_genes, nonrandom_genes in zip(eligible_genes, kept_genes)] for iteration in range(self.num_runs_for_random_experiments)}
-            mean_counter, sd_counter = self.count_overlap(random_genes, get_mean_sd=True)
+            mean_counter, sd_counter = self._count_overlap(random_genes, get_mean_sd=True)
         elif algorithm == "fast":
             n_models = self.config.crossval.n_folds if n_models is None else n_models
             n_drawings = self.num_runs_for_random_experiments
@@ -1119,12 +1175,12 @@ class PostProcessor:
             raise ValueError("'algorithm' keyword must be either 'descriptive' or 'fast'")
         return  mean_counter, sd_counter
 
-    def count_overlap(self, list_of_sets, get_mean_sd: bool = False):
+    def _count_overlap(self, list_of_sets, get_mean_sd: bool = False):
         ''' Takes a list of gene sets and returns counts how often each gene occurs in each of the sets and how often each of the counts occurs in the total list.
         optional parameter get_mean_sd means that the input value is a dict of list of sets containing multiple iterations of random experiments and mean and sd of counts is returned instead'''
 
         if get_mean_sd:
-            count_counters = [self.count_overlap(list)[1] for _, list in list_of_sets.items()]
+            count_counters = [self._count_overlap(list)[1] for _, list in list_of_sets.items()]
             aggregated_count_counters = {i: [] for i in range(1, len(count_counters[0].keys()) + 1)}
 
             for i in aggregated_count_counters.keys():
