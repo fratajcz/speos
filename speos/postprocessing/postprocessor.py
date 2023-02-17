@@ -930,18 +930,6 @@ class PostProcessor:
         return set(hgnc2degree.keys())
 
     def get_drugtarget_dict(self, path_to_graph="~/ppi-core-genes/data/drkg/cgi.tsv") -> dict:
-
-        """
-        condition_df = pd.read_table("/home/icb/florin.ratajczak/ppi-core-genes/data/drkg/cgi_cardiovascular.txt",sep="\t",names= ["Compound", "edge", "Disease"])
-        condition_compounds = set(condition_df["Compound"])
-        nodes_to_delete = []
-        for node in graph.nodes:
-            if node.startswith("Compound") and node not in condition_compounds:
-                nodes_to_delete.append(node)
-
-        graph.remove_nodes_from(nodes_to_delete)
-        graph.remove_nodes_from(list(nx.isolates(graph)))
-        """
         graph = self.load_drugtarget_graph(path_to_graph)
         node2entrez = {node: "".join(node.split("::")[1:]) for node in graph.nodes if node.startswith("Gene")}
         # node2entrez = {value: "".join(value.split("::")[1:]) for value in df["Gene"] if not "".join(value.split("::")[1:]).startswith("drugbank")}
