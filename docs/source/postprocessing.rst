@@ -9,6 +9,6 @@ If, however, the user needs more detailed results, there is an example at the en
 
 For a more detailed of description of the the external validation tasks you can consult the method section of the `accompanying paper <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1>`_ .
 
-.. autoclass:: speos.preprocessing.preprocessor.PreProcessor
+.. autoclass:: speos.postprocessing.postprocessor.PostProcessor
     :members:
     :inherited-members:
