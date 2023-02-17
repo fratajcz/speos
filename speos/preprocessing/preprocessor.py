@@ -52,7 +52,6 @@ class PreProcessor:
                 use_embeddings (bool): If node embeddings should be added to node features. If :obj:`None`, the respective setting will be read from the config provided during initialization.
            """
 
-
         self._read_translation_table()
 
         self._build_conversion_dicts()

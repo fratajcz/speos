@@ -1,5 +1,5 @@
-Inputs
-======
+speos.preprocessing
+===================
 
 Speos automatically integrates various types of inputs, namely GWAS summary statistics, gene expression data and different biological networks.
 To allow an extensible and easy integration of new data sources, please read the following documentation.

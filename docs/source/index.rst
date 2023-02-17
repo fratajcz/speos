@@ -9,7 +9,7 @@ Welcome to Speos's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Step By Step
    
    introduction
    getting_started
@@ -17,6 +17,10 @@ Welcome to Speos's documentation!
    configuration
    extension
    benchmarking
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Package Reference
    inputs
 
 
