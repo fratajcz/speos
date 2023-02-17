@@ -558,22 +558,30 @@ class PreProcessor:
 
         return df
 
-    def get_graph(self, features=False):
+    def get_graph(self, features=False, use_embeddings=False):
         """ 
+            Returns a networkx graph object with the required settings. If the graph hasnt been built yet, then it builds it first.
+
+            Args:
+                features (bool): If the node-features should be read and added to the nodes. Nodes that have missing features will be removed, thus this setting changes the size of the graph returned. 
+                    Is only relevant if the graph hasnt been built yet.
+                use_embeddings (bool): If node embeddings should be added to node features. If :obj:`None`, the respective setting will be read from the config provided during initialization.
+                    Is only relevant if the graph hasnt been built yet.
+                
             Returns:
                 networkx.MultiDiGraph: The graph object holding all input adjacencies, node labels and input features.
         """
 
         if not self.graph_is_built:
-            self.build_graph(features=features)
+            self.build_graph(features=features, use_embeddings=use_embeddings)
 
         if features and not self.has_features:
-            self.build_graph(features=features)
+            self.build_graph(features=features, use_embeddings=use_embeddings)
 
         return self.G
 
     def dump_edgelist(self, path, symbol="hgnc"):
-        """dumps the edgelist that is currently held by the graph in tabstop-seperated format. 
+        """Dumps the edgelist that is currently held by the graph in tabstop-seperated format. 
         If you need other formats, call self.get_graph() and write the edgelists from the graph object.
 
             Args:
@@ -637,4 +645,8 @@ class PreProcessor:
             logger.info("Using {} additional node data sources: {}".format(len(self.additional_inputs), [input["name"] for input in self.additional_inputs]))
 
     def get_num_relations(self):
+        """
+            Returns: 
+                int: Number of different relations / edge types in the graph.
+        """
         return len(self.adjacency_list)
