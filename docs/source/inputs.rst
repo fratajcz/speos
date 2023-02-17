@@ -5,10 +5,31 @@ Speos automatically integrates various types of inputs, namely GWAS summary stat
 To allow an extensible and easy integration of new data sources, please read the following documentation.
 
 
+Quickstart
+----------
+
+Speos has an :obj:`InputHandler` class that requires only a config file and returns the fully equipped preprocessor. Use this class if all you want is the data for a given run:
+
+.. autoclass:: speos.preprocessing.handler.InputHandler
+    :members:
+    :inherited-members:
+
+
+Preprocessor
+------------
+
+The Preprocessor is a rather extensive class that strings together all preprocessing operations, such as reading files, building the graph from edgelists and normalizing input features.
+It has a few useful functions for users, such as :obj:`get_data()`, :obj:`get_graph()` or :obj:`get_feature_names()`
+
+.. autoclass:: speos.preprocessing.mappers.Preprocessor
+    :members:
+    :inherited-members:
+
+
 GWAS Data
 ---------
 
-The mapping of phenotypes to appropriate GWAS traits is done by the ``speos.preprocessing.mappers.GWASMapper`` :
+The mapping of phenotypes to appropriate GWAS traits is done by the :obj:`speos.preprocessing.mappers.GWASMapper` :
 
 .. autoclass:: speos.preprocessing.mappers.GWASMapper
     :members:
@@ -18,7 +39,7 @@ The mapping of phenotypes to appropriate GWAS traits is done by the ``speos.prep
 Biological Networks
 -------------------
 
-The mapping of networks and filtering by their properties is done by the ``speos.preprocessing.mappers.AdjacencyMapper`` :
+The mapping of networks and filtering by their properties is done by the :obj:`speos.preprocessing.mappers.AdjacencyMapper` :
 
 .. autoclass:: speos.preprocessing.mappers.AdjacencyMapper
     :members:

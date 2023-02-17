@@ -45,9 +45,9 @@ class PreProcessor:
 
     def build_graph(self, features=True, use_embeddings=None):
 
-        self.read_translation_table()
+        self._read_translation_table()
 
-        self.build_conversion_dicts()
+        self._build_conversion_dicts()
 
         if len(self.expression_files) > 0:
             self.build_expression_table()
@@ -95,7 +95,7 @@ class PreProcessor:
         return [(i, {self.entrez_key: series[self.entrez_key], self.ensembl_key: series[self.ensembl_key], self.hgnc_key:series[self.hgnc_key], "y": 0, "x": []})
                 for i, series in self.translation_table.iterrows()]
 
-    def read_translation_table(self, path=None, hgnc_col="symbol", entrez_col="entrez_id", ensembl_col="ensembl_gene_id", sep="\t") -> None:
+    def _read_translation_table(self, path=None, hgnc_col="symbol", entrez_col="entrez_id", ensembl_col="ensembl_gene_id", sep="\t") -> None:
 
         if path is None:
             path = self.translation_table_path
@@ -104,10 +104,10 @@ class PreProcessor:
         df.rename(columns={hgnc_col: self.hgnc_key, entrez_col: self.entrez_key, ensembl_col: self.ensembl_key}, inplace=True)
         self.translation_table = df
 
-    def build_conversion_dicts(self) -> None:
+    def _build_conversion_dicts(self) -> None:
 
         if self.translation_table is None:
-            self.read_translation_table()
+            self._read_translation_table()
 
         self.ensembl2id = {self.translation_table[self.ensembl_key][i]: i for i in range(
             len(self.translation_table))}

@@ -17,8 +17,16 @@ class InputHandler:
         self.prepro = PreProcessor(config, mappings, adjacencies)
 
     def get_preprocessor(self):
+        """ 
+            Returns:
+                speos.preprocessing.preprocessor.Preprocessor: The Preprocessor object that holds all the data necessary for the run in graph format.
+        """
         return self.prepro
 
     def get_data(self, *args, **kwargs):
-        """ Utility function that calls get_data of the preprocessor"""
+        """ Utility function that calls get_data of the preprocessor
+
+            Returns:
+                tuple(Tensor, Tensor, Tensor): returns input matrix X, ground truth y and adjacency matrix adj as pytorch tensors.
+        """
         return self.prepro.get_data(*args, **kwargs)
