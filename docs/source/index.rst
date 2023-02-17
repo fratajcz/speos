@@ -23,6 +23,7 @@ Welcome to Speos's documentation!
    :caption: Package Reference
    
    inputs
+   postprocessing
 
 
 
