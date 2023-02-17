@@ -3,7 +3,12 @@ from speos.preprocessing.preprocessor import PreProcessor
 
 class InputHandler:
     def __init__(self, config):
-        """ Utility class that strings together gwas and adjacency mapping and feeds it into the preprocessor """
+        """ Utility class that strings together gwas and adjacency mapping and feeds it into the preprocessor 
+
+            Args:
+                config (speos.utils.config.Config): A Config object that contains all the details of the required data.
+
+        """
         self.config = config
         mappings = GWASMapper().get_mappings(config.input.tag, fields=config.input.field)
 

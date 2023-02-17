@@ -65,11 +65,9 @@ class GWASMapper(Mapper):
     Enables simple matching of multiple GWAS to individual Phenotypes via its :obj:`get_mappings()` method.
 
     Args:
-        ground_truth_path (int): The path to the directory where the ground truth (label) files are stored, as defined in the :obj:`mapping_file`.
-            It can be set to :obj:`""` if the path is included in the file name as defined in the :obj:`mapping_file`.
-        features_file_path (str): The path to the directory where the features (GWAS) files are stored, as defined in the :obj:`mapping_file`.
-            It can be set to :obj:`""` if the path is included in the file name as defined in the :obj:`mapping_file`.
         mapping_file (str): The path to the file that maps ground truths (labels) to sets of feature (GWAS) files. (default: :obj:`./speos/mapping.json`)
+        extension_mappings (str): The path to the file that maps ground truths (labels) to sets of feature (GWAS) files for user-defined extensions. (default: :obj:`./extensions/mapping.json`)
+        
     """
     def __init__(self,
                  mapping_file: str = "./speos/mapping.json",
@@ -110,6 +108,7 @@ class AdjacencyMapper(Mapper):
 
     Args:
         mapping_file (str): The path to the file that describes the networks and where they are stored. (default: :obj:`./speos/adjacencies.json`)
+        extension_mappings (str): The path to the file that describes the networks and where they are stored for user-defined extensions. (default: :obj:`./extensions/adjacencies.json`)
     """
     def __init__(self,
                  mapping_file: str = "speos/adjacencies.json",
@@ -146,7 +145,16 @@ class AdjacencyMapper(Mapper):
     def get_mappings(self, tags: str = "", fields: str = "name"):
         '''goes through the mapping list and returns all mappings that include the provided tag in the provided field (default is name field)
 
-          If called without arguments, returns all mappings (tag = "") '''
+        If called without arguments, returns all mappings (tag = "") 
+          
+        Args:
+            tags (str/list): the tag or a list of tags that should be searched for in the fiven field of adjacencies (i.e. a name, a type etc.) 
+            fields (str/list): the field in which the tag should be searched for. in case field is a string, all tags are searched in that field.
+                In case of multiple tags and multiple fields, lengths must match and the nth tag is searched in the nth field.
+
+        Returns:
+            list: List of adjacencies that match the tag/field mapping and are not blacklisted.
+          '''
         if type(tags) == str:
             tags = [tags]
         if type(fields) == str:
