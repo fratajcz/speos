@@ -62,7 +62,6 @@ class PostProcessor:
                 try:
                     value.append(getattr(self, function)())
                 except FileNotFoundError as e:
-                    
                     logger.error("FileNotFoundError during handling of postprocessing task {}:".format(function))
                     logger.error(e)
                     continue
@@ -1036,12 +1035,12 @@ class PostProcessor:
             self.outer_result = json.load(fp)
 
     def get_consensus_genes(self, count2gene, pvals):
-        consensus_score = self.find_consensus_score(pvals)
+        consensus_score = self._find_consensus_score(pvals)
         mask = [np.array(list(count2gene.keys())) >= consensus_score]
         selected_keys = np.array(list(count2gene.keys()))[tuple(mask)]
         return sorted([gene for key in selected_keys for gene in count2gene[key]]), consensus_score
 
-    def find_consensus_score(self, pvals: list) -> int:
+    def _find_consensus_score(self, pvals: list) -> int:
         """from 1 to n, finds in which bin the positive values are significantly enriched for the first time"""
         if type(self.consensus) == int:
             return self.consensus
@@ -1064,11 +1063,6 @@ class PostProcessor:
         if type(results_file) == list:
             results_file = results_file[0]
         return pd.read_csv(results_file, header=0, index_col=0, sep="\t")
-
-    def get_doid(self):
-        for tag, doid in self.target2doid.items():
-            if self.target.lower() in tag.lower():
-                return doid
 
     def check_overlap(self, results_paths: list, cutoff_value, cutoff_type: str, plot=True):
         """Checks the overlap of multiple runs and returns them
@@ -1148,7 +1142,6 @@ class PostProcessor:
             b = []
             results = []
             for eligible_genes_one_fold, kept_genes_one_fold in zip(eligible_genes, kept_genes):
-                #TODO something seems to be redundant here, we don't need to traw n_models (loop) times n_models (stats.binom.rvs), one time n_models should be enough
                 results.append(stats.binom.rvs(1, len(kept_genes_one_fold)/len(eligible_genes_one_fold), size=(len(eligible_genes_one_fold), n_drawings)))
                 
             results = np.array(results)
