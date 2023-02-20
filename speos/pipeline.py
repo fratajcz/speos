@@ -57,7 +57,7 @@ class BaggingPipeline(Pipeline):
     def __init__(self, config_path: str = ""):
         super(BaggingPipeline, self).__init__(config_path)
 
-        self.bagging = BaggingWrapper(self.config, self.logger)
+        self.bagging = BaggingWrapper(self.config)
         # self.postprocessor = PostProcessor(self.config)
 
     def run(self):
@@ -70,7 +70,7 @@ class OuterCVPipeline(Pipeline):
     def __init__(self, config_path: str = ""):
         super(OuterCVPipeline, self).__init__(config_path)
 
-        self.crossval = OuterCVWrapper(self.config, self.logger)
+        self.crossval = OuterCVWrapper(self.config)
         self.postprocessor = PostProcessor(self.config)
 
     def run(self):
@@ -82,7 +82,7 @@ class InferencePipeline(Pipeline):
     def __init__(self, config_path: str = ""):
         super(InferencePipeline, self).__init__(config_path)
 
-        self.inference_engine = InferenceEngine(self.config, self.logger)
+        self.inference_engine = InferenceEngine(self.config)
         #self.postprocessor = PostProcessor(self.config)
 
     def run(self):
@@ -112,7 +112,7 @@ class CVInferencePipeline(Pipeline):
             logger.info("Found train switch is 'on' in the provided config, turning it off to do inference-only.")
             self.config.training.switch = False
 
-        self.crossval = CVWrapper(self.config, self.logger)
+        self.crossval = CVWrapper(self.config)
         self.postprocessor = PostProcessor(self.config)
 
     def run(self):
@@ -128,7 +128,7 @@ class OuterCVInferencePipeline(Pipeline):
             logger.info("Found train switch is 'on' in the provided config, turning it off to do inference-only.")
             self.config.training.switch = False
 
-        self.crossval = OuterCVWrapper(self.config, self.logger)
+        self.crossval = OuterCVWrapper(self.config)
         self.postprocessor = PostProcessor(self.config)
 
     def run(self):

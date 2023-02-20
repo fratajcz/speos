@@ -24,7 +24,6 @@ class BaseWrapper():
 class BaggingWrapper(BaseWrapper):
     def __init__(self, config, logger=None):
         super(BaggingWrapper, self).__init__(config)
-        self.logger = setup_logger(config, __name__ + " (bagging)")
         self.n_folds = config.crossval.n_folds
         self.base_experiment = Experiment(config, id="bootstrap")
         self.data = self.base_experiment.data
@@ -37,7 +36,8 @@ class BaggingWrapper(BaseWrapper):
         self.sample_factor = 1.5
 
     def run(self):
-        self.logger.info(
+        logger = setup_logger(self.config, __name__ + " (bagging)")
+        logger.info(
             "Running Bagging with {} splits.".format(self.n_folds))
 
         for i in range(self.n_folds):
@@ -47,10 +47,11 @@ class BaggingWrapper(BaseWrapper):
             self.cleanup()
 
     def run_epoch(self, i):
-        self.logger.info("Start Epoch {}: CUDA Memory allocated: {}; reserved: {}".format(
+        logger = setup_logger(self.config, __name__ + " (bagging)")
+        logger.info("Start Epoch {}: CUDA Memory allocated: {}; reserved: {}".format(
             i, torch.cuda.memory_allocated(), torch.cuda.memory_reserved()))
         data = deepcopy(self.data)
-        self.logger.debug("After data copying: CUDA Memory allocated: {}; reserved: {}".format(
+        logger.debug("After data copying: CUDA Memory allocated: {}; reserved: {}".format(
             torch.cuda.memory_allocated(), torch.cuda.memory_reserved()))
         data.train_mask, data.val_mask = self.resample()
 
@@ -69,7 +70,7 @@ class BaggingWrapper(BaseWrapper):
 
         split_experiment = Experiment(
             sub_config, resultshandler=self.base_experiment.resultshandler, id=i)
-        self.logger.debug("After experiment creation: CUDA Memory allocated: {}; reserved: {}".format(
+        logger.debug("After experiment creation: CUDA Memory allocated: {}; reserved: {}".format(
             torch.cuda.memory_allocated(), torch.cuda.memory_reserved()))
 
         split_experiment.run()
@@ -80,22 +81,22 @@ class BaggingWrapper(BaseWrapper):
             split_inference_engine.infer()
             del split_inference_engine
 
-        self.logger.debug("End Epoch {}: CUDA Memory allocated: {}; reserved: {}".format(
+        logger.debug("End Epoch {}: CUDA Memory allocated: {}; reserved: {}".format(
             i, torch.cuda.memory_allocated(), torch.cuda.memory_reserved()))
-        self.logger.debug("Deleting References.")
+        logger.debug("Deleting References.")
         del data
         torch.cuda.empty_cache()
-        self.logger.debug("After data deletion: CUDA Memory allocated: {}; reserved: {}".format(
+        logger.debug("After data deletion: CUDA Memory allocated: {}; reserved: {}".format(
             torch.cuda.memory_allocated(), torch.cuda.memory_reserved()))
         del split_experiment.data
         del split_experiment.model
         del split_experiment
         torch.cuda.empty_cache()
-        self.logger.debug("After experiment deletion: CUDA Memory allocated: {}; reserved: {}".format(
+        logger.debug("After experiment deletion: CUDA Memory allocated: {}; reserved: {}".format(
             torch.cuda.memory_allocated(), torch.cuda.memory_reserved()))
         gc.collect()
         torch.cuda.empty_cache()
-        self.logger.debug("After gc call: CUDA Memory allocated: {}; reserved: {}".format(
+        logger.debug("After gc call: CUDA Memory allocated: {}; reserved: {}".format(
             torch.cuda.memory_allocated(), torch.cuda.memory_reserved()))
 
     def resample(self):
@@ -117,10 +118,9 @@ class BaggingWrapper(BaseWrapper):
 
 
 class CVWrapper(BaseWrapper):
-    def __init__(self, config, logger=None, slave=False):
+    def __init__(self, config, slave=False):
         super(CVWrapper, self).__init__(config)
         self.name = config.name
-        self.logger = setup_logger(config, __name__ + " (cv)")
         self.config = config
         self.n_folds = config.crossval.n_folds
 
@@ -140,8 +140,8 @@ class CVWrapper(BaseWrapper):
         
 
     def run(self):
-
-        self.logger.info(
+        logger = setup_logger(self.config, __name__ + " (cv)")
+        logger.info(
             "Running Inner Cross Validation with {} splits.".format(self.n_folds))
 
         for i in range(len(self.indices)):
@@ -149,7 +149,7 @@ class CVWrapper(BaseWrapper):
             if self.indices is not None and i == self.test_split:
                 continue
 
-            self.logger.info("Starting Inner Split {}".format(i))
+            logger.info("Starting Inner Split {}".format(i))
 
             sub_config = self.config.deepcopy()
             sub_config.name = self.name + self.config.crossval.suffix.format(i)
@@ -260,19 +260,19 @@ class CVWrapper(BaseWrapper):
 
 
 class OuterCVWrapper:
-    def __init__(self, config, logger=None):
+    def __init__(self, config):
         self.name = config.name
-        self.logger = setup_logger(config, __name__ + " (ocv)")
         self.config = config
         self.n_folds = config.crossval.n_folds + 1
 
-        self.inner_cv = CVWrapper(config, logger, slave=True)
+        self.inner_cv = CVWrapper(config, slave=True)
 
     def run(self):
-        self.logger.info(
+        logger = setup_logger(self.config, __name__ + " (ocv)")
+        logger.info(
             "Running Outer Cross Validation with {} splits.".format(self.n_folds))
         for i in range(self.n_folds):
-            self.logger.info("Starting Outer Split {}".format(i))
+            logger.info("Starting Outer Split {}".format(i))
             self.inner_cv.name = self.name + \
                 self.config.crossval.outer_suffix.format(i)
             self.inner_cv.test_split = i
