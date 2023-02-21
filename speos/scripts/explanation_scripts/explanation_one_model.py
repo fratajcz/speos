@@ -23,7 +23,7 @@ parser.add_argument('--gene', "-g", type=str, default="",
                     help='HGNC gene symbol which should be interpreted')
 parser.add_argument('--index', "-i", type=int, default=-1,
                     help='index of gene to examine')
-parser.add_argument('--threshold', "-t", type=float, default=0.1,
+parser.add_argument('--threshold', "-t", type=float, default=0.0,
                     help='minimum importance of nodes and edges required to be plotted')
 
 

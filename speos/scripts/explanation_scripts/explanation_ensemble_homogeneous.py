@@ -34,7 +34,7 @@ parser.add_argument('--readonly', "-r", action='store_true',
                     help='if run should be readonly.')
 parser.add_argument('--device', "-d", type=str,
                     default="cpu",
-                    help='if run should be readonly.')
+                    help='The device on which the calculations should be ru on (i.e. "cpu", or "cuda:0" etc.)')
 
 
 
@@ -152,16 +152,16 @@ for i, (output_idx, gene) in enumerate(zip(candidates, genes)):
                     additional_forward_args=(data.edge_index), internal_batch_size=1)
 
                 # Scale attributions to [0, 1]:
-                ig_attr_self = ig_attr_node.squeeze(0)[output_idx]
-                ig_attr_self_abs = ig_attr_node.squeeze(0)[output_idx].abs()
-                ig_attr_node = ig_attr_node.squeeze(0).abs().sum(dim=1)
+                ig_attr_self = ig_attr_node.squeeze(0)[output_idx].detach()
+                ig_attr_self_abs = ig_attr_node.squeeze(0)[output_idx].abs().detach()
+                ig_attr_node = ig_attr_node.squeeze(0).abs().sum(dim=1).detach()
                 
-                ig_attr_self /= ig_attr_self.abs().max()
-                ig_attr_self_abs /= ig_attr_self_abs.max()
-                ig_attr_node /= ig_attr_node.max()
+                ig_attr_self /= ig_attr_self.abs().max().detach()
+                ig_attr_self_abs /= ig_attr_self_abs.max().detach()
+                ig_attr_node /= ig_attr_node.max().detach()
 
-                ig_attr_edge = ig_attr_edge.squeeze(0).abs()
-                ig_attr_edge /= ig_attr_edge.max()
+                ig_attr_edge = ig_attr_edge.squeeze(0).abs().detach()
+                ig_attr_edge /= ig_attr_edge.max().detach()
                 
                 torch.save(ig_attr_self, os.path.join(config.pp.save_dir, "{}_ig_attr_self_outer{}_inner{}_{}.pt".format(old_config_name, outer_fold, inner_fold, gene)))
                 torch.save(ig_attr_self_abs, os.path.join(config.pp.save_dir, "{}_ig_attr_self_abs_outer{}_inner{}_{}.pt".format(old_config_name, outer_fold, inner_fold, args.gene)))

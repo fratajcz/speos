@@ -17,6 +17,7 @@ Welcome to Speos's documentation!
    configuration
    extension
    benchmarking
+   interpretation
 
 .. toctree::
    :maxdepth: 2
