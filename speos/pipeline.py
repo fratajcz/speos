@@ -45,7 +45,7 @@ class CVPipeline(Pipeline):
     def __init__(self, config_path: str = ""):
         super(CVPipeline, self).__init__(config_path)
 
-        self.crossval = CVWrapper(self.config, self.logger)
+        self.crossval = CVWrapper(self.config)
         self.postprocessor = PostProcessor(self.config)
 
     def run(self):

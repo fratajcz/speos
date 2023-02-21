@@ -27,6 +27,9 @@ parser.add_argument('--mincs', "-m", type=int, default=-1,
 parser.add_argument('--readonly', "-r", action='store_true',
                     default=False,
                     help='if run should be readonly.')
+parser.add_argument('--device', "-d", type=str,
+                    default="cpu",
+                    help='if run should be readonly.')
 
 args = parser.parse_args()
 
@@ -69,22 +72,6 @@ num_outer = 10
 data.x = list(data.x_dict.values())[0]
 data.edge_index, edge_encoder = nn_utils.typed_edges_to_sparse_tensor(data.x, data.edge_index_dict)
 
-#print(edge_encoder.inverse_transform([0]))
-#print(data.edge_index)
-#print(dir(data.edge_index))
-#edge_masks = [None] * len(data.edge_index_dict.keys())
-#for key, value in data.edge_index_dict.items():
-#    index = edge_encoder.transform([key[1]])[0]
-#    type_ = torch.Tensor((index,)).repeat(value.size(1))
-#    mask = torch.ones(value.size(1), requires_grad=True, device="cpu")
-#    mask = torch.stack((mask, type_), 1)
-#    #print(mask)
-#    edge_masks[index] = mask
-#    #print(mask.shape)
-#edge_masks = torch.cat(edge_masks, 0)
-#print(edge_masks.shape)
-#print(edge_masks[:,1].max())
-
 edge_mask = torch.ones_like(data.edge_index.storage.value(), requires_grad=True).cuda()
 edge_types = data.edge_index.storage.value().cuda()
 del data.x_dict
@@ -106,7 +93,7 @@ outer_results_file = "/lustre/groups/epigenereg01/projects/ppi-florin/results/{}
 
 with open(outer_results_file, "r") as file:
     outer_results = json.load(file)[0]
-min_cs = 5
+
 if args.gene == "" and args.index == -1:
     genes = [key for key, value in outer_results.items() if value > 5]
     candidates = [dataset.preprocessor.hgnc2id[gene] for gene in genes]
