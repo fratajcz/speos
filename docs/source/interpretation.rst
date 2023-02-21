@@ -5,7 +5,7 @@ Sometimes it can be very helpful to see which input features have been the most 
 
 To make use of the full range of model interpretation techniques that have been developed for neural networks, Speos uses the bridge between PyTorch Geometric and Captum, the largest model interpretation library for PyTorch.
 
-We have encapsulated the necessary code into command line scripts which either provide interpretations for individual models or for entire ensembles. All you have to do is provide the config file of the runs and the label or index of the genes for which interpretations should be generated:
+We have encapsulated the necessary code into command line scripts which either provide interpretations for individual models or for entire ensembles using `Integrated Gradients <https://captum.ai/docs/extension/integrated_gradients>`_. All you have to do is provide the config file of the runs and the label or index of the genes for which interpretations should be generated:
 
 .. note:: 
 
