@@ -186,7 +186,11 @@ class PostProcessor:
             if option.startswith(phenotype.lower()):
                 phenotype = option
         
-        subtypes = mapping[phenotype.lower()]
+        try:
+            subtypes = mapping[phenotype.lower()]
+        except KeyError:
+            logger.warning("Phenotype {} not registered for differential gene expression analysis.")
+
         num_phenotypes = len(list(subtypes.keys()))
 
         logger.info("Found {} subtypes for phenotype {}: {}.".format(num_phenotypes, phenotype, list(subtypes.keys())))
@@ -679,9 +683,13 @@ class PostProcessor:
         valid_background_ko_genes = self._return_only_valid(background_ko_genes, all_genes)
         unknown_background_ko_genes = self._return_only_valid(valid_background_ko_genes, unknown_genes)
         self.pp_table.add("Included in Mouse KO", valid_background_ko_genes, True, False)
-
-        ko_genes = set(self.get_mouse_knockout_genes())
-
+        
+        try:
+            ko_genes = set(self.get_mouse_knockout_genes())
+        except KeyError:
+            logger.warning("Phenotype {} not registered for mouse KO analysis.")
+            return
+        
         mendelian_array = self.make_contingency_table(valid_background_ko_genes, positive_genes, ko_genes.intersection(all_genes))
         mendelian_ko_enrichment_result = fisher_exact(mendelian_array)
 
