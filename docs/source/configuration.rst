@@ -167,7 +167,8 @@ For example, if you'd like to use :obj:`GraphConv` instead of :obj:`GCN`, then u
             type: gcn       
             kwargs: {aggr: max}
 
-This little snipped changes the neighborhood aggregation keyword of the GCN layer from :obj:`mean` (the default) to :obj:`max`. However, Speos also supports the passing of more sophisitcated keywords, such as classes imported from either `pyg_nn <https://pytorch-geometric.readthedocs.io/en/latest/modules/nn.html#convolutional-layers>`_ or (PyTorch) `nn <https://pytorch.org/docs/1.8.1/nn.html>`_:
+This little snipped changes the neighborhood aggregation keyword of the GCN layer from :obj:`mean` (the default) to :obj:`max`. However, Speos also supports the passing of more sophisitcated keywords, such as classes imported from either `pyg_nn <https://pytorch-geometric.readthedocs.io/en/latest/modules/nn.html#convolutional-layers>`_ or (PyTorch) `nn <https://pytorch.org/docs/1.8.1/nn.html>`_.
+For example, the FiLM layer from PyTorch Geometric by default uses a single linear layer of shape :obj:`(hidden_dim, 2 * hidden_dim)` for it's feature wise linear modulation. by using its :obj:`nn` keyword, we can input arbitrary other neural networks, like the PyTorch Geometric MLP class with two layers (one with shape :obj:`(hidden_dim, 1.5 * hidden_dim)` and one with shape :obj:`(1.5 *hidden_dim, 2 * hidden_dim)`):
 
 .. code-block:: text
     :linenos:
@@ -178,10 +179,7 @@ This little snipped changes the neighborhood aggregation keyword of the GCN laye
             kwargs: 
                 nn: pyg_nn.models.MLP([50,75,100])
 
-Usually, the FiLM layer from PyTorch Geometric uses a single linear layer of shape :obj:`(hidden_dim, 2 * hidden_dim)` for it's feature wise linear modulation. by using its :obj:`nn` keyword, we can input arbitrary other neural networks, like the PyTorch Geometric MLP class with two layers (one with shape :obj:`(hidden_dim, 1.5 * hidden_dim)` and one with shape :obj:`(1.5 *hidden_dim, 2 * hidden_dim)`).
-
 Another example on how to achieve the same is to build a Sequential Model right out of its (PyTorch) nn building blocks:
-
 
 .. code-block:: text
     :linenos:
