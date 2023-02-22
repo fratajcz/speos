@@ -30,6 +30,7 @@ Adjacency Matrices (Networks)
 From the default config (excerpt):
 
 .. code-block:: text
+    :linenos:
 
     input:
         adjacency: BioPlex30293T
@@ -47,6 +48,7 @@ Node Features
 From the default config (excerpt):
 
 .. code-block:: text
+    :linenos:
 
     input:
         gwas_mappings: ./speos/mapping.json
@@ -89,6 +91,7 @@ General
 From the default config (excerpt):
 
 .. code-block:: text
+    :linenos:
 
     model:
         model: SimpleModel            # SimpleModel, LogisticRegressionModel, RandomForestModel, SupportVectorModel or AdversarialModel (untested)
@@ -110,6 +113,7 @@ They are built from fully connected neural networks which can be configured in d
 From the default config (excerpt):
 
 .. code-block:: text
+    :linenos:
 
     model:
         pre_mp:
@@ -123,7 +127,7 @@ From the default config (excerpt):
 
 
 :obj:`dim` lets you control the hidden dimension across the layers. while :obj:`n_layers` controls the number of layers. if you set it to 0, pre_mp will only contain one mandatory layer fitting the input space to the GNNs hidden space and post_mp will contain only two mandatory layers fitting the hidden space to the output space.
-:obj:`act` lets you defince the activation function (nonlinearity). At the moment, only elu and relu are implemented
+:obj:`act` lets you defince the activation function (nonlinearity). At the moment, only elu and relu are implemented, but if you would like to use other activation functions, do not hesitate to send us a feature request via `GitHub Issues <https://github.com/fratajcz/speos/issues>`.
 
 Message Passing (GNN)
 ~~~~~~~~~~~~~~~~~~~~~
@@ -134,6 +138,7 @@ Now, lets look at the message passing (GNN) settings:
 From the default config (excerpt):
 
 .. code-block:: text
+    :linenos:
 
     model:
         mp:
@@ -151,8 +156,49 @@ If you feel like that is not enough and you would like to test a different layer
 For example, if you'd like to use :obj:`GraphConv` instead of :obj:`GCN`, then use :obj:`type: GraphConv` and Speos will try to dynamically import and use that layer. 
 
 :obj:`dim` and :obj:`n_layers` lets you define the width and depth of the GNN. :obj:`normalize` lets you pick either instance, graph or layer normalization applied after each GNN layer. To see their differences, check `here <https://pytorch-geometric.readthedocs.io/en/latest/modules/nn.html#normalization-layers>`_.
-:obj:`kwargs` lets you pass additional keyword arguments for to the layer initialization.
 
+:obj:`kwargs` lets you pass additional keyword arguments for to the layer initialization. Simple keyword arguments can be specified by passing in key, value pairs:
+
+.. code-block:: text
+    :linenos:
+
+    model:
+        mp:
+            type: gcn       
+            kwargs: {aggr: max}
+
+This little snipped changes the neighborhood aggregation keyword of the GCN layer from :obj:`mean` (the default) to :obj:`max`. However, Speos also supports the passing of more sophisitcated keywords, such as classes imported from either `pyg_nn <https://pytorch-geometric.readthedocs.io/en/latest/modules/nn.html#convolutional-layers>`_ or (PyTorch) nn `pyg_nn <https://pytorch.org/docs/1.8.1/nn.html>`:
+
+.. code-block:: text
+    :linenos:
+
+    model:
+        mp:
+            type: film
+            kwargs: 
+                nn: pyg_nn.models.MLP([50,75,100])
+
+Usually, the FiLM layer from PyTorch Geometric uses a single linear layer of shape :obj:`(hidden_dim, 2 * hidden_dim)` for it's feature wise linear modulation. by using its :obj:`nn` keyword, we can input arbitrary other neural networks, like the PyTorch Geometric MLP class with two layers (one with shape :obj:`(hidden_dim, 1.5 * hidden_dim)` and one with shape :obj:`(1.5 *hidden_dim, 2 * hidden_dim)`).
+
+Another example on how to achieve the same is to build a Sequential Model right out of its (PyTorch) nn building blocks:
+
+
+.. code-block:: text
+    :linenos:
+
+    model:
+        mp:
+            type: film
+            kwargs: 
+                nn: nn.Sequential(
+                    nn.Linear(50,75),
+                    nn.ReLU(),
+                    nn.Linear(75,100),
+                    nn.ReLU()
+                    )
+
+Be aware that for now, all classes imported and created this way have to originate in `pyg_nn <https://pytorch-geometric.readthedocs.io/en/latest/modules/nn.html#convolutional-layers>`_ or (PyTorch) nn `pyg_nn <https://pytorch.org/docs/1.8.1/nn.html>`.
+If you would like to use other classes which can not be imported from these two sources, make sure to send us a feature request via `GitHub Issues <https://github.com/fratajcz/speos/issues>`.
 
 Advanced
 ~~~~~~~~
@@ -163,6 +209,7 @@ There are a few other model settings which might be worthwile introducing.
 From the default config (excerpt):
 
 .. code-block:: text
+    :linenos:
 
     model:
         loss: bce

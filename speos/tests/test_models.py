@@ -126,6 +126,81 @@ class SimpleModelTest(unittest.TestCase):
 
         train_out, loss = model.step(dataset.data, dataset.data.train_mask)
 
+    def test_eval_kwargs(self):
+        node_features = torch.rand((3,10))
+        edges = torch.tensor([[0,1,2],[2,0,1]])
+
+        config = self.config.deepcopy()
+        config.input.force_multigraph = True
+        config.model.mp.type = "film"
+        config.model.mp.kwargs = {"nn": "pyg_nn.models.MLP(channel_list=[50, 50, 100])"}
+
+        model = ModelBootstrapper(config, node_features.shape[1], 1).get_model()
+
+        out = model.architectures[0](node_features, edges)
+
+    def test_eval_kwargs_from_dict(self):
+        import yaml
+        node_features = torch.rand((3,10))
+        edges = torch.tensor([[0,1,2],[2,0,1]])
+        
+        configdict = {"input":
+                        {"force_multigraph": True},
+                     "model": 
+                        {"mp": 
+                            {"kwargs": 
+                                {"nn": "pyg_nn.models.MLP(channel_list=[50, 50, 100])"},
+                            "type": "film"
+                            }
+                        }
+                    }
+        
+        with open("testconfig.yaml", 'w') as yaml_file:
+            yaml.dump(configdict, yaml_file, default_flow_style=False)
+
+        config = self.config.deepcopy()
+        new_config = Config()
+        new_config.parse_yaml("testconfig.yaml")
+        config.recursive_update(config, new_config)
+
+        model = ModelBootstrapper(config, node_features.shape[1], 1).get_model()
+
+        out = model.architectures[0](node_features, edges)
+
+    def test_eval_nn_kwargs_from_dict(self):
+        import yaml
+        node_features = torch.rand((3,10))
+        edges = torch.tensor([[0,1,2],[2,0,1]])
+        
+        configdict = {"input":
+                        {"force_multigraph": True},
+                     "model": 
+                        {"mp": 
+                            {"kwargs": 
+                                {"nn": "nn.Sequential( \
+                                        nn.Linear(50,75), \
+                                        nn.ReLU(), \
+                                        nn.Linear(75,100), \
+                                        nn.ReLU() \
+                                        )"},
+                            "type": "film"
+                            }
+                        }
+                    }
+        
+        #with open("testconfig.yaml", 'w') as yaml_file:
+        #    yaml.dump(configdict, yaml_file, default_flow_style=False)
+
+        config = self.config.deepcopy()
+        new_config = Config()
+        new_config.parse_yaml("testconfig.yaml")
+        config.recursive_update(config, new_config)
+
+        model = ModelBootstrapper(config, node_features.shape[1], 1).get_model()
+
+        out = model.architectures[0](node_features, edges)
+
+
     def test_balance_losses(self):
         losses = torch.Tensor((5, 1, 1))
         truth = torch.LongTensor((1, 0, 0))

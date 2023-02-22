@@ -6,6 +6,7 @@ import torch_geometric.utils as pyg_utils
 from sklearn.preprocessing import LabelEncoder
 from torch_sparse import SparseTensor
 from speos.utils.logger import setup_logger
+from speos.utils.config import Config
 import speos.utils.nn_utils as nn_utils
 import speos.layers as layers
 
@@ -131,7 +132,7 @@ class GeneNetwork(nn.Module):
         self.rgcn_kwargs = {"num_bases": 1}
         self.gat_kwargs = {"dropout": 0.1}
         self.cheb_kwargs = {"K": 5}
-
+        self.initialize_kwargs(self.config)
         # Pre Message Passing
         self.make_pre_mp()
 
@@ -140,6 +141,15 @@ class GeneNetwork(nn.Module):
 
         # Post Message Passing
         self.make_post_mp()
+
+    def initialize_kwargs(self, config):
+        for key, value in config.items():
+            if key == "kwargs":
+                for kwarg_key, kwarg_value in value.items():
+                    if kwarg_value.startswith("nn.") or kwarg_value.startswith("pyg_nn.") or kwarg_value.startswith("aggr."):
+                        config[key][kwarg_key] = eval("".join(kwarg_value.split()))
+            elif isinstance(value, Config):
+                self.initialize_kwargs(value)
 
     def get_act(self):
         if self.config.model.pre_mp.act.lower() == "elu":

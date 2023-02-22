@@ -1,2 +1,12 @@
+input:
+  force_multigraph: true
 model:
-  kwargs: {foo: 'bar'}
+  mp:
+    kwargs:
+      nn: nn.Sequential(                                         
+          nn.Linear(50,75),                                         
+          nn.ReLU(),                                         
+          nn.Linear(75,100),                                         
+          nn.ReLU()                                         
+          )
+    type: film
