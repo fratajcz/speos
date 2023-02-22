@@ -167,7 +167,7 @@ For example, if you'd like to use :obj:`GraphConv` instead of :obj:`GCN`, then u
             type: gcn       
             kwargs: {aggr: max}
 
-This little snipped changes the neighborhood aggregation keyword of the GCN layer from :obj:`mean` (the default) to :obj:`max`. However, Speos also supports the passing of more sophisitcated keywords, such as classes imported from either `pyg_nn <https://pytorch-geometric.readthedocs.io/en/latest/modules/nn.html#convolutional-layers>`_ or (PyTorch) nn `pyg_nn <https://pytorch.org/docs/1.8.1/nn.html>`:
+This little snipped changes the neighborhood aggregation keyword of the GCN layer from :obj:`mean` (the default) to :obj:`max`. However, Speos also supports the passing of more sophisitcated keywords, such as classes imported from either `pyg_nn <https://pytorch-geometric.readthedocs.io/en/latest/modules/nn.html#convolutional-layers>`_ or (PyTorch) `nn <https://pytorch.org/docs/1.8.1/nn.html>`_:
 
 .. code-block:: text
     :linenos:
@@ -197,8 +197,8 @@ Another example on how to achieve the same is to build a Sequential Model right 
                     nn.ReLU()
                     )
 
-Be aware that for now, all classes imported and created this way have to originate in `pyg_nn <https://pytorch-geometric.readthedocs.io/en/latest/modules/nn.html#convolutional-layers>`_ or (PyTorch) nn `pyg_nn <https://pytorch.org/docs/1.8.1/nn.html>`.
-If you would like to use other classes which can not be imported from these two sources, make sure to send us a feature request via `GitHub Issues <https://github.com/fratajcz/speos/issues>`.
+Be aware that for now, all classes imported and created this way have to originate in `pyg_nn <https://pytorch-geometric.readthedocs.io/en/latest/modules/nn.html#convolutional-layers>`_ or (PyTorch) `nn <https://pytorch.org/docs/1.8.1/nn.html>`_.
+If you would like to use other classes which can not be imported from these two sources, make sure to send us a feature request via `GitHub Issues <https://github.com/fratajcz/speos/issues>`_.
 
 Advanced
 ~~~~~~~~
