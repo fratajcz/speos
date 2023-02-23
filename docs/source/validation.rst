@@ -230,6 +230,79 @@ Then, 632 - 115 = 517 knockout genes are left in the total 14116 unlabeled genes
 
 Third, when looking at the confusion matrix, 55 out of 719 (55 + 664) tested candidates are knockout genes, which corresponds to an OR of 2.319 with a p-value of 2.01e-07. So, while not as high as the Mendelian disorder genes, the candidate genes are also significantly enriched for mouse knockout genes, meaning that they are representative for the phenotype.
 
+Functional Mutation Intolerance
+-------------------------------
+
+If genes have vital function for survival they usually accumulate fewer functional mutations in the population. Such functional mutations are either loss of function (LoF) or missense mutations, which can both result in a drastic change of protein structure and activity.
+
+Large cohorts have been tested and examined where such mutations occur, and for each gene, it's intolerance to such mutations has been used as an indicator of importance.
+Our analysis for functional mutation intolerance is split into two parts, the first examines LoF intolerance by the pLI score, which ranges from 0, meaning tolerant to LoF mutations, to 1, meaning intolerant to LoF mutations. 
+Here, we place the cutoff at pLI > 0.8 top say that a gene is LoF intolerant:
+
+ .. code-block:: text
+    :linenos:
+    :caption: first part
+
+    cardiovascular_gcn 2023-02-22 14:50:32,522 [INFO] speos.postprocessing.postprocessor: Total of 3230 genes with significant LoF Intolerance, 2865 of them match with our translation table.
+    cardiovascular_gcn 2023-02-22 14:50:32,522 [INFO] speos.postprocessing.postprocessor: Found 113 LoF Intolerance genes among the 584 known positive genes (p: 6.96e-02, OR: 1.219), leaving 2752 in 16736 Unknowns
+    cardiovascular_gcn 2023-02-22 14:50:32,527 [INFO] speos.postprocessing.postprocessor: Fishers Exact Test for genes with significant LoF Intolerance among Predicted Genes. p: 8.71e-03, OR: 0.754
+    cardiovascular_gcn 2023-02-22 14:50:32,527 [INFO] speos.postprocessing.postprocessor: LoF Intolerance Confusion Matrix:
+    [[  102  2650]
+    [  679 13305]]
+
+Here we see that, while in total 3230 genes are LoF intolerant, only 2865 match with the HGNC symbols that are contained in our graph. 
+
+Second, 113 of the 2865 LoF intolerant genes can be found within the 584 Mendelian disorder genes, which corresponds to an odds ratio (OR) of 1.21 with a p-value of 6.96e-02.
+Then, 2865 - 113 = 2752 LoF intolerant genes are left in the total 16736 unlabeled genes from which we predict our candidates.
+
+Third, when looking at the confusion matrix, 102 out of 781 (102 + 679) candidates are LoF intolerant genes, which corresponds to an OR of 0.754 with a p-value of 8.71e-03. So, interestingly, the candidates are even slightly but significantly depleted for genes with pLI > 0.8!
+
+In the second part, instead of the pLI score we use the Z-score for LoF and missense mutation intolerance. We compare the mean Z-score in the three groups Mendelian disorder gene, candidate gene and non-candidate gene:
+
+ .. code-block:: text
+    :linenos:
+    :caption: second part
+
+    cardiovascular_gcn 2023-02-22 14:50:32,535 [INFO] speos.postprocessing.postprocessor: ANOVA for LoF Z Value in Predicted Genes vs Non-Predicted Genes (Unknowns). p: 8.66e-09, F: 18.586
+    cardiovascular_gcn 2023-02-22 14:50:34,362 [INFO] speos.postprocessing.postprocessor:           Multiple Comparison of Means - Tukey HSD, FWER=0.05          
+    =======================================================================
+        group1           group2      meandiff p-adj   lower   upper  reject
+    -----------------------------------------------------------------------
+    Candidate Gene         Mendelian   0.6084    0.0  0.3577   0.859   True
+    Candidate Gene Noncandidate Gene   0.1437 0.1159  -0.026  0.3134  False
+        Mendelian Noncandidate Gene  -0.4647    0.0 -0.6566 -0.2727   True
+    ----------------------------------------------------------------------
+
+    cardiovascular_gcn 2023-02-22 14:50:34,498 [INFO] speos.postprocessing.postprocessor: ANOVA for Missense Z Value in Predicted Genes vs Non-Predicted Genes (Unknowns). p: 7.80e-02, F: 2.552
+    cardiovascular_gcn 2023-02-22 14:50:34,821 [INFO] speos.postprocessing.postprocessor:          Multiple Comparison of Means - Tukey HSD, FWER=0.05          
+    ======================================================================
+        group1           group2      meandiff p-adj   lower  upper  reject
+    ----------------------------------------------------------------------
+    Candidate Gene         Mendelian   0.1332  0.352 -0.0932 0.3597  False
+    Candidate Gene Noncandidate Gene  -0.0314 0.8804 -0.1847 0.1219  False
+        Mendelian Noncandidate Gene  -0.1647 0.0669 -0.3381 0.0087  False
+    ----------------------------------------------------------------------
+
+First, we conduct an ANOVA to see if there are significant differences between the groups. Then, we conduct a pairwise comparison using Tukey's HSD. As we can see, the Mendelians are different (:obj:`reject` is :obj:`True`) from the candidates and non-candidates. However, the candidates are not different from non-candidates.
+This means that this external validation does not conclude in favor of the candidate genes. However, as we have detailed in our `preprint <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1.full.pdf>`_, the GCN layer is not optimal for this task! You can check the figures in the preprint which method produces better results (Spoiler: The TAG and FILM layers!)
+
+Afterwards, the same is repeated for missense mutation intolerance. Here, the ANOVA is not significant, indicating that there are no significant differences between the groups. The Tukey's HSD results table corroborates this finding.
+
+This task also produces plots that compare the confidence intervals of the three groups sourced from the Tukey's HSD test:
+
+
+.. image:: https://raw.githubusercontent.com/fratajcz/speos/master/docs/img/cardiovascular_gcn_Tukey_LoF_Z_Value.png
+  :width: 600
+  :caption: cardiovascular_gcn_Tukey_LoF_Z_Value.png
+  :alt: LoF Intolerance Confidence Intervals
+
+
+And the same for missense mutations:
+
+.. image:: https://raw.githubusercontent.com/fratajcz/speos/master/docs/img/cardiovascular_gcn_Tukey_Missense_Z_Value.png
+  :width: 600
+  :caption: cardiovascular_gcn_Tukey_LoF_Z_Value.png
+  :alt: LoF Intolerance Confidence Intervals
 
 
 TODO: document other tasks
