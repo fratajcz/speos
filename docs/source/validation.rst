@@ -127,7 +127,7 @@ The log indicates that, while in total 8888 genes are labeled as drug targets, o
 Second, 471 of the 8381 drug targets can be found within the 584 Mendelian disorder genes, which corresponds to an odds ratio (OR) of 4.651 with a p-value of 6.84e-60. This tells us that the Mendelian disorder genes for cardiovascular disease have been in the focus of drug development,
 a finding that serves as a positive control for this external validation. 8381 - 471 = 7910 drug targets are left in the total 16736 unlabeled genes from which we predict our candidates.
 
-Third, when looking at the confusion matrix, 613 out of 781 (613 + 168) candidates are differentially expressed, which corresponds to an OR of 4.329 with a p-value of 1.19e-74. We therefore see that our proposed candidate genes have also been in the focus of drug deleopment, just as the positive control Mendelian disorder genes!
+Third, when looking at the confusion matrix, 613 out of 781 (613 + 168) candidates are drug targets, which corresponds to an OR of 4.329 with a p-value of 1.19e-74. We therefore see that our proposed candidate genes have also been in the focus of drug deleopment, just as the positive control Mendelian disorder genes!
 
 Let's continue with the next part:
 
@@ -150,5 +150,86 @@ In addition, the postprocessor generates a plot which shows the distributions:
 .. image:: https://raw.githubusercontent.com/fratajcz/speos/master/docs/img/CGI_cardiovascular_gcn.png
   :width: 600
   :alt: Drug Gene Distribution
+
+
+Druggable Genes
+---------------
+
+This task is related to the drug target task, but less a validation and instead more of a prospective analysis. Instead of looking for drugs that are already targeted by an approved drug, it looks for genes (or, more correctly, their protein products) that are categorized as druggable. There are several ways to establish if a gene is druggable, most of which are based unstructural similarity to approved drug targets.
+We did not conduct these analyses but instead obtained a list of druggable genes from DGIdb, which compiles them from several publications.
+The task is split in to sections, the first just looks at druggable genes in general, while the second looks at druggable genes among the non-drug-targets, meaning genes that are not yet targeted by any drug.
+
+Lets look at the first part:
+
+ .. code-block:: text
+    :linenos:
+    :caption: first part
+
+    cardiovascular_gcn 2023-02-22 14:50:28,941 [INFO] speos.postprocessing.postprocessor: Reading druggable genes from /home/icb/florin.ratajczak/ppi-core-genes/data/dgidb/druggable_genome.tsv
+    cardiovascular_gcn 2023-02-22 14:50:29,028 [INFO] speos.postprocessing.postprocessor: Total of 5776 druggable genes, 5127 of them match with our translation table.
+    cardiovascular_gcn 2023-02-22 14:50:29,028 [INFO] speos.postprocessing.postprocessor: Found 265 druggable genes among the 584 known positive genes (p: 3.52e-16, OR: 2.029), leaving 4862 in 16736 Unknowns
+    cardiovascular_gcn 2023-02-22 14:50:29,042 [INFO] speos.postprocessing.postprocessor: Fishers Exact Test for Druggable Genes among Predicted Genes. p: 8.37e-16, OR: 1.844
+    cardiovascular_gcn 2023-02-22 14:50:29,043 [INFO] speos.postprocessing.postprocessor: Druggable Genes Confusion Matrix:
+    [[  330  4532]
+    [  451 11423]]
+
+Here we see that, while in total 5776 genes are labeled as druggable, only 5127 match with the HGNC symbols that are contained in our graph. 
+
+Second, 265 of the 5127 druggable genes can be found within the 584 Mendelian disorder genes, which corresponds to an odds ratio (OR) of 2.029 with a p-value of 3.52e-16. This is not surprising, as we have seen earlier that the Mendelian disorder genes are enriched for drug targets and so, also for druggable genes.
+Then, 5127 - 265 = 4862 druggable genes are left in the total 16736 unlabeled genes from which we predict our candidates.
+
+Third, when looking at the confusion matrix, 330 out of 781 (330 + 451) candidates are druggable, which corresponds to an OR of 1.844 with a p-value of 8.37e-16. 
+
+Now, lets look at the second part:
+
+ .. code-block:: text
+    :linenos:
+    :caption: first part
+
+    cardiovascular_gcn 2023-02-22 14:50:29,043 [INFO] speos.postprocessing.postprocessor: Reading compound drug interaction graph from ~/ppi-core-genes/data/drkg/cgi.tsv
+    cardiovascular_gcn 2023-02-22 14:50:30,105 [INFO] speos.postprocessing.postprocessor: Reading translation table from ./data/hgnc_official_list.tsv
+    cardiovascular_gcn 2023-02-22 14:50:30,518 [INFO] speos.postprocessing.postprocessor: Total of 2115 druggable genes which are not yet Drug Targets, 1672 of them match with our translation table.
+    cardiovascular_gcn 2023-02-22 14:50:30,518 [INFO] speos.postprocessing.postprocessor: Found 18 druggable non drug target genes among the 113 known positive genes (p: 5.44e-01, OR: 0.822), leaving 1654 in 8826 Unknowns
+    cardiovascular_gcn 2023-02-22 14:50:30,523 [INFO] speos.postprocessing.postprocessor: Fishers Exact Test for Druggable Non Drug Target Genes among Predicted Genes. p: 2.72e-01, OR: 1.23
+    cardiovascular_gcn 2023-02-22 14:50:30,523 [INFO] speos.postprocessing.postprocessor: Druggable Genes Confusion Matrix:
+    [[  37 1617]
+    [ 131 7041]]
+
+This time, all known drug targets are removed from the gene pool and the same analysis is repeated. We see that, while in total 2115 non-drug-targets are labeled as druggable, only 1672 match with the HGNC symbols that are contained in our graph. 
+
+Second, 18 of the 1672 druggable non-drug-targets can be found within the 113 non-drug-target Mendelian disorder genes, which corresponds to an odds ratio (OR) of 0.822 with a p-value of 5.44e-01. In contrast to the earlier finding we now see that, albeit non-significant, the Mendelian disorder genes are slightly depleted of novel drug-targets-to-be, meaning that they have largely exhausted their potential for innovation in drug development.
+1672 - 18 = 1654 druggable non-drug-targets are left in the total 8826 unlabeled druggable non-drug-targets.
+
+Third, when looking at the confusion matrix, 37 out of 168 (37 + 131) candidates are druggable non-drug-targets, which corresponds to an OR of 1.23 with a p-value of 2.72e-01. While this is still not significantly different from 1, it is a slightly higher odds ratio than the Mendelians. This is the hardest odds ratio to get a significant result for, as the general setup of the method makes the candidates similar to the Mendelians, but to be significant here, they also have to be different in this single aspect. You can check our `preprint <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1.full.pdf>`_ to see which methods routinely deliver signifcant results here.
+
+Mouse Knockout Enrichment
+-------------------------
+
+As core genes are defined as producing the phenotype directly, disrupting a gene's function is likely to induce the phenotype. In the case of Mendelian disorder genes, it even single-handedly produces the phenotype.
+
+To get a more systematic assessment of phenotypic enrichment we gathered knockout data from the Mouse Genome Database for five diseases. For a detailed description on how we obtained the genes, consult the methods section in our `preprint <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1.full.pdf>`_.
+
+In the following, we will see how the mouse knockout analysis is reflected in the logs:
+
+ .. code-block:: text
+    :linenos:
+
+    cardiovascular_gcn 2023-02-22 14:50:30,643 [INFO] speos.postprocessing.postprocessor: Reading mouse knockout genes from ./data/mgi/background.txt
+    cardiovascular_gcn 2023-02-22 14:50:31,324 [INFO] speos.postprocessing.postprocessor: Reading mouse knockout genes from ./data/mgi/cad_query.txt
+    cardiovascular_gcn 2023-02-22 14:50:31,407 [INFO] speos.postprocessing.postprocessor: Total of 693 Mouse KO genes, 632 of them match with our translation table.
+    cardiovascular_gcn 2023-02-22 14:50:31,407 [INFO] speos.postprocessing.postprocessor: Found 115 Mouse KO genes among the 584 known positive genes (p: 5.13e-47, OR: 6.737), leaving 517 in 14116 Unknowns
+    cardiovascular_gcn 2023-02-22 14:50:31,412 [INFO] speos.postprocessing.postprocessor: Fishers Exact Test for mouse KO Genes among Predicted Genes. p: 2.01e-07, OR: 2.319
+    cardiovascular_gcn 2023-02-22 14:50:31,412 [INFO] speos.postprocessing.postprocessor: Mouse KO Confusion Matrix:
+    [[   55   462]
+    [  664 12935]]
+
+Here we see that, while in total 693 genes produce the phenotype of cardiovascular disease when knocked out, only 632 match with the HGNC symbols that are contained in our graph. 
+
+Second, 115 of the 632 knockout genes can be found within the 584 Mendelian disorder genes, which corresponds to an odds ratio (OR) of 6.737 with a p-value of 5.13e-47.
+Then, 632 - 115 = 517 knockout genes are left in the total 14116 unlabeled genes for which mouse knockout experiments have been performed.
+
+Third, when looking at the confusion matrix, 55 out of 719 (55 + 664) tested candidates are knockout genes, which corresponds to an OR of 2.319 with a p-value of 2.01e-07. So, while not as high as the Mendelian disorder genes, the candidate genes are also significantly enriched for mouse knockout genes, meaning that they are representative for the phenotype.
+
+
 
 TODO: document other tasks
