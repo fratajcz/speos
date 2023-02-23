@@ -220,5 +220,3 @@ For mean rank, lowest is best, while for AUROC and AUPRC, highest is best. As yo
 As we can see here relatively clearly, the network that we have chosen, Bioplex 3.0 293T, is not very favorable for the selected graph convolutions, as the MLP which does not use it often performs best. 
 
 With this type of analysis, it is fast and easy to ascertain which parts of the input or neural network should be placed more attention upon. Here, using a different network or tesiting a wider range of graph convolutions might improve performance.
-
-

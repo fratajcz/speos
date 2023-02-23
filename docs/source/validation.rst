@@ -92,7 +92,63 @@ And here is the accompanying plot, truncated to the top 10:
 
 .. image:: https://raw.githubusercontent.com/fratajcz/speos/master/docs/img/cardiovascular_gcn_goea_biological_process_top10.png
   :width: 600
-  :alt: Benchmark Results
+  :alt: Top 10 GO Biological Processes
 
+
+
+Drug Targets
+------------
+
+
+Drug targets can be used as a validation method for a gene's (or, more correctly, it's protein product's) implication in disease. We are aware that there are many biases and restrictions to past drug development, but nonetheless,
+we would expect a disease-relevant group of genes to have more drugs targeting them than a disease-irrelevant group of genes
+
+We have therefore made use of the Drug Repurposing Knowledge Graph (DRKG) and mined all interactions that run between drugs and genes after excluding all relations that have been mined from preprint servers.
+
+In the following you can see the output of the individual parts of the drug target analysis:
+
+
+.. code-block:: text
+    :linenos:
+    :caption: first part
+
+    cardiovascular_gcn 2023-02-22 14:50:26,487 [INFO] speos.postprocessing.postprocessor: Reading compound drug interaction graph from ~/ppi-core-genes/data/drkg/cgi.tsv
+    cardiovascular_gcn 2023-02-22 14:50:27,755 [INFO] speos.postprocessing.postprocessor: Reading translation table from ./data/hgnc_official_list.tsv
+    cardiovascular_gcn 2023-02-22 14:50:28,316 [INFO] speos.postprocessing.postprocessor: Total of 8888 drug targets, 8381 of them match with our translation table.
+    cardiovascular_gcn 2023-02-22 14:50:28,317 [INFO] speos.postprocessing.postprocessor: Found 471 drug targets genes among the 584 known positive genes (p: 6.84e-60, OR: 4.651), leaving 7910 in 16736 Unknowns
+    cardiovascular_gcn 2023-02-22 14:50:28,341 [INFO] speos.postprocessing.postprocessor: Fishers Exact Test for Drug Targets among Predicted Genes. p: 1.19e-74, OR: 4.329
+    cardiovascular_gcn 2023-02-22 14:50:28,342 [INFO] speos.postprocessing.postprocessor: Drug Targets Confusion Matrix:
+    [[ 613 7297]
+    [ 168 8658]]
+
+These lines correspond to a binary drug target analysis, meaning each gene is either counted as a drug target if it is targeted by at least one drug or as a non-target if no drug targets it. 
+The log indicates that, while in total 8888 genes are labeled as drug targets, only 8381 match with the HGNC symbols that are contained in our graph. 
+
+Second, 471 of the 8381 drug targets can be found within the 584 Mendelian disorder genes, which corresponds to an odds ratio (OR) of 4.651 with a p-value of 6.84e-60. This tells us that the Mendelian disorder genes for cardiovascular disease have been in the focus of drug development,
+a finding that serves as a positive control for this external validation. 8381 - 471 = 7910 drug targets are left in the total 16736 unlabeled genes from which we predict our candidates.
+
+Third, when looking at the confusion matrix, 613 out of 781 (613 + 168) candidates are differentially expressed, which corresponds to an OR of 4.329 with a p-value of 1.19e-74. We therefore see that our proposed candidate genes have also been in the focus of drug deleopment, just as the positive control Mendelian disorder genes!
+
+Let's continue with the next part:
+
+ .. code-block:: text
+    :linenos:
+    :caption: second part
+
+    cardiovascular_gcn 2023-02-22 14:50:28,355 [INFO] speos.postprocessing.postprocessor: U-Test for number of Drug interactions in Predicted Genes vs Non-Predicted Genes. q: 1.09e-09, U: 2568714.0
+    cardiovascular_gcn 2023-02-22 14:50:28,355 [INFO] speos.postprocessing.postprocessor: U-Test for number of Drug interactions in Mendelian Genes vs Non-Predicted Genes. q: 2.34e-31, U: 2268526.0
+    cardiovascular_gcn 2023-02-22 14:50:28,355 [INFO] speos.postprocessing.postprocessor: U-Test for number of Drug interactions in Mendelian Genes vs Predicted Genes. q: 1.47e-08, U: 173255.5
+    cardiovascular_gcn 2023-02-22 14:50:28,355 [INFO] speos.postprocessing.postprocessor: 0, 25, 50, 75 and 99% quantiles for Mendelians: [  1.    4.   10.   32.  441.9]
+    cardiovascular_gcn 2023-02-22 14:50:28,355 [INFO] speos.postprocessing.postprocessor: 0, 25, 50, 75 and 99% quantiles for Predicted Genes: [  1.     3.     6.    15.   195.56]
+    cardiovascular_gcn 2023-02-22 14:50:28,356 [INFO] speos.postprocessing.postprocessor: 0, 25, 50, 75 and 99% quantiles for Non-Predicted Genes: [  1.     2.     4.    12.   153.04]
+
+This part of the log tells us the median number of drugs treating each drug target gene and if this number differs between Mendelian disorder genes, predicted candidate genes and non-candidate genes. For this analysis, only genes with at least one drug targeting it are included.
+
+As we can see, all three groups are significantly different from each other (all three p-values are significant) and while the median number of drug-gene interactions in the Mendelian disorder genes is 10, it is 6 for the candidates and 4 for the non-candidates. This is a fold increase of 2.5 and 1.5, respectively!
+In addition, the postprocessor generates a plot which shows the distributions:
+
+.. image:: https://raw.githubusercontent.com/fratajcz/speos/master/docs/img/CGI_cardiovascular_gcn.png
+  :width: 600
+  :alt: Drug Gene Distribution
 
 TODO: document other tasks
