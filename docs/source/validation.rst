@@ -284,12 +284,9 @@ In the second part, instead of the pLI score we use the Z-score for LoF and miss
     ----------------------------------------------------------------------
 
 First, we conduct an ANOVA to see if there are significant differences between the groups. Then, we conduct a pairwise comparison using Tukey's HSD. As we can see, the Mendelians are different (:obj:`reject` is :obj:`True`) from the candidates and non-candidates. However, the candidates are not different from non-candidates.
-This means that this external validation does not conclude in favor of the candidate genes. However, as we have detailed in our `preprint <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1.full.pdf>`_, the GCN layer is not optimal for this task! You can check the figures in the preprint which method produces better results (Spoiler: The TAG and FILM layers!)
-
 Afterwards, the same is repeated for missense mutation intolerance. Here, the ANOVA is not significant, indicating that there are no significant differences between the groups. The Tukey's HSD results table corroborates this finding.
 
 This task also produces plots that compare the confidence intervals of the three groups sourced from the Tukey's HSD test:
-
 
 .. image:: https://raw.githubusercontent.com/fratajcz/speos/master/docs/img/cardiovascular_gcn_Tukey_LoF_Z_Value.png
   :width: 600
@@ -303,4 +300,4 @@ And the same for missense mutations:
   :alt: Missense Mutation Intolerance Confidence Intervals
 
 
-TODO: document other tasks
+As we can see, none of the candidate groups is different from the noncandidates. This means that this external validation does not conclude in favor of the candidate genes. However, as we have detailed in our `preprint <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1.full.pdf>`_, the GCN layer is not optimal for this task! You can check the figures in the preprint which method produces better results (Spoiler: The TAG and FILM layers!)

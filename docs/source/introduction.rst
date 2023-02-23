@@ -39,4 +39,5 @@ A consensus score of 0 on the other hand means that the models are fairly certai
 Where can I start?
 ------------------
 
+This documentation is intended to be read from start to finish and will guide you through the whole process, step by step and from start to finish. Some parts might not apply to you, so feel free to skip them.
 On the next page you will be guided through the installation process. Afterwards, you will be guided through the creation of a configuration file and how you can use it to customize your training runs. You will not need to write any code, changing settings in a plain text file is all you need! Finally, once you got the hang of how to run Speos, you can add your own datasets and use them to discover new core genes.
