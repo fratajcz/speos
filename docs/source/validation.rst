@@ -293,7 +293,6 @@ This task also produces plots that compare the confidence intervals of the three
 
 .. image:: https://raw.githubusercontent.com/fratajcz/speos/master/docs/img/cardiovascular_gcn_Tukey_LoF_Z_Value.png
   :width: 600
-  :caption: cardiovascular_gcn_Tukey_LoF_Z_Value.png
   :alt: LoF Intolerance Confidence Intervals
 
 
@@ -301,8 +300,7 @@ And the same for missense mutations:
 
 .. image:: https://raw.githubusercontent.com/fratajcz/speos/master/docs/img/cardiovascular_gcn_Tukey_Missense_Z_Value.png
   :width: 600
-  :caption: cardiovascular_gcn_Tukey_LoF_Z_Value.png
-  :alt: LoF Intolerance Confidence Intervals
+  :alt: Missense Mutation Intolerance Confidence Intervals
 
 
 TODO: document other tasks
