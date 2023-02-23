@@ -71,9 +71,9 @@ If your machine/cluster has GPU capabilities, it is highly recommended to use th
 
     .. code-block:: console
 
-        $ pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric==2.0.4 -f https://data.pyg.org/whl/torch-{1}.0+{2}.html
+        $ pip install torch-scatter torch-sparse==0.6.12 torch-cluster torch-spline-conv torch-geometric==2.0.4 -f https://data.pyg.org/whl/torch-{1}+{2}.html
 
-    instead. Replace the placeholder ${1}$ with the pytorch version you just installed (i.e. 1.8, 1.13 etc) and ${2}$ with the CUDA version (i.e. cpu for CPU only or cu116 for CUDA 11.6 etc.)
+    instead. Replace the placeholder ${1}$ with the pytorch version you just installed (i.e. 1.8.0, 1.13.1 etc) and ${2}$ with the CUDA version (i.e. cpu for CPU only or cu116 for CUDA 11.6 etc.)
 
 Then, install the remaining requirements with pip:
 
@@ -102,12 +102,14 @@ if any of those steps produced an error, please do not hesitate and open an issu
 Obtain Data
 -----------
 
-You might have notived that :obj:`speos/data` is empty. This is because Speos is built on too much data to store it in Github. To obtain the data, run the following command in the Speos main dir:
+You might have noticed that :obj:`speos/data` is mostly empty. This is because Speos is built on too much data to store it on Github. To obtain the data in one step, run the following command in the Speos main dir:
 
 .. code-block:: console
 
     $ ./download_data.sh
     $ tar xzvf data.tar.gz
+
+If you are only interested in parts of the data, i.e. for a different project, check the individual subdirectories of :obj:`speos/data` and you will find download scripts for most programmatically accessible files that will download the file directly from the source repository.
 
 Test it
 -------
