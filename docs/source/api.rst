@@ -73,7 +73,12 @@ and re-run only the inference:
 
 
 which will save all the results of the inference to :obj:`~/results/` without training the model again.
-The inference basically skips the training step and instead loads the pre-trained model.
+The inference basically skips the training step and instead loads the pre-trained model:
+
+.. image:: https://raw.githubusercontent.com/fratajcz/speos/master/docs/img/inference.webp
+  :width: 600
+  :alt: Inference
+
 This assumes that the model has not been moved/deleted since it has been trained and that the config settings for the model save path are the same like when it was trained.
 
 The Nested Crossvalidation
@@ -82,6 +87,10 @@ The Nested Crossvalidation
 Although training a single model is nice and helpful, especially for testing purposes, Speos stands out by its nested crossvalidation scheme.
 It allows you to train an ensemble of methods and use the overlap in their predictions to prioritize disease genes.
 Afterwards, it uses these prioritized gene sets and the ground truth and does postprocessing analyses such as differentially expressed genes or drug target enrichment.
+
+.. image:: https://raw.githubusercontent.com/fratajcz/speos/master/docs/img/outer_crossval.webp
+  :width: 600
+  :alt: Ensemble Training
 
 Let's first draft a suitable config file:
 
@@ -178,6 +187,10 @@ These keys are pretty self-explanatory. So, if you have lost your results or ask
 
 
 Now, if you think that you want to try some changes in these settings, i.e. a different :obj:`cutoff_value` or different :obj:`tasks`, just add the respective lines to your :obj:`my_crossval_config.yaml` and re-run the postprocessing only:
+
+.. image:: https://raw.githubusercontent.com/fratajcz/speos/master/docs/img/postprocessing.webp
+  :width: 600
+  :alt: Inference
 
 >>> python postprocessing.py -c my_crossval_config.yaml
 
