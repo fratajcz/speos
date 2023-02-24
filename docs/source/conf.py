@@ -34,8 +34,12 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
-    "sphinx.ext.autosectionlabel"
+    "sphinx.ext.autosectionlabel",
+    "sphinx_rtd_dark_mode",
 ]
+
+# user starts in dark mode
+default_dark_mode = True
 
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
@@ -59,6 +63,11 @@ exclude_patterns = []
 # a list of builtin themes.
 #
 html_theme = 'sphinx_rtd_theme'
+html_logo = "mepro_headshot.png"
+html_theme_options = {
+    'logo_only': True,
+    'display_version': False,
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
