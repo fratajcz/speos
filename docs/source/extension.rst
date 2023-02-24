@@ -565,7 +565,9 @@ Thus, these external validations will not need any extensions to run, even if yo
 However, some external validations, such as the enrichment of differentially expressed and mouse KO genes, requires disease dependent gene sets. In the following we will show you how you can add these sets for your own customized Speos runs.
 
 Adding Mouse Knockout Data
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We obtained mouse knockout genes from the `Mouse Genome Database <http://www.informatics.jax.org/allele>`_, for more methologic details consult the method section of our `preprint <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1.full.pdf>`_. 
 
 Mouse Knockout data is matched to the disease of a given run by the file :obj:`data/mgi/query_mapping.yaml`:obj:. An excerpt of this file shows you how the mapping has to look like:
 
@@ -589,6 +591,8 @@ and with the next run your freshly added mouse KO genes will automatically be se
 
 Adding Differential Gene Expression Data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We obtained differntially expressed genes from `GEMMA database <https://gemma.msl.ubc.ca/phenotypes.html>`_, for more methologic details consult the method section of our `preprint <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1.full.pdf>`_. 
 
 Differential gene expression data is matched to the disease of a given run by the file :obj:`data/dge/mapping.yaml`. An excerpt of this file shows you how the mapping has to look like:
 
