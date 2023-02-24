@@ -626,7 +626,7 @@ Differential gene expression data is matched to the disease of a given run by th
             file: "./data/dge/ms.gemma"
 
 In every line, a disease tag :obj:`cardiovascular_disease` is mapped to an array of disease subtypes, each linking to a file. 
-So, if you added your disease with the tag :obj:`my_disease` and want to add differentially expressed genes obtained for the subtypes :obj:`Subtype A` and :obj:`Subtype B` from the `Gemma <https://gemma.msl.ubc.ca/phenotypes.html >`_ and saved at :obj:`./data/dge/suba.gemma` and :obj:`./data/dge/subb.gemma` then add the following lines to :obj:`data/dge/mapping.yaml`:
+So, if you added your disease with the tag :obj:`my_disease` and want to add differentially expressed genes obtained for the subtypes :obj:`Subtype A` and :obj:`Subtype B` from `GEMMA database <https://gemma.msl.ubc.ca/phenotypes.html>`_ and saved at :obj:`./data/dge/suba.gemma` and :obj:`./data/dge/subb.gemma` then add the following lines to :obj:`data/dge/mapping.yaml`:
 
 .. code-block:: text
     :linenos:
