@@ -112,7 +112,7 @@ In the following you can see the output of the individual parts of the drug targ
     :linenos:
     :caption: first part
 
-    cardiovascular_gcn 2023-02-22 14:50:26,487 [INFO] speos.postprocessing.postprocessor: Reading compound drug interaction graph from ~/ppi-core-genes/data/drkg/cgi.tsv
+    cardiovascular_gcn 2023-02-22 14:50:26,487 [INFO] speos.postprocessing.postprocessor: Reading compound drug interaction graph from ./data/drkg/cgi.tsv
     cardiovascular_gcn 2023-02-22 14:50:27,755 [INFO] speos.postprocessing.postprocessor: Reading translation table from ./data/hgnc_official_list.tsv
     cardiovascular_gcn 2023-02-22 14:50:28,316 [INFO] speos.postprocessing.postprocessor: Total of 8888 drug targets, 8381 of them match with our translation table.
     cardiovascular_gcn 2023-02-22 14:50:28,317 [INFO] speos.postprocessing.postprocessor: Found 471 drug targets genes among the 584 known positive genes (p: 6.84e-60, OR: 4.651), leaving 7910 in 16736 Unknowns
@@ -165,7 +165,7 @@ Lets look at the first part:
     :linenos:
     :caption: first part
 
-    cardiovascular_gcn 2023-02-22 14:50:28,941 [INFO] speos.postprocessing.postprocessor: Reading druggable genes from /home/icb/florin.ratajczak/ppi-core-genes/data/dgidb/druggable_genome.tsv
+    cardiovascular_gcn 2023-02-22 14:50:28,941 [INFO] speos.postprocessing.postprocessor: Reading druggable genes from ./data/dgidb/druggable_genome.tsv
     cardiovascular_gcn 2023-02-22 14:50:29,028 [INFO] speos.postprocessing.postprocessor: Total of 5776 druggable genes, 5127 of them match with our translation table.
     cardiovascular_gcn 2023-02-22 14:50:29,028 [INFO] speos.postprocessing.postprocessor: Found 265 druggable genes among the 584 known positive genes (p: 3.52e-16, OR: 2.029), leaving 4862 in 16736 Unknowns
     cardiovascular_gcn 2023-02-22 14:50:29,042 [INFO] speos.postprocessing.postprocessor: Fishers Exact Test for Druggable Genes among Predicted Genes. p: 8.37e-16, OR: 1.844
@@ -186,7 +186,7 @@ Now, lets look at the second part:
     :linenos:
     :caption: first part
 
-    cardiovascular_gcn 2023-02-22 14:50:29,043 [INFO] speos.postprocessing.postprocessor: Reading compound drug interaction graph from ~/ppi-core-genes/data/drkg/cgi.tsv
+    cardiovascular_gcn 2023-02-22 14:50:29,043 [INFO] speos.postprocessing.postprocessor: Reading compound drug interaction graph from ./data/drkg/cgi.tsv
     cardiovascular_gcn 2023-02-22 14:50:30,105 [INFO] speos.postprocessing.postprocessor: Reading translation table from ./data/hgnc_official_list.tsv
     cardiovascular_gcn 2023-02-22 14:50:30,518 [INFO] speos.postprocessing.postprocessor: Total of 2115 druggable genes which are not yet Drug Targets, 1672 of them match with our translation table.
     cardiovascular_gcn 2023-02-22 14:50:30,518 [INFO] speos.postprocessing.postprocessor: Found 18 druggable non drug target genes among the 113 known positive genes (p: 5.44e-01, OR: 0.822), leaving 1654 in 8826 Unknowns

@@ -578,7 +578,7 @@ class PostProcessor:
         not_predicted_genes = unknown_genes - predicted_genes
         df["Group N"] = [len(positive_genes), len(predicted_genes), len(not_predicted_genes)]
 
-        druggable_genes = set(self.get_druggable_genes("/home/icb/florin.ratajczak/ppi-core-genes/data/dgidb/druggable_genome.tsv"))
+        druggable_genes = set(self.get_druggable_genes("./data/dgidb/druggable_genome.tsv"))
         unknown_druggable_genes = self._return_only_valid(druggable_genes, unknown_genes)
         positive_druggable_genes = self._return_only_valid(druggable_genes, positive_genes)
         predicted_druggable_genes = self._return_only_valid(druggable_genes, predicted_genes)
@@ -932,11 +932,11 @@ class PostProcessor:
 
         return graph
 
-    def get_drugtargets(self, path_to_graph="~/ppi-core-genes/data/drkg/cgi.tsv") -> set:
+    def get_drugtargets(self, path_to_graph="./data/drkg/cgi.tsv") -> set:
         hgnc2degree = self.get_drugtarget_dict(path_to_graph)
         return set(hgnc2degree.keys())
 
-    def get_drugtarget_dict(self, path_to_graph="~/ppi-core-genes/data/drkg/cgi.tsv") -> dict:
+    def get_drugtarget_dict(self, path_to_graph="./data/drkg/cgi.tsv") -> dict:
         graph = self.load_drugtarget_graph(path_to_graph)
         node2entrez = {node: "".join(node.split("::")[1:]) for node in graph.nodes if node.startswith("Gene")}
         # node2entrez = {value: "".join(value.split("::")[1:]) for value in df["Gene"] if not "".join(value.split("::")[1:]).startswith("drugbank")}

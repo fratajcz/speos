@@ -95,7 +95,7 @@ class GWASMapperTest(unittest.TestCase):
 
         before_mappings = self.mapper.get_mappings(tags="immune_dysregulation", fields="name")
 
-        mapper = GWASMapper(self.config.input.gene_sets, self.config.input.gwas, mapping_file=self.mapping_file_path, extension_mappings=mapping_file_path)
+        mapper = GWASMapper(mapping_file=self.mapping_file_path, extension_mappings=mapping_file_path)
 
         after_mappings = mapper.get_mappings(tags="immune_dysregulation", fields="name")
 
@@ -129,6 +129,7 @@ class GWASMapperTest(unittest.TestCase):
         after_mappings = mapper.get_mappings(tags="insulin", fields="ground_truth")
 
         self.assertEqual("insulin_disorder", after_mappings[0]["phenotype"])
+
 
 class AdjacencyMapperTest(unittest.TestCase):
     def setUp(self):
