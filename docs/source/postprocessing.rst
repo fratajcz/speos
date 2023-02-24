@@ -1,4 +1,4 @@
-speos.postproscessing
+speos.postprocessing
 =====================
 
 The Preprocessor handles everything that happens after the crossvalidation ensemble has been trained. It gathers the candidate genes and conducts several external validation tasks among the candidates.
