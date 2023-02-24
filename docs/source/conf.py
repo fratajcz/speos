@@ -62,7 +62,7 @@ exclude_patterns = []
 # a list of builtin themes.
 #
 html_theme = 'sphinx_rtd_theme'
-html_logo = "mepro_headshot.png"
+#html_logo = "mepro_headshot.png"
 
 html_css_files = [
     'css/rtd_dark.css',
