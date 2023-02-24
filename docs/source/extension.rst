@@ -44,18 +44,20 @@ Open the file and edit it to the following:
       "kwargs": {}
       }]
 
-In this case, it is more or less irrelevant what you put in as `name` or `ground_truth`, as long as its not empty. The `features_file` is set to an empty string, unless you want to add GWAS data, which you can learn about further below.
-Since Speos can't know how you structured the labels in your file, you have to give it a function that reads the label file and returns the labels as a python set. `args` and `kwargs` defines the arguments and keyword arguments which are fed to the function in order to return the right labels.
-To make this work, all we now have to do is write the function `test_preprocess_labels` which reads `./extensions/labels.txt` from `args` and returns a set of HGNC identifiers. We add this function definition to the file ``extensions/preprocessing.py``:
+In this case, it is more or less irrelevant what you put in as :obj:`name` or :obj:`ground_truth`, as long as its not empty. The :obj:`features_file` is set to an empty string, unless you want to add GWAS data, which you can learn about further below.
+Since Speos can't know how you structured the labels in your file, you have to give it a function that reads the label file and returns the labels as a python set. :obj:`args` and :obj:`kwargs` defines the arguments and keyword arguments which are fed to the function in order to return the right labels.
+To make this work, all we now have to do is write the function :obj:`test_preprocess_labels` which reads :obj:`./extensions/labels.txt` from :obj:`args` and returns a set of HGNC identifiers. We add this function definition to the file :obj:`extensions/preprocessing.py`:
 
 .. code-block:: python
+    :linenos:
+    :caption: extensions/preprocessing.py
 
     def test_preprocess_labels(path) -> set:
         import pandas as pd
 
         return set(pd.read_csv(path, sep="\t", header=None, names=["0"])["0"].tolist())
 
-This function takes the path stored in `args`, reads the file, extracts the only column and transforms the contents into a set before returning them. You can test if it works as follows:
+This function takes the path stored in :obj:`args`, reads the file, extracts the only column and transforms the contents into a set before returning them. You can test if it works as follows:
 
 .. code-block:: console
 
@@ -73,16 +75,18 @@ How Do I Use My Label Set?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Now that the label sat "my_labels" has been added to the extensions, lets craft a config file to use them.
-Lets create the file ``config_my_labels.yaml`` and fill it with the following content:
+Lets create the file :obj:`config_my_labels.yaml` and fill it with the following content:
 
 .. code-block:: text
+    :linenos:
+    :caption: config_my_labels.yaml
 
     name: test_adjacency_multiple
 
     input:
         tag: my_labels
 
-This will now sift through all extensions label definitions and inbuilt label definitions and return those with "my_labels" in the field `name`. Be careful to not use the same name twice, as duplicate entries are not allowed!
+This will now sift through all extensions label definitions and inbuilt label definitions and return those with "my_labels" in the field :obj:`name`. Be careful to not use the same name twice, as duplicate entries are not allowed!
 
 Lets test or newly added label set by running a quick training job:
 
@@ -131,20 +135,24 @@ Say you have an adjacency that you want to add to Speos to run some experiments 
     SymbolA SymbolB
     MTOR    IL1B
 
-It describes a fictional connection between the MTOR and the IL1B gene using HGNC gene identifier. You now save this edgelist to ``data/myadjacency/edgelist.tsv``  
-Now, the next step is to tell Speos how to use your new adjacency. To add an additional network to Speos, you can simply register it in ``extensions/adjacencies.json``. Se the following example how to do it:
+It describes a fictional connection between the MTOR and the IL1B gene using HGNC gene identifier. You now save this edgelist to :obj:`data/myadjacency/edgelist.tsv`.  
+Now, the next step is to tell Speos how to use your new adjacency. To add an additional network to Speos, you can simply register it in :obj:`extensions/adjacencies.json`. Se the following example how to do it:
 
-Without any manipulation, ``extensions/adjacencies.json`` simply contains an empty list:
+Without any manipulation, :obj:`extensions/adjacencies.json` simply contains an empty list:
 
 .. code-block:: json
+    :linenos:
+    :caption: extensions/adjacencies.json
 
     []
 
-This is because Speos has defined its core networks elsewhere (in ``speos/adjacencies.json``).
-To add a network, simply modify ``extensions/adjacencies.json`` as follows:
+This is because Speos has defined its core networks elsewhere (in :obj:`speos/adjacencies.json`).
+To add a network, simply modify :obj:`extensions/adjacencies.json` as follows:
 
 
 .. code-block:: json
+    :linenos:
+    :caption: extensions/adjacencies.json
 
     [{"name": "MyNetwork",
     "type": "ppi",
@@ -168,9 +176,9 @@ To add a network, simply modify ``extensions/adjacencies.json`` as follows:
 Using your Network
 ~~~~~~~~~~~~~~~~~~
 
-To use the network that we just have added to ``extensions/adjacencies.json``, you can simply set according values in a config file and try to run a training run using that config file.
+To use the network that we just have added to :obj:`extensions/adjacencies.json`, you can simply set according values in a config file and try to run a training run using that config file.
 
-Select your network in the config ``my_config.yaml``:
+Select your network in the config :obj:`my_config.yaml`:
 
 .. code-block:: text
 
@@ -210,7 +218,7 @@ Using your Network together with others
 
 We can use the :obj:`"type"` keyword in the description of the network to trigger a multi-network run. The :obj:`"type"` of our little netork is set to :obj:`"ppi"`, so we can blend it with other PPIs by using the folling config:
 
-Adapt ``my_config.yaml`` to:
+Adapt :obj:`my_config.yaml` to:
 
 .. code-block:: text
 
@@ -305,20 +313,24 @@ They are seperated with a single blank space, not with a tab delimiter.
    We allow much less flexibility in the GWAS Data file structure than with the adjacencies. 
    This is because we process them all identically with the same tool, so we just have to write one processing script. Edgelists and Networks come from various soruces, having various formats.
 
-You now save this gene list to ``data/mygwas/FOO.genes.out``.
-Now, the next step is to tell Speos how to use your data. To add an additional GWAS trait to Speos, you can simply register it in ``extensions/mapping.json``. Se the following example how to do it:
+You now save this gene list to :obj:`data/mygwas/FOO.genes.out`.
+Now, the next step is to tell Speos how to use your data. To add an additional GWAS trait to Speos, you can simply register it in :obj:`extensions/mapping.json`:obj:. Se the following example how to do it:
 
-Without any manipulation, ``extensions/mapping.json`` simply contains an empty list:
+Without any manipulation, :obj:`extensions/mapping.json` simply contains an empty list:
 
 .. code-block:: json
+    :linenos:
+    :caption: extensions/mapping.json
 
     []
 
-This is because Speos has defined its GWAS data elsewhere (in ``speos/mapping.json``).
-To add a GWAS trait, simply modify ``extensions/mapping.json`` as follows:
+This is because Speos has defined its GWAS data elsewhere (in :obj:`speos/mapping.json`).
+To add a GWAS trait, simply modify :obj:`extensions/mapping.json` as follows:
 
 
 .. code-block:: json
+    :linenos:
+    :caption: extensions/mapping.json
 
     [{"name": "FOO-immune_dysregulation",
     "ground_truth": "data/mendelian_gene_sets/Immune_Dysregulation_genes.bed",
@@ -338,7 +350,7 @@ To add a GWAS trait, simply modify ``extensions/mapping.json`` as follows:
 Using your GWAS Study
 ~~~~~~~~~~~~~~~~~~~~~
 
-Now that you have added your GWAS study to ``extensions/mapping.json``, you can start using it. Note that we have specified the Immune Dysregulatin as ground truth and phenotype. If you look above in the :ref:`Using your Network` subsection, you will find the following line in the logging output:
+Now that you have added your GWAS study to :obj:`extensions/mapping.json`, you can start using it. Note that we have specified the Immune Dysregulatin as ground truth and phenotype. If you look above in the :ref:`Using your Network` subsection, you will find the following line in the logging output:
 
 .. code-block:: console
 
@@ -348,9 +360,11 @@ Now that you have added your GWAS study to ``extensions/mapping.json``, you can 
 
 This means that by default, we have 8 GWAS traits that map to Immune Dysregulation. 
 
-Now, lets write the following config file and save it to ``my_config.yaml``:
+Now, lets write the following config file and save it to :obj:`my_config.yaml`:
 
 .. code-block:: text
+    :linenos:
+    :caption: my_config.yaml
 
     name: test_gwas
 
@@ -358,9 +372,9 @@ Now, lets write the following config file and save it to ``my_config.yaml``:
         tag: Immune_Dysregulation
         field: ground_truth
 
-This setting is also the default, but we define it anyway so that you know what to change if you want to run it for a differend ground truth. This settings means that it will look for the substring ``Immune_Dysregulation`` in the field ``ground_truth`` of all GWAS-to-disease-gene mappings and select all those that match.
+This setting is also the default, but we define it anyway so that you know what to change if you want to run it for a differend ground truth. This settings means that it will look for the substring :obj:`Immune_Dysregulation` in the field :obj:`ground_truth` of all GWAS-to-disease-gene mappings and select all those that match.
 
-Look what happens if we start a training run now after we have registered our FOO GWAS trait in ``extensions/mapping.json``:
+Look what happens if we start a training run now after we have registered our FOO GWAS trait in :obj:`extensions/mapping.json`:
 
 .. code-block:: console
 
@@ -380,14 +394,14 @@ Look what happens if we start a training run now after we have registered our FO
     Average out degree:   1.0000
     test_gwas 2022-08-30 11:42:19,344 [INFO] speos.preprocessing.preprocessor: Number of positives in ground truth data/mendelian_gene_sets/Immune_Dysregulation_genes.bed: 2
 
-You see that this logging output is drastically different to the ones in the chapters above. First, it says ``Using 9 mappings`` instead of 8, so the additional trait FOO is being used. 
+You see that this logging output is drastically different to the ones in the chapters above. First, it says :obj:`Using 9 mappings` instead of 8, so the additional trait FOO is being used. 
 But then, our graph has only 18 nodes, even though we fed in GWAS data for 21 nodes for the trait FOO. This is because the remaining three nodes have either missing data for one of the other 8 traits, or there is no median gene expression data for these three.
 In the last line, you can see that among these 18 nodes, only 2 positives (Mendelians) have been found. This is of course too few to construct a meaningful train, validation and test set, which is why the training run crashes soon after. 
 
 This example should have shown you 1. how to add you own GWAS trait data and 2. that it is crucial that your GWAS trait has information about as many genes as possible.
 
 .. note::
-   Of course you can go ahead and simply impute p-value, Z-value and the number of SNPs for all the genes that have no information for your trait. In this case, just add the imputed values to ``data/mygwas/FOO.genes.out`` and re-run the analysis, now the number of used genes should be much larger.
+   Of course you can go ahead and simply impute p-value, Z-value and the number of SNPs for all the genes that have no information for your trait. In this case, just add the imputed values to :obj:`data/mygwas/FOO.genes.out` and re-run the analysis, now the number of used genes should be much larger.
    Since it is not clear how to impute such values, however, we will not advise to do so.
 
 Additonal Node Features
@@ -402,6 +416,7 @@ Say you have some features that you can add to every node. For the sake of simpl
 The following is your data file that is stored in :obj:`"data/mydata/mydata.tsv"`:
 
 .. code-block:: text
+    :caption: data/mydata/mydata.tsv
 
     hgnc	Feat1	Feat2	Feat3
     A1BG	1	2	3
@@ -426,6 +441,8 @@ You can write any preprocessing function that you want, as long as it returns a 
 For the file shown above, we write this simple preprocessing script and place it in :obj:`"extensions/preprocessing.py"`:
 
 .. code-block:: python
+    :linenos:
+    :caption: extensions/preprocessing.py
 
     def preprocess_mydata(path):
     import pandas as pd
@@ -491,7 +508,7 @@ Using Your Node Feautures
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Now that we have successfully registered the additional Dataset, it is used automatically. To demonstrate, let's start a simple training run.
-Write a config and store it under ``my_config.yaml``, containing the following lines:
+Write a config and store it under :obj:`my_config.yaml`, containing the following lines:
 
 .. code-block:: text
 
@@ -525,8 +542,8 @@ And now we run it:
     test_input 2022-08-30 14:28:59,330 [INFO] speos.datasets: Data(x=[16852, 99], edge_index=[2, 158962], y=[16852], train_mask=[16852], test_mask=[16852], val_mask=[16852])
     ...
 
-You can see the line ``Using 1 additional node data sources: ['MyData']`` indicating that it finds the definition of your dataset. 
-Further down you can see the dimension of the feature matrix: ``Data(x=[16852, 99], ...`` indicating that we have 16852 genes which each has 99 features. 
+You can see the line :obj:`Using 1 additional node data sources: ['MyData']` indicating that it finds the definition of your dataset. 
+Further down you can see the dimension of the feature matrix: :obj:`Data(x=[16852, 99], ...)` indicating that we have 16852 genes which each has 99 features. 
 
 If we delete our description from :obj:`"extensions/datasets.json.py"` (i.e. turn it into an empty list again), and leave everything else as it is, the corresponding line in the output will change to:
 
@@ -534,7 +551,7 @@ If we delete our description from :obj:`"extensions/datasets.json.py"` (i.e. tur
 
     test_input 2022-08-30 14:58:46,339 [INFO] speos.datasets: Data(x=[16852, 96], edge_index=[2, 158962], y=[16852], train_mask=[16852], test_mask=[16852], val_mask=[16852])
 
-And the part ``Data(x=[16852, 96], ...`` indicates that, without our "MyDataset", we have only 96 features. So, adding the 3 features beforehand was a success!
+And the part :obj:`Data(x=[16852, 96], ...)` indicates that, without our "MyDataset", we have only 96 features. So, adding the 3 features beforehand was a success!
 
 Extending Postprocessing
 ------------------------
@@ -550,30 +567,34 @@ However, some external validations, such as the enrichment of differentially exp
 Adding Mouse Knockout Data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Mouse Knockout data is matched to the disease of a given run by the file ``data/mgi/query_mapping.yaml``. An excerpt of this file shows you how the mapping has to look like:
+Mouse Knockout data is matched to the disease of a given run by the file :obj:`data/mgi/query_mapping.yaml`:obj:. An excerpt of this file shows you how the mapping has to look like:
 
 .. code-block:: text
+    :linenos:
+    :caption: data/mgi/query_mapping.yaml
 
     "cardiovascular_disease":
         file: "./data/mgi/cad_query.txt"
     "immune_dysregulation":
         file: "./data/mgi/immune_dysreg_query.txt"
 
-In every line, a disease tag ``"cardiovascular_disease"`` is mapped to a file ``"./data/mgi/cad_query.txt"`` in yaml format. So, if you added your disease with the tag ``my_disease`` and want to add the mouse knockout genes obtained from the `MGI Database <https://www.informatics.jax.org/allele>`_ and saved at ``data/mgi/my_disease_query.txt`` then add the following lines to ``data/mgi/query_mapping.yaml``:
+In every line, a disease tag :obj:`"cardiovascular_disease"` is mapped to a file :obj:`"./data/mgi/cad_query.txt"` in yaml format. So, if you added your disease with the tag :obj:`my_disease` and want to add the mouse knockout genes obtained from the `MGI Database <https://www.informatics.jax.org/allele>`_ and saved at ``data/mgi/my_disease_query.txt`` then add the following lines to ``data/mgi/query_mapping.yaml``:
 
 .. code-block:: text
 
     "my_disease":
         file: "./data/mgi/my_disease_query.txt"
 
-and with the next run your freshly added mouse KO genes will automatically be selected for ``my_disease``.
+and with the next run your freshly added mouse KO genes will automatically be selected for :obj:`my_disease`.
 
 Adding Differential Gene Expression Data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Differential gene expression data is matched to the disease of a given run by the file ``data/dge/mapping.yaml``. An excerpt of this file shows you how the mapping has to look like:
+Differential gene expression data is matched to the disease of a given run by the file :obj:`data/dge/mapping.yaml`. An excerpt of this file shows you how the mapping has to look like:
 
 .. code-block:: text
+    :linenos:
+    :caption: data/dge/mapping.yaml (excerpt)
 
     "cardiovascular_disease":
         "Coronary Artery Disease":
@@ -600,10 +621,12 @@ Differential gene expression data is matched to the disease of a given run by th
         "Multiple Sclerosis":
             file: "./data/dge/ms.gemma"
 
-In every line, a disease tag ``cardiovascular_disease`` is mapped to an array of disease subtypes, each linking to a file. 
-So, if you added your disease with the tag ``my_disease`` and want to add differentially expressed genes obtained for the subtypes ``Subtype A`` and ``Subtype B``from the `Gemma <https://gemma.msl.ubc.ca/phenotypes.html >`_ and saved at ``./data/dge/suba.gemma`` and ``./data/dge/subb.gemma`` then add the following lines to ``data/dge/mapping.yaml``:
+In every line, a disease tag :obj:`cardiovascular_disease` is mapped to an array of disease subtypes, each linking to a file. 
+So, if you added your disease with the tag :obj:`my_disease` and want to add differentially expressed genes obtained for the subtypes :obj:`Subtype A` and :obj:`Subtype B` from the `Gemma <https://gemma.msl.ubc.ca/phenotypes.html >`_ and saved at :obj:`./data/dge/suba.gemma` and :obj:`./data/dge/subb.gemma` then add the following lines to :obj:`data/dge/mapping.yaml`:
 
 .. code-block:: text
+    :linenos:
+    :caption: data/dge/mapping.yaml (continued)
 
     "my_disease":
         "Subtype A":

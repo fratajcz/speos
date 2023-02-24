@@ -14,6 +14,10 @@ Differential Gene Expression
 
 The DGE task relies on data obtained from the `GEMMA database <https://gemma.msl.ubc.ca/phenotypes.html>`_. We have defined several sub-phenotypes for every disorder and queried GEMMA for genes that are differentially expressed if that sub-phenotype is present. For further methodological details on this task consult the method section in our `preprint <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1.full.pdf>`_ 
 
+.. note::
+
+    This task is disease-specific. We have added subtypes for five diseases, which are also discussed in our `preprint <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1.full.pdf>`_. Adding new subtypes for these or other, potentially custom, diseases is documented `here <https://speos.readthedocs.io/en/latest/extension.html#adding-differential-gene-expression-data>`_.
+
 One of the subtypes defined for the disorder cardiovascular disease is coronary artery disease. The related part of the logfile is as follows:
 
 .. code-block:: text
@@ -208,6 +212,10 @@ Mouse Knockout Enrichment
 As core genes are defined as producing the phenotype directly, disrupting a gene's function is likely to induce the phenotype. In the case of Mendelian disorder genes, it even single-handedly produces the phenotype.
 
 To get a more systematic assessment of phenotypic enrichment we gathered knockout data from the `Mouse Genome Database <http://www.informatics.jax.org/allele>`_ for five diseases. For a detailed description on how we obtained the genes, consult the methods section in our `preprint <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1.full.pdf>`_.
+
+.. note::
+
+    This task is disease-specific. We have added mouse KO genes for five diseases, which are also discussed in our `preprint <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1.full.pdf>`_. Adding new KO genes for these or other, potentially custom, diseases is documented `here <https://speos.readthedocs.io/en/latest/extension.html#adding-mouse-knockout-data>`_.
 
 In the following, we will see how the mouse knockout analysis is reflected in the logs:
 
