@@ -5,7 +5,7 @@ Doing machine learning with relatively scarce labeled data points is always chal
 making the 'internal' validation with a hold-out set somewhat unreliable. To improve upon this weakness, we have added an array of external validation datasets which serve as alternative label sets. The datasets have been selected to have the lowest possible bias, i.e. not being influenced by the training labels.
 
 The external validations are run by the :obj:`speos.postprocessing.postprocessor.Postprocessor` class, which is automatically run when running the :obj:`outer_crossval.py` and :obj:`postprocessing.py` pipelines, as `detailed here <https://speos.readthedocs.io/en/latest/api.html#post-processing-in-detail>`_. 
-Before the postprocessor can perform the external validation, you have to train a crossvalidation ensemble, read `here <https://speos.readthedocs.io/en/latest/api.html#the-nested-crossvalidation>`_ on how to do this if you haven't done it already.
+Before the postprocessor can perform the external validation, you have to train a crossvalidation ensemble, read the respective `documentation <https://speos.readthedocs.io/en/latest/api.html#the-nested-crossvalidation>`_ on how to do this if you haven't done it already.
 
 Now, we want to take a look into the individual means of external validation, or tasks, how they are called within the framework. To do that, we will look at the log of a run that produced candidate genes for cardiovascular disease. If you cant find your log, check your config file, the logs are placed in :obj:`<config.logging.dir>/<config.name>`.
 
@@ -16,7 +16,7 @@ The DGE task relies on data obtained from the `GEMMA database <https://gemma.msl
 
 .. note::
 
-    This task is disease-specific. We have added subtypes for five diseases, which are also discussed in our `preprint <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1.full.pdf>`_. Adding new subtypes for these or other, potentially custom, diseases is documented `here <https://speos.readthedocs.io/en/latest/extension.html#adding-differential-gene-expression-data>`_.
+    This task is disease-specific. We have added subtypes for five diseases, which are also discussed in our `preprint <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1.full.pdf>`_. Adding new subtypes for these or other, potentially custom, diseases is documented `elsewhere <https://speos.readthedocs.io/en/latest/extension.html#adding-differential-gene-expression-data>`_.
 
 One of the subtypes defined for the disorder cardiovascular disease is coronary artery disease. The related part of the logfile is as follows:
 
