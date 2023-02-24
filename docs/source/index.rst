@@ -10,7 +10,7 @@ Speos is a framework built on `PyG <https://pytorch-geometric.readthedocs.io>`_ 
 
 It handles the integration of various types of genomic data, as well as the complete training and evaluation process. For the motivation behind the framework you can check our `preprint <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1.full.pdf>`_ with exciting applications and showcases.
 
-Speos is designes as a low code platform, meaning that users will have to write little to no code to access the full bandwidth of state-of-the-art methods and datasets. It is possible to extend Speos to your needs, which might come with a minimum of implementation effort, as detailed in the later chapters of this documentation.
+Speos is designed as a low code platform, meaning that users will have to write little to no code to access the full bandwidth of state-of-the-art methods and datasets. It is possible to extend Speos to your needs, which might come with a minimum of implementation effort, as detailed in the later chapters of this documentation.
 
 For now, you can go through the chapters of this documenation one by one and learn how to install, use, adapt and extend Speos to power your experiments!
 
