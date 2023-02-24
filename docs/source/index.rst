@@ -3,6 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. image:: https://raw.githubusercontent.com/fratajcz/speos/master/img/speos_space_11_1080.png
+  :width: 640
+  :alt: Speos Banner
+
 Welcome to Speos's documentation!
 =================================
 
