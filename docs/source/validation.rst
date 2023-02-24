@@ -12,7 +12,7 @@ Now, we want to take a look into the individual means of external validation, or
 Differential Gene Expression
 ----------------------------
 
-The DGE task relies on data obtained from the GEMMA database. We have defined several sub-phenotypes for every disorder and queried GEMMA for genes that are differentially expressed if that sub-phenotype is present. For further methodological details on this task consult the method section in our `preprint <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1.full.pdf>`_ 
+The DGE task relies on data obtained from the `GEMMA database <https://gemma.msl.ubc.ca/phenotypes.html>`_. We have defined several sub-phenotypes for every disorder and queried GEMMA for genes that are differentially expressed if that sub-phenotype is present. For further methodological details on this task consult the method section in our `preprint <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1.full.pdf>`_ 
 
 One of the subtypes defined for the disorder cardiovascular disease is coronary artery disease. The related part of the logfile is as follows:
 
@@ -103,7 +103,7 @@ Drug Targets
 Drug targets can be used as a validation method for a gene's (or, more correctly, it's protein product's) implication in disease. We are aware that there are many biases and restrictions to past drug development, but nonetheless,
 we would expect a disease-relevant group of genes to have more drugs targeting them than a disease-irrelevant group of genes
 
-We have therefore made use of the Drug Repurposing Knowledge Graph (DRKG) and mined all interactions that run between drugs and genes after excluding all relations that have been mined from preprint servers.
+We have therefore made use of the `Drug Repurposing Knowledge Graph (DRKG) <https://github.com/gnn4dr/DRKG>`_ and mined all interactions that run between drugs and genes after excluding all relations that have been mined from preprint servers.
 
 In the following you can see the output of the individual parts of the drug target analysis:
 
@@ -156,7 +156,7 @@ Druggable Genes
 ---------------
 
 This task is related to the drug target task, but less a validation and instead more of a prospective analysis. Instead of looking for drugs that are already targeted by an approved drug, it looks for genes (or, more correctly, their protein products) that are categorized as druggable. There are several ways to establish if a gene is druggable, most of which are based unstructural similarity to approved drug targets.
-We did not conduct these analyses but instead obtained a list of druggable genes from DGIdb, which compiles them from several publications.
+We did not conduct these analyses but instead obtained a list of druggable genes from `DGIdb <https://www.dgidb.org/downloads>`_, which compiles them from several publications.
 The task is split in to sections, the first just looks at druggable genes in general, while the second looks at druggable genes among the non-drug-targets, meaning genes that are not yet targeted by any drug.
 
 Lets look at the first part:
@@ -184,7 +184,7 @@ Now, lets look at the second part:
 
  .. code-block:: text
     :linenos:
-    :caption: first part
+    :caption: second part
 
     cardiovascular_gcn 2023-02-22 14:50:29,043 [INFO] speos.postprocessing.postprocessor: Reading compound drug interaction graph from ./data/drkg/cgi.tsv
     cardiovascular_gcn 2023-02-22 14:50:30,105 [INFO] speos.postprocessing.postprocessor: Reading translation table from ./data/hgnc_official_list.tsv
@@ -207,7 +207,7 @@ Mouse Knockout Enrichment
 
 As core genes are defined as producing the phenotype directly, disrupting a gene's function is likely to induce the phenotype. In the case of Mendelian disorder genes, it even single-handedly produces the phenotype.
 
-To get a more systematic assessment of phenotypic enrichment we gathered knockout data from the Mouse Genome Database for five diseases. For a detailed description on how we obtained the genes, consult the methods section in our `preprint <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1.full.pdf>`_.
+To get a more systematic assessment of phenotypic enrichment we gathered knockout data from the `Mouse Genome Database <http://www.informatics.jax.org/allele>`_ for five diseases. For a detailed description on how we obtained the genes, consult the methods section in our `preprint <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1.full.pdf>`_.
 
 In the following, we will see how the mouse knockout analysis is reflected in the logs:
 
