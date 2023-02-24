@@ -545,7 +545,7 @@ And now we run it:
 You can see the line :obj:`Using 1 additional node data sources: ['MyData']` indicating that it finds the definition of your dataset. 
 Further down you can see the dimension of the feature matrix: :obj:`Data(x=[16852, 99], ...)` indicating that we have 16852 genes which each has 99 features. 
 
-If we delete our description from :obj:`"extensions/datasets.json.py"` (i.e. turn it into an empty list again), and leave everything else as it is, the corresponding line in the output will change to:
+If we delete our description from :obj:`extensions/datasets.json.py` (i.e. turn it into an empty list again), and leave everything else as it is, the corresponding line in the output will change to:
 
 .. code-block:: console
 
@@ -573,16 +573,18 @@ Mouse Knockout data is matched to the disease of a given run by the file :obj:`d
 
 .. code-block:: text
     :linenos:
-    :caption: data/mgi/query_mapping.yaml
+    :caption: data/mgi/query_mapping.yaml (excerpt)
 
     "cardiovascular_disease":
         file: "./data/mgi/cad_query.txt"
     "immune_dysregulation":
         file: "./data/mgi/immune_dysreg_query.txt"
 
-In every line, a disease tag :obj:`"cardiovascular_disease"` is mapped to a file :obj:`"./data/mgi/cad_query.txt"` in yaml format. So, if you added your disease with the tag :obj:`my_disease` and want to add the mouse knockout genes obtained from the `MGI Database <https://www.informatics.jax.org/allele>`_ and saved at ``data/mgi/my_disease_query.txt`` then add the following lines to ``data/mgi/query_mapping.yaml``:
+In every line, a disease tag :obj:`"cardiovascular_disease"` is mapped to a file :obj:`"./data/mgi/cad_query.txt"` in yaml format. So, if you added your disease with the tag :obj:`my_disease` and want to add the mouse knockout genes obtained from the `MGI Database <https://www.informatics.jax.org/allele>`_ and saved at :obj:`data/mgi/my_disease_query.txt` then add the following lines to :obj:`data/mgi/query_mapping.yaml`:
 
 .. code-block:: text
+    :linenos:
+    :caption: data/mgi/query_mapping.yaml (continued)
 
     "my_disease":
         file: "./data/mgi/my_disease_query.txt"
