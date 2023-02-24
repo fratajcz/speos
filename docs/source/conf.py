@@ -64,6 +64,9 @@ exclude_patterns = []
 html_theme = 'sphinx_rtd_theme'
 #html_logo = "mepro_headshot.png"
 
+# These folders are copied to the documentation's HTML output
+html_static_path = ['_static']
+
 html_css_files = [
     'css/rtd_dark.css',
 ]
