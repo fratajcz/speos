@@ -567,7 +567,7 @@ However, some external validations, such as the enrichment of differentially exp
 Adding Mouse Knockout Data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We obtained mouse knockout genes from the `Mouse Genome Database <http://www.informatics.jax.org/allele>`_, for more methologic details consult the method section of our `preprint <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1.full.pdf>`_. 
+We obtained mouse knockout genes from the `Mouse Genome Database <http://www.informatics.jax.org/allele>`_, for more method details consult the method section of our `preprint <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1.full.pdf>`_. 
 
 Mouse Knockout data is matched to the disease of a given run by the file :obj:`data/mgi/query_mapping.yaml`:obj:. An excerpt of this file shows you how the mapping has to look like:
 
@@ -592,7 +592,7 @@ and with the next run your freshly added mouse KO genes will automatically be se
 Adding Differential Gene Expression Data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We obtained differntially expressed genes from `GEMMA database <https://gemma.msl.ubc.ca/phenotypes.html>`_, for more methologic details consult the method section of our `preprint <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1.full.pdf>`_. 
+We obtained differntially expressed genes from `GEMMA database <https://gemma.msl.ubc.ca/phenotypes.html>`_, for more method details consult the method section of our `preprint <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1.full.pdf>`_. 
 
 Differential gene expression data is matched to the disease of a given run by the file :obj:`data/dge/mapping.yaml`. An excerpt of this file shows you how the mapping has to look like:
 
@@ -639,3 +639,8 @@ So, if you added your disease with the tag :obj:`my_disease` and want to add dif
             file: "./data/dge/subb.gemma"
 
 and the next time you run preprocessing, the results will automatically contain your new enrichment analysis for differentially expressed genes!
+
+Adding New Tasks
+~~~~~~~~~~~~~~~~
+
+For now, configuring the postprocessor so that users can implement and run their own tasks is on the TODO list. If you want the option to add your own task, let us know by filing a feature request via `GitHub Issues <https://github.com/fratajcz/speos/issues>`_ so we know that this features is needed and can bump up its priority.
