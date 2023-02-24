@@ -314,7 +314,7 @@ They are seperated with a single blank space, not with a tab delimiter.
    This is because we process them all identically with the same tool, so we just have to write one processing script. Edgelists and Networks come from various soruces, having various formats.
 
 You now save this gene list to :obj:`data/mygwas/FOO.genes.out`.
-Now, the next step is to tell Speos how to use your data. To add an additional GWAS trait to Speos, you can simply register it in :obj:`extensions/mapping.json`:obj:. Se the following example how to do it:
+Now, the next step is to tell Speos how to use your data. To add an additional GWAS trait to Speos, you can simply register it in :obj:`extensions/mapping.json`. Se the following example how to do it:
 
 Without any manipulation, :obj:`extensions/mapping.json` simply contains an empty list:
 
@@ -569,7 +569,7 @@ Adding Mouse Knockout Data
 
 We obtained mouse knockout genes from the `Mouse Genome Database <http://www.informatics.jax.org/allele>`_, for more method details consult the method section of our `preprint <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1.full.pdf>`_. 
 
-Mouse Knockout data is matched to the disease of a given run by the file :obj:`data/mgi/query_mapping.yaml`:obj:. An excerpt of this file shows you how the mapping has to look like:
+Mouse Knockout data is matched to the disease of a given run by the file :obj:`data/mgi/query_mapping.yaml`. An excerpt of this file shows you how the mapping has to look like:
 
 .. code-block:: text
     :linenos:
