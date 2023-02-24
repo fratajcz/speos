@@ -123,6 +123,13 @@ class GWASMapperTest(unittest.TestCase):
 
         os.remove(mapping_file_path)
 
+    def test_case_sensitive(self):
+        mapper = GWASMapper()
+
+        after_mappings = mapper.get_mappings(tags="insulin", fields="ground_truth")
+
+        self.assertEqual("insulin_disorder", after_mappings[0]["phenotype"])
+
 class AdjacencyMapperTest(unittest.TestCase):
     def setUp(self):
         self.config = Config()

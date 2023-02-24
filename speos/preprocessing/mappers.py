@@ -21,7 +21,7 @@ class Mapper:
             for mapping in self.mapping_list:
                 appendFlag = False
                 for tag in tags:
-                    if tag in mapping[fields[0]]:
+                    if tag.lower() in mapping[fields[0]].lower():
                         appendFlag = True
                 if appendFlag:
                     mappings.append(mapping)
@@ -30,7 +30,7 @@ class Mapper:
             for mapping in self.mapping_list:
                 appendFlag = True
                 for tag, field in zip(tags, fields):
-                    if tag not in mapping[field]:
+                    if tag.lower() not in mapping[field].lower():
                         appendFlag = False
                 if appendFlag:
                     mappings.append(mapping)

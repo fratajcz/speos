@@ -146,8 +146,9 @@ class GeneNetwork(nn.Module):
         for key, value in config.items():
             if key == "kwargs":
                 for kwarg_key, kwarg_value in value.items():
-                    if kwarg_value.startswith("nn.") or kwarg_value.startswith("pyg_nn.") or kwarg_value.startswith("aggr."):
-                        config[key][kwarg_key] = eval("".join(kwarg_value.split()))
+                    if isinstance(kwarg_value, str):
+                        if kwarg_value.startswith("nn.") or kwarg_value.startswith("pyg_nn.") or kwarg_value.startswith("aggr."):
+                            config[key][kwarg_key] = eval("".join(kwarg_value.split()))
             elif isinstance(value, Config):
                 self.initialize_kwargs(value)
 
