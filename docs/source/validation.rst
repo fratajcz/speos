@@ -4,7 +4,7 @@ External Validation
 Doing machine learning with relatively scarce labeled data points is always challenging to validate, especially since Speos is designed for positive-unlabeled scenarios, where we assume that some of the unlabeled genes are actually positives, 
 making the 'internal' validation with a hold-out set somewhat unreliable. To improve upon this weakness, we have added an array of external validation datasets which serve as alternative label sets. The datasets have been selected to have the lowest possible bias, i.e. not being influenced by the training labels.
 
-The external validations are run by the :obj:`speos.postprocessing.postprocessor.Postprocessor` class, which is automatically run when running the :obj:`outer_crossval.py` and :obj:`postprocessing.py` pipelines, as `detailed here <https://speos.readthedocs.io/en/latest/api.html#post-processing>`_. 
+The external validations are run by the :obj:`speos.postprocessing.postprocessor.Postprocessor` class, which is automatically run when running the :obj:`outer_crossval.py` and :obj:`postprocessing.py` pipelines, as detailed here. 
 Before the postprocessor can perform the external validation, you have to train a crossvalidation ensemble, read the respective :doc:`documentation <ensemble>`_ on how to do this if you haven't done it already.
 
 Now, we want to take a look into the individual means of external validation, or tasks, how they are called within the framework. To do that, we will look at the log of a run that produced candidate genes for cardiovascular disease. If you cant find your log, check your config file, the logs are placed in :obj:`<config.logging.dir>/<config.name>`.
