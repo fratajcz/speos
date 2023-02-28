@@ -34,6 +34,7 @@ For now, you can go through the chapters of this documenation one by one and lea
    extension
    benchmarking
    validation
+   ensemble
    interpretation
 
 .. toctree::
