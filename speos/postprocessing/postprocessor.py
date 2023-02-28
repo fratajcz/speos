@@ -189,7 +189,8 @@ class PostProcessor:
         try:
             subtypes = mapping[phenotype.lower()]
         except KeyError:
-            logger.warning("Phenotype {} not registered for differential gene expression analysis.")
+            logger.warning("Phenotype {} not registered for differential gene expression analysis.".format(phenotype))
+            return
 
         num_phenotypes = len(list(subtypes.keys()))
 
