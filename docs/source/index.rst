@@ -33,8 +33,8 @@ For now, you can go through the chapters of this documenation one by one and lea
    configuration
    extension
    benchmarking
-   validation
    ensemble
+   validation
    interpretation
 
 .. toctree::
