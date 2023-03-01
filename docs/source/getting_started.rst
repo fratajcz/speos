@@ -52,7 +52,7 @@ Next, you might want to create a new conda env.
 
 .. code-block:: console
 
-    $ conda create -y --name speos python=3.7 \
+    $ conda create -y --name speos python=3.7
     $ conda activate speos
 
 Speos is built on Pytorch Geometric which in turn is built on Pytorch. To make sure Speos runs correctly, you must first install Pytorch and Pytorch geometric.
