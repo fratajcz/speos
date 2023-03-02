@@ -137,7 +137,7 @@ class PostProcessorTest(unittest.TestCase):
 
         print(self.pp.mouseKO(self.results_file))
 
-    def test_mouseKO_missing_phenbotype(self):
+    def test_mouseKO_missing_phenotype(self):
 
         config = self.config.copy()
         config.input.tag = "autism"

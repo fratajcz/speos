@@ -903,7 +903,7 @@ class PostProcessor:
                 path_to_table = value["file"]
 
         if path_to_table is None:
-            logger.error("Could not find mouse knockout genes for tag {} in mapping {}".format(tag, mapping))
+            logger.error("Could not find mouse knockout genes for tag {} in mapping {}".format(tag.lower(), mapping))
             return
 
         logger.info("Reading mouse knockout genes from {}".format(path_to_table))
