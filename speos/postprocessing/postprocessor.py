@@ -687,7 +687,7 @@ class PostProcessor:
         
         try:
             ko_genes = set(self.get_mouse_knockout_genes())
-        except KeyError:
+        except (KeyError, TypeError):
             logger.warning("Phenotype {} not registered for mouse KO analysis.")
             return
         

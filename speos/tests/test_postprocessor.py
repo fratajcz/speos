@@ -137,6 +137,20 @@ class PostProcessorTest(unittest.TestCase):
 
         print(self.pp.mouseKO(self.results_file))
 
+    def test_mouseKO_missing_phenbotype(self):
+
+        config = self.config.copy()
+        config.input.tag = "autism"
+
+        pp = PostProcessor(config)
+
+        with open(self.test_outer_results, "r") as file:
+            outer_results = json.load(file)
+
+        pp.outer_result = outer_results
+
+        self.assertIsNone(self.pp.mouseKO())
+
     def test_lof(self):
 
         with open(self.test_outer_results, "r") as file:
