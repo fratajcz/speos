@@ -79,28 +79,14 @@ class SimpleModelTest(unittest.TestCase):
             self.assertTrue(torch.eq(old_param, new_param).all())
 
     def test_forward(self):
-        mappings = GWASMapper(self.config.input.gene_sets, self.config.input.gwas).get_mappings(
-            self.config.input.tag, fields=self.config.input.field)
-
-        tag = "" if self.config.input.adjacency == "all" else self.config.input.adjacency
-        adjacencies = AdjacencyMapper(self.config.input.adjacency_mappings).get_mappings(tag)
-
-        dataset = DatasetBootstrapper(
-            mappings, adjacencies, holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
+        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
 
         model = ModelBootstrapper(self.config, dataset.data.x.shape[1], 1).get_model()
 
         train_out, loss = model.step(dataset.data, dataset.data.train_mask)
 
     def test_forward_concat(self):
-        mappings = GWASMapper(self.config.input.gene_sets, self.config.input.gwas).get_mappings(
-            self.config.input.tag, fields=self.config.input.field)
-
-        tag = "" if self.config.input.adjacency == "all" else self.config.input.adjacency
-        adjacencies = AdjacencyMapper(self.config.input.adjacency_mappings).get_mappings(tag)
-
-        dataset = DatasetBootstrapper(
-            mappings, adjacencies, holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
+        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
 
         config = self.config.deepcopy()
         config.model.concat_after_mp = True
@@ -110,14 +96,7 @@ class SimpleModelTest(unittest.TestCase):
         train_out, loss = model.step(dataset.data, dataset.data.train_mask)
 
     def test_forward_skip(self):
-        mappings = GWASMapper(self.config.input.gene_sets, self.config.input.gwas).get_mappings(
-            self.config.input.tag, fields=self.config.input.field)
-
-        tag = "" if self.config.input.adjacency == "all" else self.config.input.adjacency
-        adjacencies = AdjacencyMapper(self.config.input.adjacency_mappings).get_mappings(tag)
-
-        dataset = DatasetBootstrapper(
-            mappings, adjacencies, holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
+        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
 
         config = self.config.deepcopy()
         config.model.skip_mp = True
@@ -219,16 +198,8 @@ class SimpleModelTest(unittest.TestCase):
         config.input.adjacency = ["BioPlex 3.0 293T"]
         config.input.use_gwas = False
         config.input.use_expression = False
-
-
-        mappings = GWASMapper(self.config.input.gene_sets, self.config.input.gwas).get_mappings(
-            self.config.input.tag, fields=self.config.input.field)
-
-        tag = "" if self.config.input.adjacency == "all" else self.config.input.adjacency
-        adjacencies = AdjacencyMapper(self.config.input.adjacency_mappings).get_mappings(tag)
-
-        dataset = DatasetBootstrapper(
-            mappings, adjacencies, holdout_size=config.input.holdout_size, name=config.name, config=config).get_dataset()
+        
+        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
 
         self.model = ModelBootstrapper(config, dataset.data.x.shape[1], 1).get_model()
 
@@ -242,14 +213,7 @@ class SimpleModelTest(unittest.TestCase):
         config.input.use_expression = False
         config.model.mp.n_layers = 0
 
-        mappings = GWASMapper(self.config.input.gene_sets, self.config.input.gwas).get_mappings(
-            self.config.input.tag, fields=self.config.input.field)
-
-        tag = "" if self.config.input.adjacency == "all" else self.config.input.adjacency
-        adjacencies = AdjacencyMapper(self.config.input.adjacency_mappings).get_mappings(tag)
-
-        dataset = DatasetBootstrapper(
-            mappings, adjacencies, holdout_size=config.input.holdout_size, name=config.name, config=config).get_dataset()
+        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
 
         self.model = ModelBootstrapper(config, dataset.data.x.shape[1], 1).get_model()
 
@@ -311,14 +275,14 @@ class RelationalGeneNetworkTest(unittest.TestCase):
         config.model.mp.type = "filmtag"
         model = ModelBootstrapper(config, 90, 2).get_model()
         layers = [module for module in model.architectures[0].mp.modules() if not isinstance(module, nn.Sequential)]
-        self.assertEqual("FiLMConv", str(layers[1].__class__.__name__))
+        self.assertEqual("FiLMTAGConv", str(layers[1].__class__.__name__))
 
     def test_bootstrap_rtag(self):
         config = self.config.deepcopy()
         config.model.mp.type = "rtag"
         model = ModelBootstrapper(config, 90, 2).get_model()
         layers = [module for module in model.architectures[0].mp.modules() if not isinstance(module, nn.Sequential)]
-        self.assertEqual("FiLMConv", str(layers[1].__class__.__name__))
+        self.assertEqual("RTAGConv", str(layers[1].__class__.__name__))
 
     def test_bootstrap_gat(self):
         config = self.config.deepcopy()
@@ -329,17 +293,11 @@ class RelationalGeneNetworkTest(unittest.TestCase):
 
     def test_forward_rgcn(self):
 
-        mappings = GWASMapper().get_mappings(
-            self.config.input.tag, fields=self.config.input.field)
+        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
 
-        adjacencies = AdjacencyMapper(self.config.input.adjacency_mappings).get_mappings("BioPlex")
+        model = ModelBootstrapper(self.config, dataset.data.x.shape[1], 2).get_model()
 
-        dataset = DatasetBootstrapper(
-            mappings, adjacencies, holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
-
-        self.model = ModelBootstrapper(self.config, dataset.data.x.shape[1], 2).get_model()
-
-        train_out, loss = self.model.step(dataset.data, dataset.data.train_mask)
+        train_out, loss = model.step(dataset.data, dataset.data.train_mask)
 
     def test_forward_force_multigraph(self):
 
@@ -348,14 +306,7 @@ class RelationalGeneNetworkTest(unittest.TestCase):
         config.input.force_multigraph = True
         config.model.mp.type = "film"
 
-        mappings = GWASMapper(self.config.input.gene_sets, self.config.input.gwas).get_mappings(
-            self.config.input.tag, fields=self.config.input.field)
-
-        tag = "" if self.config.input.adjacency == "all" else self.config.input.adjacency
-        adjacencies = AdjacencyMapper(self.config.input.adjacency_mappings).get_mappings(tag)
-
-        dataset = DatasetBootstrapper(
-            mappings, adjacencies, holdout_size=config.input.holdout_size, name=config.name, config=config).get_dataset()
+        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
 
         self.model = ModelBootstrapper(config, dataset.data.x.shape[1], 1).get_model()
 
@@ -364,66 +315,44 @@ class RelationalGeneNetworkTest(unittest.TestCase):
     def test_forward_rtag(self):
         import numpy as np
 
-        mappings = GWASMapper(self.config.input.gene_sets, self.config.input.gwas).get_mappings(
-            self.config.input.tag, fields=self.config.input.field)
-
-        tag = "" if self.config.input.adjacency == "all" else self.config.input.adjacency
-        adjacencies = AdjacencyMapper(self.config.input.adjacency_mappings).get_mappings(tag)
-        dataset = DatasetBootstrapper(
-            mappings, adjacencies, holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
+        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
 
         config = self.config.deepcopy()
         config.model.mp.type = "rtag"
-        failed_runs = 0
-        failed_run_list = []
-        for i in range(10):
-            model = ModelBootstrapper(config, dataset.data.x.shape[1], 2).get_model()
-            params = model.state_dict()[0]
-            for name, param in params.items():
-                self.assertTrue(torch.isfinite(param).all(), "params for {} are non-finite BEFORE step".format(name))
-            train_out, loss = model.step(dataset.data, dataset.data.train_mask)
-            params = model.state_dict()[0]
-            for name, param in params.items():
-                self.assertTrue(torch.isfinite(param).all(), "params for {} are non-finite AFTER step".format(name))
-            try:
-                self.assertFalse(np.isnan(loss))
-            except AssertionError:
-                failed_runs += 1
-                failed_run_list.append(i)
 
-        self.assertTrue(failed_runs == 0, "Had {} failed runs (loss is np.nan): {}".format(failed_runs, failed_run_list))
+        model = ModelBootstrapper(config, dataset.data.x.shape[1], 2).get_model()
+        params = model.state_dict()[0]
+        for name, param in params.items():
+            self.assertTrue(torch.isfinite(param).all(), "params for {} are non-finite BEFORE step".format(name))
+
+        train_out, loss = model.step(dataset.data, dataset.data.train_mask)
+        params = model.state_dict()[0]
+
+        for name, param in params.items():
+            self.assertTrue(torch.isfinite(param).all(), "params for {} are non-finite AFTER step".format(name))
+
+        self.assertFalse(np.isnan(loss))
 
     def test_forward_filmtag(self):
         import numpy as np
 
-        mappings = GWASMapper(self.config.input.gene_sets, self.config.input.gwas).get_mappings(
-            self.config.input.tag, fields=self.config.input.field)
-
-        tag = "" if self.config.input.adjacency == "all" else self.config.input.adjacency
-        adjacencies = AdjacencyMapper(self.config.input.adjacency_mappings).get_mappings(tag)
-        dataset = DatasetBootstrapper(
-            mappings, adjacencies, holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
+        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
 
         config = self.config.deepcopy()
         config.model.mp.type = "filmtag"
-        failed_runs = 0
-        failed_run_list = []
-        for i in range(10):
-            model = ModelBootstrapper(config, dataset.data.x.shape[1], 2).get_model()
-            params = model.state_dict()[0]
-            for name, param in params.items():
-                self.assertTrue(torch.isfinite(param).all(), "params for {} are non-finite BEFORE step".format(name))
-            train_out, loss = model.step(dataset.data, dataset.data.train_mask)
-            params = model.state_dict()[0]
-            for name, param in params.items():
-                self.assertTrue(torch.isfinite(param).all(), "params for {} are non-finite AFTER step".format(name))
-            try:
-                self.assertFalse(np.isnan(loss))
-            except AssertionError:
-                failed_runs += 1
-                failed_run_list.append(i)
+        
+        model = ModelBootstrapper(config, dataset.data.x.shape[1], 2).get_model()
+        params = model.state_dict()[0]
+        for name, param in params.items():
+            self.assertTrue(torch.isfinite(param).all(), "params for {} are non-finite BEFORE step".format(name))
 
-        self.assertTrue(failed_runs == 0, "Had {} failed runs (loss is np.nan): {}".format(failed_runs, failed_run_list))
+        train_out, loss = model.step(dataset.data, dataset.data.train_mask)
+        params = model.state_dict()[0]
+
+        for name, param in params.items():
+            self.assertTrue(torch.isfinite(param).all(), "params for {} are non-finite AFTER step".format(name))
+
+        self.assertFalse(np.isnan(loss))
 
 
 class SKLearnModelTest(unittest.TestCase):

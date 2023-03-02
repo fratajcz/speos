@@ -125,7 +125,29 @@ At the very end of the file, you will find summary statistics of how many genes 
 
 As we see, a total of 163 genes has received a CS of 11, which is more than the intermediate CS of 6, 7 and 8. 
 
-The next lines in the config file belong to the external validation tasks which will be explained in the next chapter. First, lets take a look at the settings in the config with which you can change the behaviour of the postprocessor and how it produces candidate genes:
+Additionally, a postprocessing table is placed in the :obj:`config.pp.save_dir` directory that contains the prediction for every gene as well as the results of several external validation tasks which will be discussed in the next chapter:
+
+
+.. code-block:: text
+    :linenos:
+    :caption: ./results/cardiovascular_gcn_pp_table.tsv (excerpt)
+    
+        Is Included	Mendelian	Candidate	CS	DGE: Coronary Artery Disease	DGE: Atrial Fibrillation	DGE: Aortic Aneurysm	DGE: Ischemia	DGE: Hypertension	DGE: Atherosclerosis	DGE: Union	Drug Target	Number of Drug Interactions	Druggable	Included in Mouse KO	Is Mouse KO	pLI>0.9
+    A1BG	True	False	True	9.0	False	False	False	False	False	False	False	True	5.0	True	True	False	False
+    A1CF	True	False	False	0.0	False	False	False	False	False	False	False	False	0.0	False	True	False	False
+    A2M	True	False	True	9.0	False	False	False	False	False	False	False	True	29.0	True	True	False	False
+    A2ML1	True	False	False	0.0	False	False	False	False	False	False	False	False	0.0	True	False	False	False
+    A3GALT2	True	False	False	0.0	False	False	False	False	False	False	False	False	0.0	False	True	False	False
+    A4GALT	True	False	False	0.0	False	False	False	False	False	False	False	True	2.0	False	True	False	False
+    A4GNT	True	False	False	0.0	False	False	False	False	False	False	False	False	0.0	False	True	False	False
+    AAAS	True	False	False	0.0	False	False	False	False	False	False	False	False	0.0	False	True	False	False
+    AACS	True	False	False	0.0	False	False	False	False	False	False	False	False	0.0	False	True	False	False
+    AADAC	True	False	False	0.0	False	False	False	False	False	False	False	True	1.0	True	True	False	False
+    AADACL2	True	False	False	0.0	False	False	False	False	False	False	False	True	2.0	True	False	False	False
+    AADACL3	True	False	False	0.0	False	False	False	False	False	False	False	False	0.0	False	True	False	False
+    AADACL4	True	False	False	0.0	False	False	False	False	False	False	False	False	0.0	False	True	False	False
+    AADAT	True	False	False	0.0	False	False	False	False	False	False	False	True	2.0	True	True	False	False
+
 
 Configuring the Postprocessor
 -----------------------------

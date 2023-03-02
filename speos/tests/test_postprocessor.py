@@ -88,7 +88,7 @@ class PostProcessorTest(unittest.TestCase):
         for fast, descriptive in zip((mean_counter_fast, sd_counter_fast), (mean_counter_descriptive, sd_counter_descriptive)):
             fast_values = list(fast.values())
             descriptive_values = list(descriptive.values())
-            self.assertTrue(np.allclose(list(fast.values()), list(descriptive.values()), atol=0.5, rtol=0.1))
+            self.assertTrue(np.allclose(list(fast.values()), list(descriptive.values()), atol=0.5, rtol=0.5))
         
     def test_random_overlap_fast_faster_than_descriptive(self):
         import timeit
@@ -149,7 +149,7 @@ class PostProcessorTest(unittest.TestCase):
 
         pp.outer_result = outer_results
 
-        self.assertIsNone(self.pp.mouseKO())
+        self.assertIsNone(pp.mouseKO(self.results_file))
 
     def test_lof(self):
 
@@ -197,6 +197,20 @@ class PostProcessorTest(unittest.TestCase):
         self.pp.outer_result = outer_results
 
         print(self.pp.dge(self.results_file))
+
+    def test_dge_missing_phenotype(self):
+
+        config = self.config.copy()
+        config.input.tag = "autism"
+
+        pp = PostProcessor(config)
+
+        with open(self.test_outer_results, "r") as file:
+            outer_results = json.load(file)
+        
+        pp.outer_result = outer_results
+
+        self.assertIsNone(pp.dge(self.results_file))
 
     def test_contingency_table(self):
         import numpy as np

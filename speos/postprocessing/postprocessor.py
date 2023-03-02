@@ -31,8 +31,8 @@ class PostProcessor:
         unknown_genes, all_genes, positive_genes = self.get_unknown_genes()
         self.pp_table = PostProcessingTable(index=all_genes)
         included_genes = self._read_results_file()["hgnc"].tolist()
-        self.pp_table.add("Is Included", index=included_genes, values=True, remaining=False)
-        self.pp_table.add("Mendelian", index=positive_genes, values=True, remaining=False)
+        self.add_to_pp_table("Is Included", index=included_genes, values=True, remaining=False)
+        self.add_to_pp_table("Mendelian", index=positive_genes, values=True, remaining=False)
 
     def save_pp_table(self):
         path = os.path.join(pu.postprocessing_results_path(self.config), self.config.name + "_pp_table.tsv")
@@ -242,7 +242,7 @@ class PostProcessor:
                 unknown_dge_genes = unknown_union_genes
                 valid_dge_genes = valid_union_genes
 
-            self.pp_table.add("DGE: {}".format(subtype), valid_dge_genes, True, False)
+            self.add_to_pp_table("DGE: {}".format(subtype), valid_dge_genes, True, False)
             array = self.make_contingency_table(all_genes, positive_genes, valid_dge_genes)
             n_mendelians_with_de.append(array[0][0].item())
             n_mendelians_without_de.append(array[1][0].item())
@@ -468,10 +468,10 @@ class PostProcessor:
 
         df["N Drug Targets"] = [len(mendelian_drug_targets), len(candidate_drug_targets), len(noncandidate_drug_targets)]
 
-        self.pp_table.add("Drug Target", valid_drug_targets, True, False)
+        self.add_to_pp_table("Drug Target", valid_drug_targets, True, False)
         valid_dict = {gene: degree for gene, degree in hgnc2degree.items() if gene in all_genes}
         genes, degree = list(zip(*valid_dict.items()))
-        self.pp_table.add("Number of Drug Interactions", genes, degree, 0)
+        self.add_to_pp_table("Number of Drug Interactions", genes, degree, 0)
         
         array = self.make_contingency_table(all_genes, positive_genes, valid_drug_targets)
 
@@ -590,7 +590,7 @@ class PostProcessor:
 
         df["N Druggable"] = [len(positive_druggable_genes), len(predicted_druggable_genes), len(noncandidate_druggable_genes)]
 
-        self.pp_table.add("Druggable", valid_druggable_genes, True, False)
+        self.add_to_pp_table("Druggable", valid_druggable_genes, True, False)
 
         array = self.make_contingency_table(all_genes, positive_genes, valid_druggable_genes)
         total_druggable = []
@@ -683,7 +683,7 @@ class PostProcessor:
         background_ko_genes = set(self.get_mouse_knockout_background())
         valid_background_ko_genes = self._return_only_valid(background_ko_genes, all_genes)
         unknown_background_ko_genes = self._return_only_valid(valid_background_ko_genes, unknown_genes)
-        self.pp_table.add("Included in Mouse KO", valid_background_ko_genes, True, False)
+        self.add_to_pp_table("Included in Mouse KO", valid_background_ko_genes, True, False)
         
         try:
             ko_genes = set(self.get_mouse_knockout_genes())
@@ -695,7 +695,7 @@ class PostProcessor:
         mendelian_ko_enrichment_result = fisher_exact(mendelian_array)
 
         valid_ko_genes = self._return_only_valid(ko_genes, all_genes)
-        self.pp_table.add("Is Mouse KO", valid_ko_genes, True, False)
+        self.add_to_pp_table("Is Mouse KO", valid_ko_genes, True, False)
         unknown_ko_genes = self._return_only_valid(ko_genes, unknown_background_ko_genes)
 
         logger.info("Total of {} Mouse KO genes, {} of them match with our translation table.".format(len(ko_genes), len(ko_genes.intersection(all_genes))))
@@ -754,7 +754,7 @@ class PostProcessor:
         pli_enrichment_result_mendelian = fisher_exact(array_mendelian)
 
         valid_pli_genes = self._return_only_valid(pli_genes, all_genes)
-        self.pp_table.add("pLI>0.9", valid_pli_genes, True, False)
+        self.add_to_pp_table("pLI>0.9", valid_pli_genes, True, False)
 
         unknown_pli_genes = self._return_only_valid(pli_genes, unknown_genes)
 
@@ -803,6 +803,13 @@ class PostProcessor:
             tukeys.append(tukey)
 
         return [pli_enrichment_result_mendelian, array_mendelian, pli_enrichment_result_candidates, array_candidates], tukeys
+    
+    def add_to_pp_table(self, *args , **kwargs):
+        if hasattr(self, "pp_table"):
+            self.pp_table.add(*args, **kwargs)
+        else:
+            logger = setup_logger(*self.logger_args)
+            logger.warning("Attempting to write to postprocessing-table but no table has been set up.")
 
     def get_unknown_genes(self, results_path=None):
         #translation_table = self.get_translation_table()
@@ -1031,8 +1038,8 @@ class PostProcessor:
             self.outer_result = outer_result
             logger.info("Outer Crossvalidation results in {} candidate genes in total. Results written to {}".format(total, os.path.join(pu.postprocessing_results_path(self.config), str(self.config.name) + "outer_results.json")))
             candidate_genes, consensus_score = list(zip(*outer_result[0].items()))
-            self.pp_table.add("Candidate", index=candidate_genes, values=True, remaining=False)
-            self.pp_table.add("CS", index=candidate_genes, values=consensus_score, remaining=0)
+            self.add_to_pp_table("Candidate", index=candidate_genes, values=True, remaining=False)
+            self.add_to_pp_table("CS", index=candidate_genes, values=consensus_score, remaining=0)
 
         logger.info("Finished Overlap Analysis")
         return count2gene,
