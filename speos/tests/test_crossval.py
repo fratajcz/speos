@@ -3,7 +3,7 @@ from speos.utils.config import Config
 import unittest
 import shutil
 import numpy as np
-
+import os
 
 class OuterCrossvalTest(unittest.TestCase):
 
@@ -11,18 +11,22 @@ class OuterCrossvalTest(unittest.TestCase):
     def setUpClass(cls) -> None:
 
         cls.config = Config()
-        cls.config.logging.dir = "speos/tests/logs/"
+        cls.config.logging.dir = "speos/tests/logs/outercrossvaltest"
 
         cls.config.name = "ExperimentTest"
+        cls.config.crossval.positive_only = True
 
-        cls.config.model.save_dir = "tests/models/"
-        cls.config.inference.save_dir = "tests/results"
-        cls.config.input.save_dir = "tests/data"
+        cls.config.model.save_dir = "speos/tests/models/outercrossvaltest"
+        cls.config.inference.save_dir = "speos/tests/results/outercrossvaltest"
+        cls.config.input.save_dir = "speos/tests/data/outercrossvaltest"
 
         cls.config.training.max_epochs = 1
         cls.config.crossval.n_folds = 2
 
     def setUp(self):
+        for directory in [self.config.model.save_dir, self.config.inference.save_dir, self.config.logging.dir]:
+            if not os.path.exists(directory):
+                os.makedirs(directory)
         self.outer_cv = OuterCVWrapper(self.config)
 
     def tearDown(self):
@@ -60,23 +64,28 @@ class InnerCrossvalTest(unittest.TestCase):
 
     def setUp(self):
         self.config = Config()
-        self.config.logging.dir = "speos/tests/logs/"
+        self.config.logging.dir = "speos/tests/logs/InnerCrossvalTest"
 
         self.config.name = "InnerCVTest"
 
-        self.config.model.save_dir = "tests/models/"
-        self.config.inference.save_dir = "tests/results"
-        self.config.input.save_dir = "tests/data"
+        self.config.model.save_dir = "speos/tests/models/InnerCrossvalTest"
+        self.config.inference.save_dir = "speos/tests/resultsInner/CrossvalTest"
+        self.config.input.save_dir = "speos/tests/data/InnerCrossvalTest"
 
         self.config.training.max_epochs = 1
         self.config.crossval.n_folds = 4
         self.config.crossval.positive_only = False
+
+        for directory in [self.config.model.save_dir, self.config.inference.save_dir, self.config.logging.dir, self.config.input.save_dir]:
+            if not os.path.exists(directory):
+                os.makedirs(directory)
 
         self.cv = CVWrapper(self.config)
 
     def tearDown(self):
         shutil.rmtree(self.config.model.save_dir, ignore_errors=True)
         shutil.rmtree(self.config.inference.save_dir, ignore_errors=True)
+        shutil.rmtree(self.config.logging.dir, ignore_errors=True)
         shutil.rmtree(self.config.input.save_dir, ignore_errors=True)
 
     def test_no_overlap(self):

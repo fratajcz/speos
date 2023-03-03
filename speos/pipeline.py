@@ -68,6 +68,11 @@ class BaggingPipeline(Pipeline):
 
 class OuterCVPipeline(Pipeline):
     def __init__(self, config_path: str = ""):
+        if not self.config.crossval.positive_only:
+            logger = setup_logger(*self.logger_args)
+            logger.info("Found that crossval.positive_only is disabled in config, enabling it to run crossvalidation ensemble")
+            self.config.crossval.positive_only = True
+
         super(OuterCVPipeline, self).__init__(config_path)
 
         self.crossval = OuterCVWrapper(self.config)
@@ -92,7 +97,7 @@ class InferencePipeline(Pipeline):
 
 class CVTrainingPipeline(Pipeline):
     def __init__(self, config_path: str = ""):
-        super(CVInferencePipeline, self).__init__(config_path)
+        super(CVTrainingPipeline, self).__init__(config_path)
         if self.config.pp.switch:
             logger = setup_logger(*self.logger_args)
             logger.info("Found train switch is 'on' in the provided config, turning it off to do inference-only.")

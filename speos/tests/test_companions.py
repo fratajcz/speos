@@ -2,6 +2,7 @@ import unittest
 from speos.utils.config import Config
 from speos.experiment import Experiment
 import shutil
+import os
 
 
 class CompanionTest(unittest.TestCase):
@@ -9,13 +10,13 @@ class CompanionTest(unittest.TestCase):
     def setUp(self) -> None:
 
         self.config = Config()
-        self.config.logging.dir = "speos/tests/logs/"
+        self.config.logging.dir = "speos/tests/logs/companiontest"
 
         self.config.name = "CompanionTest"
         self.config.crossval.n_folds = 1
 
-        self.config.model.save_dir = "tests/models/"
-        self.config.inference.save_dir = "tests/results"
+        self.config.model.save_dir = "speos/tests/models/companiontest"
+        self.config.inference.save_dir = "speos/tests/resultscompaniontest"
 
         self.config.training.max_epochs = 15
 
@@ -26,6 +27,10 @@ class CompanionTest(unittest.TestCase):
         self.config.scheduler.patience = 1
         self.config.scheduler.limit = 1e-10
         self.config.scheduler.factor = 0.1
+
+        for directory in [self.config.model.save_dir, self.config.inference.save_dir, self.config.logging.dir]:
+            if not os.path.exists(directory):
+                os.makedirs(directory)
 
         self.experiment = Experiment(self.config)
 
