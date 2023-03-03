@@ -81,7 +81,7 @@ Lets create the file :obj:`config_my_labels.yaml` and fill it with the following
     :linenos:
     :caption: config_my_labels.yaml
 
-    name: test_adjacency_multiple
+    name: test_my_labels
 
     input:
         tag: my_labels
