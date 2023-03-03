@@ -6,7 +6,7 @@ import shutil
 import torch
 import numpy as np
 from speos.utils.logger import setup_logger
-
+import os
 
 class MPExplanationTest(unittest.TestCase):
 
@@ -29,8 +29,19 @@ class MPExplanationTest(unittest.TestCase):
         cls.config.training.max_epochs = 10
         cls.config.model.mp.type = "film"
 
+
+        for directory in [cls.config.model.save_dir, cls.config.inference.save_dir, cls.config.logging.dir, cls.config.input.save_dir]:
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+
         cls.experiment = Experiment(cls.config)
         cls.explainer = MessagePassingExplainer(cls.experiment.model, cls.experiment.data, ["0", "1"], cls.config)
+
+    def tearDown(self):
+        shutil.rmtree(self.config.model.save_dir, ignore_errors=True)
+        shutil.rmtree(self.config.inference.save_dir, ignore_errors=True)
+        shutil.rmtree(self.config.logging.dir, ignore_errors=True)
+        shutil.rmtree(self.config.input.save_dir, ignore_errors=True)
 
     def test_get_beta_gamma(self):
 

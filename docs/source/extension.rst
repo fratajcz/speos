@@ -85,6 +85,7 @@ Lets create the file :obj:`config_my_labels.yaml` and fill it with the following
 
     input:
         tag: my_labels
+        field: ground_truth
 
 This will now sift through all extensions label definitions and inbuilt label definitions and return those with "my_labels" in the field :obj:`name`. Be careful to not use the same name twice, as duplicate entries are not allowed!
 

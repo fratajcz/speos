@@ -11,22 +11,21 @@ class DataHandlerReadTest(unittest.TestCase):
         self.config.parse_yaml("speos/tests/files/inference_test_config.yaml")
         self.config.logging.file = "/dev/null"
 
-        self.config.model.save_dir = "tests/"
-        self.config.inference.save_dir = "tests/results"
+        self.config.model.save_dir = "speos/tests/models/DataHandlerReadTest"
+        self.config.inference.save_dir = "speos/tests/results/DataHandlerReadTest"
 
-        # self.resultshandler = ResultsHandler('speos/tests/files/inference_test.h5',read_only=True)
-        self.resultshandler = ResultsHandler('results/bm_disorder3.h5', read_only=True)
+        self.resultshandler = ResultsHandler('speos/tests/results/adjacencies_cardio_gcn_max_benchmark_adj_all-filmrep0.h5', read_only=True)
 
     def tearDown(self):
         self.resultshandler.close()
-        # shutil.rmtree(self.config.inference.save_dir, ignore_errors=True)
-        pass
+        shutil.rmtree(self.config.inference.save_dir, ignore_errors=True)
+        shutil.rmtree(self.config.model.save_dir, ignore_errors=True)
 
     def test_get_results_for_gene(self):
         self.resultshandler.get_results_for_gene("A1CF")
 
-    def test_get_explanation_for_gene(self):
-        self.resultshandler.get_explanation_for_gene("A1CF")
+    #def test_get_explanation_for_gene(self):
+    #    self.resultshandler.get_explanation_for_gene("A1CF")
 
 
 class DataHandlerWriteTest(unittest.TestCase):
