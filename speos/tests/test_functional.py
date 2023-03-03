@@ -6,7 +6,7 @@ import shutil
 import torch
 import numpy as np
 from speos.utils.logger import setup_logger
-
+import os
 
 class ExperimentTest(unittest.TestCase):
 
@@ -14,20 +14,23 @@ class ExperimentTest(unittest.TestCase):
     def setUpClass(cls) -> None:
 
         cls.config = Config()
-        cls.config.logging.dir = "speos/tests/logs/"
+        cls.config.logging.dir = "speos/tests/logs/ExperimentTest"
 
         cls.config.name = "ExperimentTest"
 
-        cls.config.model.save_dir = "speos/tests/models/"
-        cls.config.inference.save_dir = "speos/tests/results"
+        cls.config.model.save_dir = "speos/tests/models/ExperimentTest"
+        cls.config.inference.save_dir = "speos/tests/results/ExperimentTest"
         cls.config.optim.lr = 0.01
 
         cls.config.input.adjacency = "BioPlex 3.0 293T"
-        #cls.config.input.adjacency = "BioPlex"
         cls.config.input.save_data = True
-        cls.config.input.save_dir = "speos/tests/data"
+        cls.config.input.save_dir = "speos/tests/data/ExperimentTest"
 
         cls.config.training.max_epochs = 10
+
+        for directory in [cls.config.model.save_dir, cls.config.input.save_dir, cls.config.inference.save_dir, cls.config.logging.dir]:
+            if not os.path.exists(directory):
+                os.makedirs(directory)
 
         cls.experiment = Experiment(cls.config)
         resultshandler = cls.experiment.resultshandler

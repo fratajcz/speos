@@ -135,7 +135,7 @@ class RGATConvTest(unittest.TestCase):
         config = Config()
         config.model.mp.type = "rgat"
 
-        # need to rewrite the data structure
+        # TODO: need to rewrite the data structure
 
         model = RelationalGeneNetwork(config, 10, num_relations)
         x = model({"gene": x_input}, edges)

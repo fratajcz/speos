@@ -5,7 +5,7 @@ from speos.visualization.diagnosticwrapper import GraphDiagnosticWrapper
 import matplotlib.pyplot as plt
 import os
 import numpy as np
-
+import shutil
 
 class PanoramaTest(unittest.TestCase):
     """ This class tests the panorama diagnostics on fake data (i.e without relying on preprocessor)"""
@@ -13,15 +13,26 @@ class PanoramaTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.config = Config()
-        cls.config.logging.dir = "speos/tests/logs/"
+        cls.config.logging.dir = "speos/tests/logs/PanoramaTest"
 
         cls.config.name = "DiagnosticTest"
 
-        cls.config.model.save_dir = "speos/tests/models/"
-        cls.config.inference.save_dir = "speos/tests/results"
-        cls.config.model.plot_dir = "speos/tests/plots"
+        cls.config.input.save_dir = "speos/tests/data/PanoramaTest"
+        cls.config.model.save_dir = "speos/tests/models/PanoramaTest"
+        cls.config.inference.save_dir = "speos/tests/results/PanoramaTest"
+        cls.config.model.plot_dir = "speos/tests/plots/PanoramaTest"
+
+        for directory in [cls.config.model.save_dir, cls.config.input.save_dir, cls.config.inference.save_dir, cls.config.logging.dir, cls.config.model.plot_dir]:
+            if not os.path.exists(directory):
+                os.makedirs(directory)
 
         cls.diagnostic = GraphDiagnosticWrapper(config=cls.config, phenotype_tag="immune_dysregulation", adjacency_tag="BioPlex")
+
+    def tearDown(self):
+        shutil.rmtree(self.config.model.save_dir, ignore_errors=True)
+        shutil.rmtree(self.config.inference.save_dir, ignore_errors=True)
+        shutil.rmtree(self.config.logging.dir, ignore_errors=True)
+        shutil.rmtree(self.config.input.save_dir, ignore_errors=True)
 
     def test_panorama_no_detail_fails(self):
         self.assertRaises(ValueError, self.diagnostic.get_diagnostics)

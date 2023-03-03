@@ -11,10 +11,14 @@ class LoggingTest(unittest.TestCase):
     def setUpClass(cls) -> None:
 
         cls.config = Config()
-        cls.config.logging.dir = "speos/tests/logs/"
+        cls.config.logging.dir = "speos/tests/logs/loggingtest"
         cls.config.logging.level = 20
 
         cls.config.name = "LoggingTest"
+
+        for directory in [cls.config.logging.dir]:
+            if not os.path.exists(directory):
+                os.makedirs(directory)
 
     def tearDown(self):
         shutil.rmtree(self.config.logging.dir, ignore_errors=True)
@@ -26,7 +30,7 @@ class LoggingTest(unittest.TestCase):
         logger.warning("warning")
         logger.error("error")
         logger.critical("critical")
-
+        logger.handlers[0].flush()
         with open(os.path.join(self.config.logging.dir, self.config.name), 'r') as fp:
             numlines = len(fp.readlines())
 

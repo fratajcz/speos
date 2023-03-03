@@ -16,30 +16,33 @@ def setup_logger(config, name):
     flush_existing_loggers()
     logger = logging.getLogger(name)
     level = config.logging.level
+    test = logger.hasHandlers()
 
-    if not logger.hasHandlers():
-        if not os.path.exists(os.path.dirname(config.logging.dir)):
-            os.makedirs(os.path.dirname(config.logging.dir))
+    if logger.hasHandlers():
+        logger.handlers = []
 
-        if config.logging.file == "auto":
-            output = os.path.join(config.logging.dir, str(config.name))
-        elif config.logging.file is None:
-            output = "/dev/null"
-        else:
-            output = os.path.join(config.logging.dir, config.logging.file)
+    if not os.path.exists(os.path.dirname(config.logging.dir)):
+        os.makedirs(os.path.dirname(config.logging.dir))
 
-        formatter = logging.Formatter('{} %(asctime)s [%(levelname)s] %(name)s: %(message)s'.format(config.name))
+    if config.logging.file == "auto":
+        output = os.path.join(config.logging.dir, str(config.name))
+    elif config.logging.file is None:
+        output = "/dev/null"
+    else:
+        output = os.path.join(config.logging.dir, config.logging.file)
 
-        sh = logging.StreamHandler()
-        sh.setFormatter(formatter)
-        sh.setLevel(level)
+    formatter = logging.Formatter('{} %(asctime)s [%(levelname)s] %(name)s: %(message)s'.format(config.name))
 
-        fh = logging.FileHandler(output)
-        fh.setFormatter(formatter)
-        fh.setLevel(level)
+    sh = logging.StreamHandler()
+    sh.setFormatter(formatter)
+    sh.setLevel(level)
 
-        logger.addHandler(MemoryHandler(500, target=sh))
-        logger.addHandler(MemoryHandler(100, target=fh))
+    fh = logging.FileHandler(output)
+    fh.setFormatter(formatter)
+    fh.setLevel(level)
+
+    logger.addHandler(MemoryHandler(capacity=500, flushLevel=30, target=sh))
+    logger.addHandler(MemoryHandler(capacity=100, flushLevel=30, target=fh))
 
     logger.propagate = False
     logger.setLevel(level)
