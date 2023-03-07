@@ -11,7 +11,7 @@ class LoggingTest(unittest.TestCase):
     def setUpClass(cls) -> None:
 
         cls.config = Config()
-        cls.config.logging.dir = "speos/tests/logs/loggingtest"
+        cls.config.logging.dir = "speos/tests/logs/LoggingTest"
         cls.config.logging.level = 20
 
         cls.config.name = "LoggingTest"
@@ -38,14 +38,13 @@ class LoggingTest(unittest.TestCase):
 
     def test_flush_existing_loggers(self):
         logger = setup_logger(self.config, __name__)
-        logger.debug("debug")
         logger.info("info")
-        logger.warning("warning")
+        logger.info("another info")
 
-        #with open(os.path.join(self.config.logging.dir, self.config.name), 'r') as fp:
-        #    numlines = len(fp.readlines())
+        with open(os.path.join(self.config.logging.dir, self.config.name), 'r') as fp:
+            numlines = len(fp.readlines())
 
-        #self.assertEqual(numlines, 0)
+        self.assertEqual(numlines, 0)
 
         # getting a new loger should make the old one flush
         logger = setup_logger(self.config, __name__ + "_new")

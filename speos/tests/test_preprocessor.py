@@ -78,11 +78,6 @@ class GWASMapperTest(unittest.TestCase):
         read_mappings = self.mapper.get_mappings()
         self.assertEqual(len(read_mappings), len(self.mapping))
 
-    def test_appends_paths(self):
-        read_mappings = self.mapper.get_mappings(tags="immune_dysregulation", fields="name")
-        self.assertEqual(read_mappings[0]["ground_truth"], os.path.join(self.config.input.gene_sets, self.mapping[0]["ground_truth"]))
-        self.assertEqual(read_mappings[0]["features_file"], os.path.join(self.config.input.gwas, self.mapping[0]["features_file"]))
-
     def test_extension(self):
         extension = [{"name": "EXT-immune_dysregulation",
                       "ground_truth": "Immune_Dysregulation_genes.bed",
@@ -137,7 +132,7 @@ class AdjacencyMapperTest(unittest.TestCase):
         self.mapper = AdjacencyMapper()
 
     def test_fetch_by_tags(self):
-        with open("coregenes/adjacencies.json", "r") as file:
+        with open("speos/adjacencies.json", "r") as file:
             content = file.read()
             self.mapping = json.loads(content)
         formatted_mapping_names = [self.mapper._format_name(mapping["name"]) for mapping in self.mapping]
@@ -150,7 +145,7 @@ class AdjacencyMapperTest(unittest.TestCase):
         self.assertEqual(len(read_mappings), 1)
 
     def test_fetch_all(self):
-        with open("coregenes/adjacencies.json", "r") as file:
+        with open("speos/adjacencies.json", "r") as file:
             content = file.read()
             self.mapping = json.loads(content)
         formatted_mapping_names = [self.mapper._format_name(mapping["name"]) for mapping in self.mapping]
@@ -159,7 +154,7 @@ class AdjacencyMapperTest(unittest.TestCase):
         self.assertEqual(len(read_mappings), len(self.mapping))
 
     def test_fetch_by_type(self):
-        with open("coregenes/adjacencies.json", "r") as file:
+        with open("speos/adjacencies.json", "r") as file:
             content = file.read()
             mappings = json.loads(content)
 
@@ -232,19 +227,19 @@ class PreprocessorTest(unittest.TestCase):
     def setUp(self):
         self.config = Config()
         self.mapping = [{"name": "UC-immune_dysregulation",
-                         "ground_truth": "Immune_Dysregulation_genes.bed",
-                         "features_file": "UC.genes.out",
+                         "ground_truth": "data/mendelian_gene_sets/Immune_Dysregulation_genes.bed",
+                         "features_file": "data/gwas/UC.genes.out",
                          "match_type": "perfect",
                          "significant": "False"},
                         {"name": "RA-immune_dysregulation",
-                         "ground_truth": "Immune_Dysregulation_genes.bed",
-                         "features_file": "RA.genes.out",
+                         "ground_truth": "data/mendelian_gene_sets/Immune_Dysregulation_genes.bed",
+                         "features_file": "data/gwas/RA.genes.out",
                          "match_type": "perfect",
                          "significant": "True"}]
-        self.mapping_file_path = "coregenes/tests/files/mappings.json"
+        self.mapping_file_path = "speos/tests/files/mappings.json"
         with open(self.mapping_file_path, "w") as file:
             json.dump(self.mapping, file)
-        self.gwasmapper = GWASMapper(self.config.input.gene_sets, self.config.input.gwas, mapping_file=self.mapping_file_path)
+        self.gwasmapper = GWASMapper(mapping_file=self.mapping_file_path)
 
         self.adjacencymapper = AdjacencyMapper()
 
@@ -525,14 +520,14 @@ class DummyPreProcessorTest(unittest.TestCase):
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
         preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
         preprocessor.build_graph()
-        preprocessor.dump_edgelist(os.path.join("coregenes/tests/data/edgelist.tsv.gz"))
+        preprocessor.dump_edgelist(os.path.join("speos/tests/data/edgelist.tsv.gz"))
 
     def test_dump_edgelist_directed(self):
         gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyDirectedGraph", fields="name")
         preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
         preprocessor.build_graph()
-        preprocessor.dump_edgelist(os.path.join("coregenes/tests/data/edgelist_directed.tsv.gz"))
+        preprocessor.dump_edgelist(os.path.join("speos/tests/data/edgelist_directed.tsv.gz"))
 
     def test_node_dicts(self):
         gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
@@ -567,7 +562,7 @@ class DummyPreProcessorTest(unittest.TestCase):
         preprocessor2.build_graph()
         degree_sequence2 = sorted((d for n, d in preprocessor2.G.degree()), reverse=True)
 
-        self.assertTrue((degree_sequence == degree_sequence2).all())
+        self.assertTrue((degree_sequence == degree_sequence2))
 
     def test_dummy_xswap_undirected_with_features(self):
         gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")

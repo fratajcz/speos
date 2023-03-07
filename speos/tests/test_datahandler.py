@@ -2,7 +2,7 @@ import unittest
 from speos.utils.config import Config
 from speos.utils.datahandlers import ResultsHandler
 import shutil
-
+import os
 
 class DataHandlerReadTest(unittest.TestCase):
 
@@ -14,7 +14,7 @@ class DataHandlerReadTest(unittest.TestCase):
         self.config.model.save_dir = "speos/tests/models/DataHandlerReadTest"
         self.config.inference.save_dir = "speos/tests/results/DataHandlerReadTest"
 
-        self.resultshandler = ResultsHandler('speos/tests/results/adjacencies_cardio_gcn_max_benchmark_adj_all-filmrep0.h5', read_only=True)
+        self.resultshandler = ResultsHandler('speos/tests/files/adjacencies_cardio_gcn_max_benchmark_adj_all-filmrep0.h5', read_only=True)
 
     def tearDown(self):
         self.resultshandler.close()
@@ -34,14 +34,18 @@ class DataHandlerWriteTest(unittest.TestCase):
         self.config = Config()
         self.config.parse_yaml("speos/tests/files/inference_test_config.yaml")
 
-        self.config.model.save_dir = "speos/tests/models/"
-        self.config.inference.save_dir = "speos/tests/results"
+        self.config.model.save_dir = "speos/tests/models/DataHandlerWriteTest"
+        self.config.inference.save_dir = "speos/tests/results/DataHandlerWriteTest"
 
-        self.config.logging.dir = "speos/tests/logs/"
+        self.config.logging.dir = "speos/tests/logs/DataHandlerWriteTest"
         self.config.name = "DataHandlerWriteTest"
         self.n_folds = 2
 
         self.index = ["gene1", "gene2", "gene3"]
+        for directory in [self.config.model.save_dir, self.config.inference.save_dir, self.config.logging.dir]:
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+
         self.resultshandler = ResultsHandler(self.config.inference.save_dir + self.config.name + "h5",
                                              n_folds=self.n_folds,
                                              shape=(3, 3),
