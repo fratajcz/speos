@@ -28,11 +28,10 @@ class Mapper:
         else:
             mappings = []
             for mapping in self.mapping_list:
-                appendFlag = True
+                appendFlags = []
                 for tag, field in zip(tags, fields):
-                    if tag.lower() not in mapping[field].lower():
-                        appendFlag = False
-                if appendFlag:
+                    appendFlags.append(tag.lower() in mapping[field].lower()) 
+                if any(appendFlags):
                     mappings.append(mapping)
 
         return self.remove_blacklisted_mappings(tags, mappings)

@@ -144,6 +144,19 @@ class AdjacencyMapperTest(unittest.TestCase):
         self.assertEqual(read_mappings[0]["name"], formatted_mapping_names[1])
         self.assertEqual(len(read_mappings), 1)
 
+    def test_fetch_by_multipe_fields(self):
+        with open("speos/adjacencies.json", "r") as file:
+            content = file.read()
+            self.mapping = json.loads(content)
+        formatted_mapping_names = [self.mapper._format_name(mapping["name"]) for mapping in self.mapping]
+        read_mappings = self.mapper.get_mappings(tags=["BioPlex", "evo"], fields=["name", "type"])
+        #self.assertEqual(read_mappings[0]["name"], formatted_mapping_names[0])
+        self.assertEqual(len(read_mappings), 3)
+
+        read_mappings = self.mapper.get_mappings(tags=["BioPlex", "HuRI", "evo"], fields=["name", "name", "type"])
+        #self.assertEqual(read_mappings[0]["name"], formatted_mapping_names[0])
+        self.assertEqual(len(read_mappings), 4)
+
     def test_fetch_all(self):
         with open("speos/adjacencies.json", "r") as file:
             content = file.read()

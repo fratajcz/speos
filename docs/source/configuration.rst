@@ -42,6 +42,26 @@ By using the settings above, each entry that contains the value "BioPlex30293T" 
 You can, however, use any field in the two files for matching. If you want to use all Protein-Protein-Interaction (PPI) networks, set `adjacency: ppi` and `adjacency_field: type`. Using `adjacency: all` will give you all networks that arent explicitely blacklisted.
 `adjacency_blacklist` lets you control what should not be used, even if it matches the criteria set above. As you see, recon3d and string are not used, even though they are included in the framework. String was excluded due to the degree distribution, and recon was simply added after all experiments were performed. You can already use it, but since we want Speos to recreate our experiments by default, it is on the blacklist for the time being.
 
+Note that the adjacency matching works also for multiple keywords, for example, the following setting:
+
+.. code-block:: text
+    :linenos:
+
+    input:
+        adjacency: [bioplex, evo]
+        adjacency_field: [name, type]
+
+loads all adjacencies that match the string "bioplex" in the field "name" or the string "evo" in the field "type". Thus, this setting loads three adjacencies, Bioplex 3.0 HEK293T, BioPlex 3.0 HCT116 and Hetionet Covaries. This can be extended indefinitely with more keywords, such as:
+
+.. code-block:: text
+    :linenos:
+
+    input:
+        adjacency: [bioplex, huri, evo]
+        adjacency_field: [name, name,  type]
+
+Which additionally loads HuRI.
+
 Node Features
 ~~~~~~~~~~~~~
 
