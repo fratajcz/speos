@@ -30,7 +30,7 @@ class LoggingTest(unittest.TestCase):
         logger.warning("warning")
         logger.error("error")
         logger.critical("critical")
-        logger.handlers[0].flush()
+        #logger.handlers[0].flush()
         with open(os.path.join(self.config.logging.dir, self.config.name), 'r') as fp:
             numlines = len(fp.readlines())
 

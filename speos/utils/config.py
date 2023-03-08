@@ -34,6 +34,8 @@ class Config(dict):
 
         if path is None:
             path = os.path.join(self.model.save_dir, str(self.name) + ".yaml")
+        if not os.path.exists(self.model.save_dir):
+                os.makedirs(self.model.save_dir)
         with open(path, 'w') as yaml_file:
             yaml.dump(self.recursive_serialize(self.__dict__), yaml_file, default_flow_style=False)
 
