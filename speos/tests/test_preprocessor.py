@@ -220,6 +220,28 @@ class AdjacencyMapperTest(unittest.TestCase):
 
         os.remove(mapping_file_path)
 
+    def test_fetch_extensions_only_if_required(self):
+        """ We had the bug that extension mappings would always be fetched, irrespective of specified tag """
+        extension = [{"name": "ExtensionAdjacency",
+                      "type": "ext",
+                      "file_path": "no/such/thing",
+                      "source": "SymbolA",
+                      "target": "SymbolB",
+                      "sep": "\t",
+                      "symbol": "hgnc",
+                      "weight": "None",
+                      "directed": False}]
+
+        mapping_file_path = "speos/tests/files/adjacencies_extension.json"
+        with open(mapping_file_path, "w") as file:
+            json.dump(extension, file)
+
+        mapper = AdjacencyMapper(extension_mappings=mapping_file_path)
+
+        read_mappings = mapper.get_mappings(tags="bioplex", fields="name")
+
+        self.assertTrue(all([mapping["name"].lower().startswith("bioplex") for mapping in read_mappings]))
+
     def test_blacklist(self):
 
         other_mapper = AdjacencyMapper(blacklist=self.config.input.adjacency_blacklist)

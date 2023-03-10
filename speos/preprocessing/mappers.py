@@ -10,7 +10,9 @@ class Mapper:
     def get_mappings(self, tags: str = "", fields: str = "name"):
         '''goes through the mapping list and returns all mappings that include the provided tag in the provided field (default is name field)
 
-          If called without arguments, returns all mappings (tag = "") '''
+          If called without arguments, returns all mappings (tag = "") 
+          
+          TODO: implement either "AND" or "OR" logic if multiple tags are specified, right now only "OR" is implemented'''
         if type(tags) == str:
             tags = [tags]
         if type(fields) == str:
@@ -75,12 +77,18 @@ class GWASMapper(Mapper):
         super().__init__(**kwargs)
 
         self.mapping_list = []
-        self.backup_mapping = None
+        
 
         for mapping in [mapping_file, extension_mappings]:
             with open(mapping, "r") as file:
                 content = file.read()
                 self.mapping_list.extend(json.loads(content))
+
+    def get_mappings(self, *args, **kwargs):
+        """ Returns mappings fitting the description. If the description returns no mappings due to missing GWAS files, just return one of them so we have the mapping to the labels """
+
+        mappings = super().get_mappings(*args, **kwargs)
+        self.backup_mapping = None
 
         mappings_to_delete = []
         for mapping in self.mapping_list:
@@ -90,13 +98,7 @@ class GWASMapper(Mapper):
 
         for mapping in mappings_to_delete:
             del self.mapping_list[self.mapping_list.index(mapping)]
-
-    def get_mappings(self, *args, **kwargs):
-        """ Returns mappings fitting the description. If the description returns no mappings due to missing GWAS files, just return one of them so we have the mapping to the labels """
-
-        mappings = super().get_mappings(*args, **kwargs)
-        if len(mappings) == 0:
-            mappings = [self.backup_mapping]
+ 
         return mappings
             
 
