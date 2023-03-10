@@ -179,6 +179,9 @@ class PreProcessor:
         edge_list = []
         adjacency = pd.read_csv(mapping["file_path"], sep=mapping["sep"], header=0, usecols=[mapping["target"], mapping["source"]])
 
+        if mapping["symbol"] == "ensemble":
+            mapping["symbol"] = "ensembl"
+
         if mapping["symbol"] == self.hgnc_key:
             idx_dict = self.hgnc2id
         elif mapping["symbol"] == self.entrez_key:
