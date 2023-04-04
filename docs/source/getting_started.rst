@@ -37,11 +37,11 @@ If this runs without error, you can now skip to the :ref:`Obtain Data` section.
 Installation
 ------------
 
-Installing Speos in your machine is straight-forward and can be accomplished within 15 minutes given a familiarity with python package manager tools like :obj:`pip` and :obj:`conda`.
+Installing Speos on your machine is straight-forward and can be accomplished within 15 minutes given a familiarity with python package manager tools like :obj:`pip` and :obj:`conda`.
 
 .. note::
 
-    These installation instructions have been tested under Ubuntu 20.04 and Rocky Linux 8.7. Other operating systems (i.e. MacOS, Windows) might require different package versions, especially for PyTorch and PyTorch Geometric.
+    These installation instructions have been tested under MacOS 11.6, Ubuntu 20.04 and Rocky Linux 8.7. Other operating systems (i.e. Windows) might require different package versions, especially for PyTorch and PyTorch Geometric.
 
 To Install Speos on your machine, first clone it with its submodules from github:
 
