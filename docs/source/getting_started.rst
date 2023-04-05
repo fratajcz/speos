@@ -11,6 +11,12 @@ We provide a docker image that is pre-packaged with Speos and all dependencies. 
 However, since CUDA is highly hardware-dependent, we only provide a docker image for the CPU implementation (for now). 
 If you want to run Speos on the GPU you can modify the dockerfile to your needs or continue with the Installation section.
 
+.. note::
+
+    We are unable to share pre-compiled docker images due to the number of possible OS and hardware combinations of user systems and the large size of the images (> 5GB for CPU version, >18GB for GPU version) for each of those combinations.
+    Be patient if the compilation of dependencies in docker takes a while, in our experience it can take up to an hour but it normally finishes just fine.
+
+
 To build the image, run the following commands (while in the speos main dir):
 
 .. code-block:: console
@@ -41,7 +47,8 @@ Installing Speos on your machine is straight-forward and can be accomplished wit
 
 .. note::
 
-    These installation instructions have been tested under MacOS 11.6, Ubuntu 20.04 and Rocky Linux 8.7. Other operating systems (i.e. Windows) might require different package versions, especially for PyTorch and PyTorch Geometric.
+    These installation instructions have been tested under Ubuntu 20.04 and Rocky Linux 8.7. Other operating systems (i.e. MacOS, Windows) might require different package versions, especially for PyTorch and PyTorch Geometric.
+    Although choosing newer version of packages should generally work, we are unable to test each combination of package versions a priori. If you have questions about the installation of other package versions, do not hesitate and open an `Issue on Github <https://github.com/fratajcz/speos/issues>`_
 
 To Install Speos on your machine, first clone it with its submodules from github:
 
