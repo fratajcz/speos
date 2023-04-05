@@ -4,12 +4,12 @@ Getting Started
 Speos is fully implemented in python with some sidearms in R. To use Speos, either as a full end-to-end framework or just parts of it for visualization or preprocessing, 
 follow the upcoming sections to get started.
 
-Quickstart: Docker
-------------------
+Docker
+------
 
-We provide a docker image that is pre-packaged with Speos and all dependencies. You can use it to start experimenting and check if Speos has what you want.
+We provide a dockerfile that compiles an image that is pre-packaged with Speos and all dependencies. You can use it to start experimenting and check if Speos has what you want.
 However, since CUDA is highly hardware-dependent, we only provide a docker image for the CPU implementation (for now). 
-If you want to run Speos on the GPU you can modify the dockerfile to your needs or continue with the Installation section.
+If you want to run Speos on the GPU you can modify the dockerfile to your needs or continue with the :ref:`Installation` section.
 
 .. note::
 
@@ -48,7 +48,7 @@ Installing Speos on your machine is straight-forward and can be accomplished wit
 .. note::
 
     These installation instructions have been tested under Ubuntu 20.04 and Rocky Linux 8.7. Other operating systems (i.e. MacOS, Windows) might require different package versions, especially for PyTorch and PyTorch Geometric.
-    Although choosing newer version of packages should generally work, we are unable to test each combination of package versions a priori. If you have questions about the installation of other package versions, do not hesitate and open an `Issue on Github <https://github.com/fratajcz/speos/issues>`_
+    Although choosing newer versions of packages should generally work, we are unable to test each combination of package versions a priori. If you have questions about the installation of other package versions, do not hesitate and open an `Issue on Github <https://github.com/fratajcz/speos/issues>`_
 
 To Install Speos on your machine, first clone it with its submodules from github:
 
@@ -106,17 +106,16 @@ You can now test if it installed correctly by typing:
     Type "help", "copyright", "credits" or "license" for more information.
     >>>import speos
 
-if any of those steps produced an error, please do not hesitate and open an issue in Github.
+if any of those steps produced an error, please do not hesitate and open an issue on `Github <https://github.com/fratajcz/speos/issues>`_
 
 Obtain Data
 -----------
 
-You might have noticed that :obj:`speos/data` is mostly empty. This is because Speos is built on too much data to store it on Github. To obtain the data in one step, run the following command in the Speos main dir:
+You might have noticed that :obj:`speos/data` is mostly empty. This is because Speos is built on too much data to store it on Github. To obtain the data in one step (~800MB), run the following command in the Speos main dir:
 
 .. code-block:: console
 
     $ ./download_data.sh
-    $ tar xzvf data.tar.gz
 
 If you are only interested in parts of the data, i.e. for a different project, check the individual subdirectories of :obj:`speos/data` and you will find download scripts for most programmatically accessible files that will download the file directly from the source repository.
 
