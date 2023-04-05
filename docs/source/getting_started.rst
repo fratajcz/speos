@@ -36,7 +36,8 @@ Note that this takes a while. Then you can run the image with the following comm
     [GCC 7.5.0] :: Anaconda, Inc. on linux
     Type "help", "copyright", "credits" or "license" for more information.
 
->>>import speos
+    >>>import speos
+
 
 If this runs without error, you can now skip to the :ref:`Obtain Data` section.
 
@@ -127,5 +128,75 @@ If everything has gone right, the following command should start preprocessing d
 .. code-block:: console
 
   $ python training.py
+
+Now, you should see an output that resembles the following, just with :obj:`cde005` replaced with another random 6-character hash:
+
+.. console::
+    :linenos:
+
+    cde005 2023-04-05 11:18:59,759 [INFO] speos.experiment: Starting run cde005
+    cde005 2023-04-05 11:18:59,764 [INFO] speos.experiment: Cuda is available: False
+    cde005 2023-04-05 11:18:59,764 [INFO] speos.experiment: CUDA set to auto, no CUDA device detected, setting to CPU
+    cde005 2023-04-05 11:18:59,764 [INFO] speos.experiment: Using device(s): ['cpu']
+    cde005 2023-04-05 11:18:59,779 [INFO] speos.preprocessing.preprocessor: Using Adjacency matrices: ['BioPlex30293T']
+    cde005 2023-04-05 11:18:59,782 [INFO] speos.preprocessing.preprocessor: Using 9 mappings with ground truth data/mendelian_gene_sets/Immune_Dysregulation_genes.bed 
+    Processing...
+    cde005 2023-04-05 11:22:06,660 [INFO] speos.preprocessing.preprocessor: MultiDiGraph with 17024 nodes and 160962 edges
+    Done!
+    cde005 2023-04-05 11:22:09,140 [INFO] speos.preprocessing.preprocessor: Number of positives in ground truth data/mendelian_gene_sets/Immune_Dysregulation_genes.bed: 525
+    cde005 2023-04-05 11:22:13,555 [INFO] speos.preprocessing.datasets: Loading Processed Data from ./data/processed/cde005.pt
+    cde005 2023-04-05 11:22:14,030 [INFO] speos.experiment: GeneNetwork(
+    (pre_mp): Sequential(
+        (0): Linear(93, 50, bias=True)
+        (1): ELU(alpha=1.0)
+        (2): Linear(50, 50, bias=True)
+        (3): ELU(alpha=1.0)
+        (4): Linear(50, 50, bias=True)
+        (5): ELU(alpha=1.0)
+        (6): Linear(50, 50, bias=True)
+        (7): ELU(alpha=1.0)
+        (8): Linear(50, 50, bias=True)
+        (9): ELU(alpha=1.0)
+        (10): Linear(50, 50, bias=True)
+        (11): ELU(alpha=1.0)
+    )
+    (post_mp): Sequential(
+        (0): Linear(50, 50, bias=True)
+        (1): ELU(alpha=1.0)
+        (2): Linear(50, 50, bias=True)
+        (3): ELU(alpha=1.0)
+        (4): Linear(50, 50, bias=True)
+        (5): ELU(alpha=1.0)
+        (6): Linear(50, 50, bias=True)
+        (7): ELU(alpha=1.0)
+        (8): Linear(50, 50, bias=True)
+        (9): ELU(alpha=1.0)
+        (10): Linear(50, 25, bias=True)
+        (11): ELU(alpha=1.0)
+        (12): Linear(25, 1, bias=True)
+    )
+    (mp): Sequential(
+        (0): GCNConv(50, 50)
+        (1): ELU(alpha=1.0)
+        (2): InstanceNorm(50)
+        (3): GCNConv(50, 50)
+        (4): ELU(alpha=1.0)
+        (5): InstanceNorm(50)
+    )
+    )
+    cde005 2023-04-05 11:22:14,365 [INFO] speos.preprocessing.datasets: Data(x=[17024, 93], edge_index=[2, 160962], y=[17024], train_mask=[17024], test_mask=[17024], val_mask=[17024])
+    cde005 2023-04-05 11:22:14,452 [INFO] speos.experiment: Cuda is available: False
+    cde005 2023-04-05 11:22:14,453 [INFO] speos.experiment: CUDA set to auto, no CUDA device detected, setting to CPU
+    cde005 2023-04-05 11:22:14,520 [INFO] speos.experiment: Created new ResultsHandler pointing to ./results/cde005.h5
+    cde005 2023-04-05 11:22:14,529 [INFO] speos.experiment: Received data with 472 train positives, 14849 train negatives, 27 val positives, 825 val negatives, 26 test positives and 825 test negatives
+    cde005 2023-04-05 11:22:19,084 [INFO] speos.experiment: Writing TensoBoard data to ./inference/cde005
+    cde005 2023-04-05 11:22:19,151 [INFO] speos.experiment: Writing TensoBoard data to ./runs/cde005
+    cde005 2023-04-05 11:22:19,172 [INFO] speos.experiment: Epoch 0
+    cde005 2023-04-05 11:22:47,629 [INFO] speos.experiment: Training Loss: 0.1978577714313068
+    cde005 2023-04-05 11:22:58,102 [INFO] speos.experiment: Eval Loss: 0.19540250487193395, Accuracy: 0.9683098591549296, Recall: 0.0, Precision: 0.0, AUROC: 0.644354657687991, AUPRC: 0.05257679224153335, F1: 0.0, MRR: 0.0006422621747594641, MR: 5829.185185185185, Target: val
+    cde005 2023-04-05 11:22:58,135 [INFO] speos.experiment: Epoch 1
+    ...
+
+With more training epochs to follow. As this run was started only to test the installation, feel free to cancel the run with a KeybordInterrupt (usually Ctrl+C).
 
 Congratulations, you can now proceed to the API section to see how you can customize Speos to your needs!
