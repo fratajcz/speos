@@ -14,7 +14,7 @@ If you want to run Speos on the GPU you can modify the dockerfile to your needs 
 .. note::
 
     We are unable to share pre-compiled docker images due to the number of possible OS and hardware combinations of user systems and the large size of the images (> 5GB for CPU version, >18GB for GPU version) for each of those combinations.
-    Be patient if the compilation of dependencies in docker takes a while, in our experience it can take up to an hour but it normally finishes just fine.
+    Be patient if the compilation of dependencies in docker takes a while, in our experience it can take up to an hour but it normally finishes just fine. Alternatively, check out the newer version :obj:`docker/dockerfiles/pyg_cpu_200_root` which installs much faster but does not yet have full support.
 
 
 To build the image, run the following commands (while in the speos main dir):
@@ -23,21 +23,21 @@ To build the image, run the following commands (while in the speos main dir):
 
     $ git clone https://github.com/fratajcz/speos.git
     $ cd speos
-    $ docker build -t speos . -f docker/pyg_cpu
+    $ docker build -t speos . -f docker/dockerfiles/pyg_cpu
 
 
 Note that this takes a while. Then you can run the image with the following command and test that it compiled correctly:
 
 .. code-block:: console
 
-    $ docker run -ti speos
-    user@a2c4c28ccc79:/app$ python
+        $ docker run -ti speos
+    user@a2c4c28ccc79:/app$ conda activate speos
+    (speos) user@a2c4c28ccc79:/app$ python
     Python 3.7.13 (default, Mar 29 2022, 02:18:16) 
     [GCC 7.5.0] :: Anaconda, Inc. on linux
     Type "help", "copyright", "credits" or "license" for more information.
-
     >>>import speos
-
+    >>>
 
 If this runs without error, you can now skip to the :ref:`Obtain Data` section.
 
