@@ -68,7 +68,9 @@ We can modify the config from above to explicitely tell Speos to save inference 
 
 and re-run only the inference:
 
->>> python inference.py -c my_config.yaml
+.. code-block:: console
+
+  $python python inference.py -c my_config.yaml
 
 
 
@@ -142,6 +144,8 @@ You can just change some of the keys in your config and pass it to the :obj:`pos
   :width: 600
   :alt: Inference
 
->>> python postprocessing.py -c my_crossval_config.yaml
+.. code-block:: console
+
+  $python postprocessing.py -c my_crossval_config.yaml
 
 Have a little fun with it, but don't forget that hyperparameter hacking and repeated hypothesis testing with different settings like this weakens your evidence!

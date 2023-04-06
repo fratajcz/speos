@@ -37,6 +37,10 @@ First, lets draft a suitable config file:
 
 and save it as :obj:`cardiovascular_gcn.yaml`. 
 
+.. note::
+
+    :obj:`inference.save_tsv` (in the last line) must be set to :obj:`True` for the postprocessing that happens after training to work!
+
 Here we use mostly the same settings as in the :doc:`API <api>` section earlier, you should adapt it to the settings that produced the best results in your benchmark runs. The only keys that should be identical to the config above is everything below :obj:`crossval` and :obj:`inference`.
 
 Then, you run it with the following command:
@@ -208,6 +212,10 @@ Let us walk through the keys one by one.
     These keys are pretty self-explanatory. So, if you have lost your results or ask yourself where the plots went, this is where you should look.
 
 Now, if you think that you want to try some changes in these settings, i.e. a different :obj:`cutoff_value` or different :obj:`tasks`, just add the respective lines to your :obj:`cardiovascular_gcn.yaml` and re-run the postprocessing only:
+
+.. code-block:: console
+
+  $python postprocessing.py -c cardiovascular_gcn.yaml
 
 Have a little fun with it, but don't forget that hyperparameter hacking and repeated hypothesis testing with different settings like this weakens your evidence!
 
