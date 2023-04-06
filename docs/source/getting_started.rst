@@ -198,4 +198,4 @@ Now, you should see an output that resembles the following, just with :obj:`cde0
 
 With more training epochs to follow. As this run was started only to test the installation, feel free to cancel the run with a KeybordInterrupt (usually Ctrl+C).
 
-Congratulations, you can now proceed to the API section to see how you can customize Speos to your needs!
+Congratulations, you can now proceed to the API section to see how you can customize Speos to your needs!  
