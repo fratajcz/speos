@@ -131,7 +131,7 @@ If everything has gone right, the following command should start preprocessing d
 
 Now, you should see an output that resembles the following, just with :obj:`cde005` replaced with another random 6-character hash:
 
-.. console::
+.. code-block:: console
     :linenos:
 
     cde005 2023-04-05 11:18:59,759 [INFO] speos.experiment: Starting run cde005
