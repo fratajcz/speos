@@ -132,14 +132,13 @@ If everything has gone right, the following command should start preprocessing d
 Now, you should see an output that resembles the following, just with :obj:`cde005` replaced with another random 6-character hash:
 
 .. code-block:: console
-    :linenos:
 
     cde005 2023-04-05 11:18:59,759 [INFO] speos.experiment: Starting run cde005
     cde005 2023-04-05 11:18:59,764 [INFO] speos.experiment: Cuda is available: False
     cde005 2023-04-05 11:18:59,764 [INFO] speos.experiment: CUDA set to auto, no CUDA device detected, setting to CPU
     cde005 2023-04-05 11:18:59,764 [INFO] speos.experiment: Using device(s): ['cpu']
     cde005 2023-04-05 11:18:59,779 [INFO] speos.preprocessing.preprocessor: Using Adjacency matrices: ['BioPlex30293T']
-    cde005 2023-04-05 11:18:59,782 [INFO] speos.preprocessing.preprocessor: Using 9 mappings with ground truth data/mendelian_gene_sets/Immune_Dysregulation_genes.bed 
+    cde005 2023-04-05 11:18:59,782 [INFO] speos.preprocessing.preprocessor: Using 9 mappings with ground truth  data/mendelian_gene_sets/Immune_Dysregulation_genes.bed 
     Processing...
     cde005 2023-04-05 11:22:06,660 [INFO] speos.preprocessing.preprocessor: MultiDiGraph with 17024 nodes and 160962 edges
     Done!
