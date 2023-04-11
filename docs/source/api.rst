@@ -6,7 +6,7 @@ For convenience, we have packaged the pipelines in command-line scripts so that 
 
 In general, the process goes as follows: You write a config file which contains the settings for your experiment, put it into the desired pipeline in the form of a command line script, Speos runs the required training and analyses und delivers your results:
 
-.. image:: https://raw.githubusercontent.com/fratajcz/speos/master/docs/img/general_overview.webp
+.. image:: https://raw.githubusercontent.com/fratajcz/speos/master/docs/img/general_overview.png
   :width: 600
   :alt: General Overview
 
@@ -37,7 +37,7 @@ Training
 
 If we just want to trigger a single training run, say, to check if our config does what we want, we can pass it to the high-level training script.
 
-.. image:: https://raw.githubusercontent.com/fratajcz/speos/master/docs/img/training.webp
+.. image:: https://raw.githubusercontent.com/fratajcz/speos/master/docs/img/training.png
   :width: 600
   :alt: Training
 
@@ -77,7 +77,7 @@ and re-run only the inference:
 which will save all the results of the inference to :obj:`~/results/` without training the model again.
 The inference basically skips the training step and instead loads the pre-trained model:
 
-.. image:: https://raw.githubusercontent.com/fratajcz/speos/master/docs/img/inference.webp
+.. image:: https://raw.githubusercontent.com/fratajcz/speos/master/docs/img/inference.png
   :width: 600
   :alt: Inference
 
@@ -93,7 +93,7 @@ Afterwards, it uses these prioritized gene sets and the ground truth and does po
 .. note::
   You don't have to run the nested crossvalidation ensemble right now, it is just here to showcase the different ways to use the high-level API scripts. In the next pages you will see how you can adapt Speos to your needs, run benchmarks, and then get a more in-depth introduction to the crossvalidation once you have your settings dialed in.
 
-.. image:: https://raw.githubusercontent.com/fratajcz/speos/master/docs/img/outer_crossval.webp
+.. image:: https://raw.githubusercontent.com/fratajcz/speos/master/docs/img/outer_crossval.png
   :width: 600
   :alt: Ensemble Training
 
@@ -140,7 +140,7 @@ Post-Processing
 As the ensemble training can take quite a while, you don't need to retrain it every time you want to change or adapt for postprocessing.
 You can just change some of the keys in your config and pass it to the :obj:`postprocessing.py` pipeline which will load the trained models and only do the postprocessing.
 
-.. image:: https://raw.githubusercontent.com/fratajcz/speos/master/docs/img/postprocessing.webp
+.. image:: https://raw.githubusercontent.com/fratajcz/speos/master/docs/img/postprocessing.png
   :width: 600
   :alt: Inference
 
