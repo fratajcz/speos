@@ -4,6 +4,10 @@ Getting Started
 Speos is fully implemented in python with some sidearms in R. To use Speos, either as a full end-to-end framework or just parts of it for visualization or preprocessing, 
 follow the upcoming sections to get started.
 
+.. note::
+    This is the installation instructions for the latest version of Speos, which includes more features and faster computations than the stable version. If, you plan to use Speos for your research, install this version.
+    If, however, you want to reproduce/review the results from the accompanying manuscript, switch over to the documentation of the `stable branch <https://speos.readthedocs.io/en/stable/getting_started.html>`_.
+
 Docker
 ------
 
@@ -14,8 +18,6 @@ If you want to run Speos on the GPU you can modify the dockerfile to your needs 
 .. note::
 
     We are unable to share pre-compiled docker images due to the number of possible OS and hardware combinations of user systems and the large size of the images (> 5GB for CPU version, >18GB for GPU version) for each of those combinations.
-    Be patient if the compilation of dependencies in docker takes a while, in our experience it can take up to an hour but it normally finishes just fine. Alternatively, check out the newer version :obj:`docker/dockerfiles/pyg_cpu_200_root` which installs much faster but does not yet have full support.
-
 
 To build the image, run the following commands (while in the speos main dir):
 
@@ -23,7 +25,7 @@ To build the image, run the following commands (while in the speos main dir):
 
     $ git clone https://github.com/fratajcz/speos.git
     $ cd speos
-    $ docker build -t speos . -f docker/dockerfiles/pyg_cpu
+    $ docker build -t speos . -f docker/dockerfiles/pyg_cpu_200_root
 
 
 Note that this takes a while. Then you can run the image with the following command and test that it compiled correctly:
@@ -62,7 +64,7 @@ Next, you might want to create a new conda env.
 
 .. code-block:: console
 
-    $ conda create -y --name speos python=3.7
+    $ conda create -y --name speos python=3.10
     $ conda activate speos
 
 Speos is built on Pytorch Geometric which in turn is built on Pytorch. To make sure Speos runs correctly, you must first install Pytorch and Pytorch geometric.
@@ -72,18 +74,8 @@ If your machine/cluster has GPU capabilities, it is highly recommended to use th
 
 .. code-block:: console
 
-    $ conda install pytorch torchvision torchaudio cpuonly -c pytorch-lts -y
-    $ conda install pyg==2.0.4 -c pyg -y
-
-.. note::
-
-    If the last line (installing pyg with conda) did not work, i.e. if you work on a cluster with limited dependencies, try 
-
-    .. code-block:: console
-
-        $ pip install torch-scatter torch-sparse==0.6.12 torch-cluster torch-spline-conv torch-geometric==2.0.4 -f https://data.pyg.org/whl/torch-{1}+{2}.html
-
-    instead. Replace the placeholder ${1}$ with the pytorch version you just installed (i.e. 1.8.0, 1.13.1 etc) and ${2}$ with the CUDA version (i.e. cpu for CPU only or cu116 for CUDA 11.6 etc.)
+    $ conda install pytorch torchvision torchaudio cpuonly -c pytorch
+    $ conda install pyg pytorch-sparse -c pyg -y
 
 Then, install the remaining requirements with pip:
 
@@ -102,8 +94,8 @@ You can now test if it installed correctly by typing:
 .. code-block:: console
 
     $ python
-    Python 3.7.13 (default, Mar 29 2022, 02:18:16) 
-    [GCC 7.5.0] :: Anaconda, Inc. on linux
+    Python 3.10.10 (main, Mar 21 2023, 18:45:11) 
+    [GCC 11.2.0] on linux
     Type "help", "copyright", "credits" or "license" for more information.
     >>>import speos
 
