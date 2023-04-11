@@ -21,6 +21,7 @@ class BaseModel:
         self.reg_lambda = self.config.model.regularization_lambda
         self.available_losses = ["mse", "bce", "lambdaloss", "neuralndcg", "approxndcg", "upu", "nnpu"]
         self.requires_sgd = True
+        self.training = True
 
     @property
     def _architectures(self):
@@ -204,8 +205,10 @@ class SimpleModel(BaseModel):
 
     def step(self, data, mask, eval_flag=False):
         if eval_flag:
+            self.training = False
             self.eval()
         else:
+            self.training = True
             self.train()
 
         self.zero_grad()
