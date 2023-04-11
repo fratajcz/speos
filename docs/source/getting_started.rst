@@ -23,7 +23,7 @@ To build the image, run the following commands (while in the speos main dir):
 
 .. code-block:: console
 
-    $ git clone https://github.com/fratajcz/speos.git
+    $ git clone --branch latest https://github.com/fratajcz/speos.git
     $ cd speos
     $ docker build -t speos . -f docker/dockerfiles/pyg_cpu_200_root
 
