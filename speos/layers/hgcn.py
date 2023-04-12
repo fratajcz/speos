@@ -26,7 +26,7 @@ class HGCNConv(MessagePassing):
         super().__init__(aggr=aggr)
         self.c = c
         self.manifold = getattr(manifolds, manifold)()
-        self.lin = HypLinear(manifold, in_channels, out_channels, c, dropout, use_bias)
+        self.lin = HypLinear(in_channels, out_channels, c, dropout, manifold, use_bias)
         self.use_bias = use_bias
         self.bias = nn.Parameter(torch.Tensor(out_channels))
         self.reset_parameters()
