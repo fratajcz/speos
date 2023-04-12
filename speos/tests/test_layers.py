@@ -39,6 +39,44 @@ class HypActTest(unittest.TestCase):
         x_direct = hact(x_input)
         self.assertTrue(torch.allclose(x_direct, x))
 
+    def test_project_and_back_again(self):
+        x_input = torch.rand((5, 10))
+
+        hact_exp = HypAct(act=torch.nn.Identity(), c_in=1.5, c_out=1.5, first=True)
+        hact_log = HypAct(act=torch.nn.Identity(), c_in=1.5, c_out=1.5, last=True)
+
+        x_exp = hact_exp.forward(x_input)
+
+        # check if features in hyperbolic space are different
+        self.assertTrue(not torch.allclose(x_input, x_exp))
+
+        x_tangent = hact_log.forward(x_exp)
+
+        # check if features mapped back to euclidean space are the same again
+        self.assertTrue(torch.allclose(x_input, x_tangent))
+
+    def test_sandwich(self):
+        x_input = torch.rand((5, 10))
+
+        hact_exp = HypAct(act=torch.nn.Identity(), c_out=1.5, first=True)
+        hact_mid = HypAct(act=torch.nn.Identity(), c_in=1.5, c_out=0.5)
+        hact_log = HypAct(act=torch.nn.Identity(), c_in=0.5, last=True)
+
+        x_exp_first = hact_exp.forward(x_input)
+
+        # check if features in hyperbolic space are different
+        self.assertTrue(not torch.allclose(x_input, x_exp_first))
+
+        x_exp_second = hact_mid.forward(x_exp_first)
+
+        # check if features in hyperbolic space with different curvature are different
+        self.assertTrue(not torch.allclose(x_exp_second, x_exp_first))
+
+        x_tangent = hact_log.forward(x_exp_second)
+
+        # check if features mapped back to euclidean space are the same again
+        self.assertTrue(torch.allclose(x_input, x_tangent))
+
 
 class HGCNConvTest(unittest.TestCase):
 
