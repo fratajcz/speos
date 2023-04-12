@@ -17,8 +17,8 @@ Individual Models
 
 .. code-block:: console
 
-    $ python speos/scripts/explanation_scripts/explanation_one_model.py -h
-    usage: explanation_one_model.py [-h] [--config CONFIG] [--gene GENE]
+    $ python speos/scripts/explanation_scripts/explanation_latest_one_model.py -h
+    usage: explanation_latest_one_model.py [-h] [--config CONFIG] [--gene GENE]
                                 [--index INDEX] [--threshold THRESHOLD]
 
     Run model interpretation for a selected gene and model
@@ -48,8 +48,8 @@ If your input graph has only one edge type, use the following script:
 
 .. code-block:: console
 
-    $ python speos/scripts/explanation_scripts/explanation_ensemble_homogeneous.py -h
-    usage: explanation_one_model.py [-h] [--config CONFIG] [--gene GENE]
+    $ python speos/scripts/explanation_scripts/explanation_latest_ensemble_homogeneous.py -h
+    usage: explanation_latest_ensemble_homogeneous.py [-h] [--config CONFIG] [--gene GENE]
                                 [--index INDEX] [--threshold THRESHOLD]
 
     Run model interpretation for a selected gene and ensemble
@@ -73,4 +73,4 @@ If your input graph has only one edge type, use the following script:
 
 In addition to the aforementioned arguments, you can now also set the minimal Consensus Score (CS) as cutoff to select candidate genes that should be examined. Additionally, as this interpreation script includes heavier calculations than the other, it lets you specify if the run should be readonly (i.e. for testing) and on which device it should be run.
 
-TODO: add script for multi-relatinal graphs.
+TODO: add script for multi-relational graphs.

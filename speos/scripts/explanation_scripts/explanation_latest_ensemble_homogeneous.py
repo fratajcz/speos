@@ -8,10 +8,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
-from captum.attr import IntegratedGradients
-
-from torch_geometric.nn import to_captum
-from speos.explanation import Explainer
+from torch_geometric.explain import Explainer, CaptumExplainer
 
 import os
 import argparse
@@ -133,25 +130,19 @@ for i, (output_idx, gene) in enumerate(zip(candidates, genes)):
 
                 surrogate_model = model.architectures[0].repackage_into_one_sequential()
                 surrogate_model.to(args.device)
-                #for module in surrogate_model.modules():
-                #    #print(module)
-                #    if isinstance(module, pyg_nn.FiLMConv):
-                #        module.add_types(edge_types)
-                #print(surrogate_model)
-                edge_mask = torch.ones(data.num_edges, requires_grad=True, device=args.device)
-
-                #edge_mask = torch.ones(data.num_edges, requires_grad=True, device=device)
-                #edge_mask = edge_masks
-                captum_model = to_captum(surrogate_model, mask_type='node_and_edge',
-                                output_idx=output_idx)
-
-                ig = IntegratedGradients(captum_model)
-
-                ig_attr_node, ig_attr_edge = ig.attribute(
-                    (data.x.float().unsqueeze(0), edge_mask.unsqueeze(0)),
-                    additional_forward_args=(data.edge_index), internal_batch_size=1)
-
-                # Scale attributions to [0, 1]:
+                
+                explainer = Explainer(
+                surrogate_model,  # It is assumed that model outputs a single tensor.
+                algorithm=CaptumExplainer('IntegratedGradients'),
+                explanation_type='model',
+                node_mask_type='attributes',
+                edge_mask_type='object',
+                model_config = dict(
+                    mode='regression',
+                    task_level="node",
+                    return_type='raw',  # Model returns probabilities.
+                    ),
+                )
                 explanation = explainer(data.x, data.edge_index, index=output_idx)
 
                 # Scale attributions to [0, 1]:
@@ -163,7 +154,7 @@ for i, (output_idx, gene) in enumerate(zip(candidates, genes)):
                 ig_attr_self_abs /= ig_attr_self_abs.max().detach()
                 ig_attr_node /= ig_attr_node.max().detach()
 
-                ig_attr_edge = ig_attr_edge.squeeze(0).abs().detach()
+                ig_attr_edge = explanation.edge_mask.squeeze(0).abs().detach()
                 ig_attr_edge /= ig_attr_edge.max().detach()
                 
                 torch.save(ig_attr_self, os.path.join(config.pp.save_dir, "{}_ig_attr_self_outer{}_inner{}_{}.pt".format(old_config_name, outer_fold, inner_fold, gene)))
@@ -231,35 +222,3 @@ for i, (output_idx, gene) in enumerate(zip(candidates, genes)):
         if column.endswith("Label"):
             df[column] = df[column].astype(int)
     df.to_csv(os.path.join(config.pp.save_dir, "Edge_Importance_{}_{}.tsv".format(old_config_name, gene)), sep="\t", index=False)
-
-    fig, ax = plt.subplots(figsize=(12, 12))
-    # Visualize absolute values of attributions:
-
-    explainer = Explainer(surrogate_model)
-
-    ax, G = explainer.visualize_subgraph(output_idx, data.edge_index, ig_attr_edge, y=data.y, threshold=args.threshold,
-                                     node_alpha=ig_attr_node_all)
-
-    id2hgnc = {value: key for key, value in dataset.preprocessor.hgnc2id.items()}
-
-    important_nodes = (ig_attr_node >= args.threshold).nonzero(as_tuple=True)[0]
-    important_edges = data.edge_index[:, ig_attr_edge >= args.threshold].unique()
-    print(important_nodes)
-    print(important_edges)
-
-    for textbox in ax.texts:
-        index = textbox._text
-        try:
-            index = int(index)
-            if index in important_nodes or index in important_edges:
-                hgnc = id2hgnc[index]
-            else:
-                hgnc = ""
-            textbox._text = hgnc
-        except (ValueError, KeyError):
-            continue
-
-    fig.tight_layout()
-    path = "{}/{}_{}.png".format(config.model.plot_dir, old_config_name, dataset.preprocessor.id2hgnc[output_idx])
-    plt.savefig(path, dpi=350)
-    print("Saved Explanation for {}".format(id2hgnc[output_idx]))
