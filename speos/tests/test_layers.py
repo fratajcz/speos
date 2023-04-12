@@ -11,13 +11,13 @@ import numpy as np
 class HGCNConvTest(unittest.TestCase):
 
     def test_init(self):
-        hgcn = HGCNConv(in_channels=10, out_channels=10, c_in=1.5, c_out = 2)
+        hgcn = HGCNConv(in_channels=10, out_channels=10, c=1.5)
 
     def test_forward(self):
         edges = torch.LongTensor([[0, 1], [0, 2], [2, 3], [2, 4]])
         x_input = torch.rand((5, 10))
 
-        hgcn = HGCNConv(in_channels=10, out_channels=10, c_in=1.5, c_out = 2)
+        hgcn = HGCNConv(in_channels=10, out_channels=10, c=1.5)
         x = hgcn.forward(x_input, edges.T.long())
         self.assertTrue(not torch.allclose(x, x_input))
 
