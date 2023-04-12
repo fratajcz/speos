@@ -4,6 +4,11 @@ Getting Started
 Speos is fully implemented in python with some sidearms in R. To use Speos, either as a full end-to-end framework or just parts of it for visualization or preprocessing, 
 follow the upcoming sections to get started.
 
+.. note::
+
+    This is the install instructions for the versions used in the `accompanying manuscript <https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1>`_. If you want to reproduce or review the results in the paper, use this version.
+    If, however, you primarily want to use Speos for your own research, switch over to the `latest branch <https://speos.readthedocs.io/en/latest/getting_started.html>`_ to get the latest features.
+
 Docker
 ------
 
@@ -14,8 +19,7 @@ If you want to run Speos on the GPU you can modify the dockerfile to your needs 
 .. note::
 
     We are unable to share pre-compiled docker images due to the number of possible OS and hardware combinations of user systems and the large size of the images (> 5GB for CPU version, >18GB for GPU version) for each of those combinations.
-    Be patient if the compilation of dependencies in docker takes a while, in our experience it can take up to an hour but it normally finishes just fine. Alternatively, check out the newer version :obj:`docker/dockerfiles/pyg_cpu_200_root` which installs much faster but does not yet have full support.
-
+    Be patient if the compilation of dependencies in docker takes a while, in our experience it can take up to an hour but it normally finishes just fine. 
 
 To build the image, run the following commands (while in the speos main dir):
 
@@ -55,7 +59,7 @@ To Install Speos on your machine, first clone it with its submodules from github
 
 .. code-block:: console
 
-    $ git clone --recurse-submodules https://github.com/fratajcz/speos.git
+    $ git clone --recurse-submodules -b stable --single-branch https://github.com/fratajcz/speos.git
     $ cd speos
 
 Next, you might want to create a new conda env.
