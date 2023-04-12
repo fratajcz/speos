@@ -1,4 +1,4 @@
-from speos.layers import RTAGConv, FiLMTAGConv, RGATConv, RGATTAGConv, MLPFiLM, FiLMFiLM
+from speos.layers import RTAGConv, FiLMTAGConv, RGATConv, RGATTAGConv, MLPFiLM, FiLMFiLM, HGCNConv
 from torch.nn.functional import binary_cross_entropy_with_logits as loss_function
 from speos.utils.config import Config
 from speos.architectures import RelationalGeneNetwork
@@ -6,6 +6,24 @@ import unittest
 import torch
 import numpy as np
 
+
+
+class HGCNConvTest(unittest.TestCase):
+
+    def test_init(self):
+        hgcn = HGCNConv(in_channels=10, out_channels=10, c_in=1.5, c_out = 2)
+
+    def test_forward(self):
+        edges = torch.LongTensor([[0, 1], [0, 2], [2, 3], [2, 4]])
+        x_input = torch.rand((5, 10))
+
+        hgcn = HGCNConv(in_channels=10, out_channels=10, c_in=1.5, c_out = 2)
+        x = hgcn.forward(x_input, edges.T.long())
+        self.assertTrue(not torch.allclose(x, x_input))
+
+         # check if implicitely calling forward works too
+        x_direct = hgcn(x_input, edges.T.long())
+        self.assertTrue(torch.allclose(x_direct, x))
 
 class RTAGConvTest(unittest.TestCase):
 
