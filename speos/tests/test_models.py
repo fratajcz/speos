@@ -105,6 +105,17 @@ class SimpleModelTest(unittest.TestCase):
 
         train_out, loss = model.step(dataset.data, dataset.data.train_mask)
 
+    def test_forward_hyperbolic(self):
+        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
+
+        config = self.config.deepcopy()
+        config.model.hyperbolic = True
+        config.model.mp.type = "hgcn"
+
+        model = ModelBootstrapper(config, dataset.data.x.shape[1], 1).get_model()
+
+        train_out, loss = model.step(dataset.data, dataset.data.train_mask)
+
     def test_eval_kwargs(self):
         node_features = torch.rand((3,10))
         edges = torch.tensor([[0,1,2],[2,0,1]])

@@ -111,6 +111,7 @@ class GeneNetwork(nn.Module):
         self.final_conv_grads = None
         self.input = None
         self.input_grads = None
+        self.hyperbolic = config.model.hyperbolic
         self.gcnconv_num_layers = self.config.model.mp.n_layers
         self.gcnconv_parameters = {"type": self.config.model.mp.type,
                                    "dim": self.config.model.mp.dim}
@@ -152,14 +153,17 @@ class GeneNetwork(nn.Module):
             elif isinstance(value, Config):
                 self.initialize_kwargs(value)
 
-    def get_act(self):
-        if self.config.model.pre_mp.act.lower() == "elu":
-            act = nn.ELU()
-        elif self.config.model.pre_mp.act.lower() == "relu":
-            act = nn.ReLU()
-        else:
-            raise ValueError("Only implemented elu and relu")
+    def get_act(self, act=None, last=False, first=False):
+        if act is None:
+            if self.config.model.pre_mp.act.lower() == "elu":
+                act = nn.ELU()
+            elif self.config.model.pre_mp.act.lower() == "relu":
+                act = nn.ReLU()
+            else:
+                raise ValueError("Only implemented elu and relu")
 
+        if self.hyperbolic:
+            act = layers.HypAct(act, c_in=1.5, c_out=1.5, last=last, first=first)
         return act
 
     def make_mp(self):
@@ -169,12 +173,22 @@ class GeneNetwork(nn.Module):
         flow_list = []
 
         for i in range(self.gcnconv_num_layers):
-            mp_list.append(self.get_mp_layer(i))
-            flow_list.append('x, edge_index -> x')
-            mp_list.append(self.get_act())
-            flow_list.append('x -> x')
-            mp_list.append(self.get_mp_norm())
-            flow_list.append('x -> x')
+            if self.hyperbolic:
+                mp_list.append(self.get_mp_layer(i))
+                flow_list.append('x, edge_index -> x')
+                mp_list.append(self.get_act(last=True))
+                flow_list.append('x -> x')
+                mp_list.append(self.get_mp_norm())
+                flow_list.append('x -> x')
+                mp_list.append(self.get_act(first=True))
+                flow_list.append('x -> x')
+            else:
+                mp_list.append(self.get_mp_layer(i))
+                flow_list.append('x, edge_index -> x')
+                mp_list.append(self.get_act())
+                flow_list.append('x -> x')
+                mp_list.append(self.get_mp_norm())
+                flow_list.append('x -> x')
 
         if len(mp_list) > 0:
             self.mp = pyg_nn.Sequential('x, edge_index', [(layer, flow) for layer, flow in zip(mp_list, flow_list)])
@@ -222,6 +236,9 @@ class GeneNetwork(nn.Module):
                 # if its anything between the first or the last layer, keep dim_in = dim_out = dim_hid * n_heads
                 mp_layer = pyg_nn.GATConv(self.gcnconv_parameters["dim"] * self.nheads, self.gcnconv_parameters["dim"] * self.nheads, heads=1, concat=True, **kwargs)
             
+        elif self.gcnconv_parameters["type"] == "hgcn":
+            mp_layer = layers.HGCNConv(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], c=1.5, **kwargs)
+
         elif self.gcnconv_parameters["type"] == "gcn2":
             mp_layer = pyg_nn.GCN2Conv(self.gcnconv_parameters["dim"],
                                        alpha=self.gcnconv_parameters["alpha"],
@@ -258,7 +275,7 @@ class GeneNetwork(nn.Module):
                 mp_layer = layers.MLPFiLM(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], self.num_adjacencies, **kwargs)
             elif self.gcnconv_parameters["type"] == "filmfilm":
                 mp_layer = layers.FiLMFiLM(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], self.num_adjacencies, **kwargs)
-
+            
         else:
             try:
                 mp_layer_uninitialized = getattr(pyg_nn, self.gcnconv_parameters["type"])
@@ -276,6 +293,9 @@ class GeneNetwork(nn.Module):
 
     def make_pre_mp(self):
         pre_mp_list = []
+
+        if self.hyperbolic:
+            pre_mp_list.append(self.get_act(first=True))
 
         pre_mp_list.append(pyg_nn.Linear(self.input_dim, self.dim_hid))
         pre_mp_list.append(self.get_act())
@@ -301,6 +321,8 @@ class GeneNetwork(nn.Module):
         post_mp_list.append(pyg_nn.Linear(self.dim_hid, self.dim_hid // 2))
         post_mp_list.append(self.get_act())
         post_mp_list.append(pyg_nn.Linear(self.dim_hid // 2, self.output_dim))
+        if self.hyperbolic:
+            post_mp_list.append(self.get_act(act=torch.nn.Identity(), last=True))
 
         self.post_mp = nn.Sequential(*post_mp_list)
 
