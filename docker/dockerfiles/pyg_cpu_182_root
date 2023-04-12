@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils gnupg
 # Create a working directory.
 RUN mkdir app
 WORKDIR app
-RUN git clone --recurse-submodules https://github.com/fratajcz/speos.git && cd speos
+RUN git clone --recurse-submodules -b stable --single-branch https://github.com/fratajcz/speos.git && cd speos
 
 
 # Install Miniconda.
