@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils gnupg
 # Create a working directory.
 RUN mkdir app
 WORKDIR app
-RUN git clone --recurse-submodules https://github.com/fratajcz/speos.git
+RUN git clone --recurse-submodules -b latest --single-branch https://github.com/fratajcz/speos.git
 
 # Install Miniconda.
 RUN curl -so /app/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh

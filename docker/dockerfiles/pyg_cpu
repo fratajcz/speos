@@ -29,7 +29,7 @@ RUN conda install pytorch torchvision torchaudio cpuonly -c pytorch
 RUN conda install pip
 RUN pip install torch-scatter torch-sparse==0.6.12 torch-cluster torch-spline-conv torch-geometric==2.0.4 -f https://data.pyg.org/whl/torch-1.12.0+cpu.html
 
-RUN git clone --recurse-submodules https://github.com/fratajcz/speos.git
+RUN git clone --recurse-submodules -b stable --single-branch https://github.com/fratajcz/speos.git
 RUN cd speos && python3 -m pip install -r requirements.yaml
 RUN cd speos && pip install .
 
