@@ -12,16 +12,16 @@ class HypLinear(nn.Module):
     Hyperbolic linear layer.
     """
 
-    def __init__(self, manifold, in_features, out_features, c, dropout=0, use_bias=True):
+    def __init__(self, in_channels, out_channels, c, dropout=0, manifold="PoincareBall", use_bias=True):
         super(HypLinear, self).__init__()
         self.manifold = getattr(manifolds, manifold)()
-        self.in_features = in_features
-        self.out_features = out_features
+        self.in_channels = in_channels
+        self.out_channels = out_channels
         self.c = c
         self.dropout = dropout
         self.use_bias = use_bias
-        self.bias = nn.Parameter(torch.Tensor(out_features))
-        self.weight = nn.Parameter(torch.Tensor(out_features, in_features))
+        self.bias = nn.Parameter(torch.Tensor(out_channels))
+        self.weight = nn.Parameter(torch.Tensor(out_channels, in_channels))
         self.reset_parameters()
 
     def reset_parameters(self):
@@ -41,6 +41,6 @@ class HypLinear(nn.Module):
         return res
 
     def extra_repr(self):
-        return 'in_features={}, out_features={}, c={}'.format(
-            self.in_features, self.out_features, self.c
+        return 'in_channels={}, out_channels={}, c={}'.format(
+            self.in_channels, self.out_channels, self.c
         )

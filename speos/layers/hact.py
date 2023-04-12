@@ -8,7 +8,7 @@ class HypAct(Module):
     Hyperbolic activation layer.
     """
 
-    def __init__(self, manifold, c_in=None, c_out=None, act, first=False, last=False):
+    def __init__(self, act, c_in=None, c_out=None, manifold="PoincareBall", first=False, last=False):
         super(HypAct, self).__init__()
         if not first:
             assert c_in is not None 
@@ -23,14 +23,18 @@ class HypAct(Module):
 
     def forward(self, x):
         if not self.first:
-            xt = self.act(self.manifold.logmap0(x, c=self.c_in))
-        xt = self.manifold.proj_tan0(xt, c=self.c_out)
+            #TODO: check if both these actions are necessary to bring it into tangent space
+            x = self.act(self.manifold.logmap0(x, c=self.c_in))
+            x = self.manifold.proj_tan0(x, c=self.c_out)
         if self.last:
-            return xt
+            return x
         else:
-            return self.manifold.proj(self.manifold.expmap0(xt, c=self.c_out), c=self.c_out)
+            return self.manifold.proj(self.manifold.expmap0(x, c=self.c_out), c=self.c_out)
 
     def extra_repr(self):
         return 'c_in={}, c_out={}'.format(
             self.c_in, self.c_out
         )
+
+    def __call__(self, *args, **kwargs):
+        return self.forward(*args, **kwargs)

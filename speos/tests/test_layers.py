@@ -1,4 +1,4 @@
-from speos.layers import RTAGConv, FiLMTAGConv, RGATConv, RGATTAGConv, MLPFiLM, FiLMFiLM, HGCNConv
+from speos.layers import *
 from torch.nn.functional import binary_cross_entropy_with_logits as loss_function
 from speos.utils.config import Config
 from speos.architectures import RelationalGeneNetwork
@@ -6,6 +6,38 @@ import unittest
 import torch
 import numpy as np
 
+
+class HypLinearTest(unittest.TestCase):
+
+    def test_init(self):
+        hlin = HypLinear(in_channels=10, out_channels=10, c=1.5)
+
+    def test_forward(self):
+        x_input = torch.rand((5, 10))
+
+        hlin = HypLinear(in_channels=10, out_channels=10, c=1.5)
+        x = hlin.forward(x_input)
+        self.assertTrue(not torch.allclose(x, x_input))
+
+         # check if implicitely calling forward works too
+        x_direct = hlin(x_input)
+        self.assertTrue(torch.allclose(x_direct, x))
+
+class HypActTest(unittest.TestCase):
+
+    def test_init(self):
+        hact = HypAct(act=torch.nn.ELU(), c_in=1.5, c_out=1.5)
+
+    def test_forward(self):
+        x_input = torch.rand((5, 10))
+
+        hact = HypAct(act=torch.nn.ELU(), c_in=1.5, c_out=1.5, first=True)
+        x = hact.forward(x_input)
+        self.assertTrue(not torch.allclose(x, x_input))
+
+         # check if implicitely calling forward works too
+        x_direct = hact(x_input)
+        self.assertTrue(torch.allclose(x_direct, x))
 
 
 class HGCNConvTest(unittest.TestCase):

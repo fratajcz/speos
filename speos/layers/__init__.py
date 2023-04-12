@@ -5,3 +5,5 @@ from .rgattag import *
 from .mlpfilm import *
 from .filmfilm import *
 from .hgcn import *
+from .hact import *
+from .hlinear import *
