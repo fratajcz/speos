@@ -1,6 +1,7 @@
 from speos.architectures import GeneNetwork, RelationalGeneNetwork, FCNN, LINKX, SimpleGCN
 import torch
 import torch.optim as optim
+from speos.layers.hyperbolic.optim import RiemannianAdam
 from speos.losses.approxndcg import approxNDCGLoss
 from speos.losses.lambdaloss import lambdaLoss
 from speos.losses.neuralndcg import neuralNDCGLoss
@@ -16,7 +17,8 @@ class BaseModel:
         self.config = config
         self.loss_function = None
         self.architectures = self._architectures
-        self.optimizers = [optim.Adam(self.architectures[i].parameters(), lr=config.optim.lr) for i in range(self.num_archs)]
+        optimizer = RiemannianAdam if config.model.hyperbolic else optim.Adam
+        self.optimizers = [optimizer(self.architectures[i].parameters(), lr=config.optim.lr) for i in range(self.num_archs)]
         self.losses = None
         self.reg_lambda = self.config.model.regularization_lambda
         self.available_losses = ["mse", "bce", "lambdaloss", "neuralndcg", "approxndcg", "upu", "nnpu"]
