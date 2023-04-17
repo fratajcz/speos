@@ -170,7 +170,7 @@ class GeneNetwork(nn.Module):
                 raise ValueError("Only implemented elu and relu")
 
         if self.hyperbolic:
-            act = layers.HypAct(act, c_in=c_in, c_out=c_out, last=last, first=first)
+            act = layers.HypAct(act, c_in=c_in, c_out=c_out, last=last, first=first, manifold=self.config.model.hyperbolic.manifold)
         return act
 
     def make_mp(self):
@@ -244,7 +244,7 @@ class GeneNetwork(nn.Module):
                 mp_layer = pyg_nn.GATConv(self.gcnconv_parameters["dim"] * self.nheads, self.gcnconv_parameters["dim"] * self.nheads, heads=1, concat=True, **kwargs)
             
         elif self.gcnconv_parameters["type"] == "hgcn":
-            mp_layer = layers.HGCNConv(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], c=curvature, **kwargs)
+            mp_layer = layers.HGCNConv(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], c=curvature, manifold=self.config.model.hyperbolic.manifold, **kwargs)
 
         elif self.gcnconv_parameters["type"] == "gcn2":
             mp_layer = pyg_nn.GCN2Conv(self.gcnconv_parameters["dim"],
@@ -300,7 +300,7 @@ class GeneNetwork(nn.Module):
 
     def get_linear(self, in_dim, out_dim, curvature=None):
         if self.hyperbolic:
-            lin = layers.HypLinear(in_channels=in_dim, out_channels=out_dim, c=curvature)
+            lin = layers.HypLinear(in_channels=in_dim, out_channels=out_dim, c=curvature, manifold=self.config.model.hyperbolic.manifold)
         else:
             lin = pyg_nn.Linear(in_channels=in_dim, out_channels=out_dim)
         return lin
@@ -346,7 +346,7 @@ class GeneNetwork(nn.Module):
 
         post_mp_list.append(self.get_linear(self.dim_hid, self.dim_hid // 2, curvature=curvatures[-2]))
         post_mp_list.append(self.get_act(c_in=curvatures[-2], c_out=curvatures[-1]))
-        post_mp_list.append(self.get_linear(self.dim_hid // 2, self.output_dim, curvature=curvatures[-1]))
+        post_mp_list.append(self.get_linear(self.dim_hid // 2, self.output_dim + 1 if self.hyperbolic and self.config.hyperbolic.manifold == "Hyperboloid" else 1, curvature=curvatures[-1]))
 
         if self.hyperbolic:
             post_mp_list.append(self.get_act(act=torch.nn.Identity(), c_in=curvatures[-1], last=True))
