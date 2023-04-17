@@ -47,7 +47,12 @@ model:
   skip: False       # boolean, use skip connections
   skip_mp: False    # boolean, use skip connections that skip message passing
   concat_after_mp: False  # boolean, concatenate pre_mp and mp features and feed them both into post_mp
-  hyperbolic: False   # boolean, if features should be fit into hyperbolic space instead of euclidean
+  hyperbolic:
+    switch: off   # on/off/True/False if netowrk should be built hyperbolic
+    manifold: PoincareBall
+    curvatures: None
+    optimizer: Riemannian
+
   pre_mp:
     type: fc
     dim: 50

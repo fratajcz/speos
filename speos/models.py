@@ -17,7 +17,7 @@ class BaseModel:
         self.config = config
         self.loss_function = None
         self.architectures = self._architectures
-        optimizer = RiemannianAdam if config.model.hyperbolic else optim.Adam
+        optimizer = RiemannianAdam if config.model.hyperbolic.switch else optim.Adam
         self.optimizers = [optimizer(self.architectures[i].parameters(), lr=config.optim.lr) for i in range(self.num_archs)]
         self.losses = None
         self.reg_lambda = self.config.model.regularization_lambda

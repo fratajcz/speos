@@ -111,7 +111,8 @@ class GeneNetwork(nn.Module):
         self.final_conv_grads = None
         self.input = None
         self.input_grads = None
-        self.hyperbolic = config.model.hyperbolic
+        self.hyperbolic = config.model.hyperbolic.switch
+        
         self.gcnconv_num_layers = self.config.model.mp.n_layers
         self.gcnconv_parameters = {"type": self.config.model.mp.type,
                                    "dim": self.config.model.mp.dim}
@@ -121,6 +122,12 @@ class GeneNetwork(nn.Module):
 
         self.npremp = self.config.model.pre_mp.n_layers
         self.npostmp = self.config.model.post_mp.n_layers
+
+        if self.hyperbolic and config.model.hyperbolic.curvatures is None:
+            self.pre_mp_curvatures = [nn.Parameter(torch.Tensor([1.])) for _ in range(self.npremp + 1)]
+            self.post_mp_curvatures = [nn.Parameter(torch.Tensor([1.])) for _ in range(self.npostmp + 2)]
+            self.mp_curvatures = [nn.Parameter(torch.Tensor([1.])) for _ in range(self.config.model.mp.n_layers)]
+
         self.output_dim = 1
         self.nheads = self.config.model.mp.nheads if self.gcnconv_num_layers > 1 else 1
 
@@ -153,7 +160,7 @@ class GeneNetwork(nn.Module):
             elif isinstance(value, Config):
                 self.initialize_kwargs(value)
 
-    def get_act(self, act=None, last=False, first=False):
+    def get_act(self, act=None, c_in=None, c_out=None, last=False, first=False):
         if act is None:
             if self.config.model.pre_mp.act.lower() == "elu":
                 act = nn.ELU()
@@ -163,7 +170,7 @@ class GeneNetwork(nn.Module):
                 raise ValueError("Only implemented elu and relu")
 
         if self.hyperbolic:
-            act = layers.HypAct(act, c_in=1.5, c_out=1.5, last=last, first=first)
+            act = layers.HypAct(act, c_in=c_in, c_out=c_out, last=last, first=first)
         return act
 
     def make_mp(self):
@@ -174,13 +181,13 @@ class GeneNetwork(nn.Module):
 
         for i in range(self.gcnconv_num_layers):
             if self.hyperbolic:
-                mp_list.append(self.get_mp_layer(i))
+                mp_list.append(self.get_mp_layer(i, curvature=self.mp_curvatures[i]))
                 flow_list.append('x, edge_index -> x')
-                mp_list.append(self.get_act(last=True))
+                mp_list.append(self.get_act(last=True, c_in=self.mp_curvatures[i]))
                 flow_list.append('x -> x')
                 mp_list.append(self.get_mp_norm())
                 flow_list.append('x -> x')
-                mp_list.append(self.get_act(first=True))
+                mp_list.append(self.get_act(first=True, c_out=self.mp_curvatures[i+1] if i != self.gcnconv_num_layers - 1 else self.post_mp_curvatures[0]))
                 flow_list.append('x -> x')
             else:
                 mp_list.append(self.get_mp_layer(i))
@@ -195,7 +202,7 @@ class GeneNetwork(nn.Module):
         else:
             self.mp = None
 
-    def get_mp_layer(self, i):
+    def get_mp_layer(self, i, curvature=None):
         kwargs = self.config.model.mp.kwargs
         if self.gcnconv_parameters["type"] == "sage":
             mp_layer = pyg_nn.SAGEConv(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], **kwargs)
@@ -237,7 +244,7 @@ class GeneNetwork(nn.Module):
                 mp_layer = pyg_nn.GATConv(self.gcnconv_parameters["dim"] * self.nheads, self.gcnconv_parameters["dim"] * self.nheads, heads=1, concat=True, **kwargs)
             
         elif self.gcnconv_parameters["type"] == "hgcn":
-            mp_layer = layers.HGCNConv(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], c=1.5, **kwargs)
+            mp_layer = layers.HGCNConv(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], c=curvature, **kwargs)
 
         elif self.gcnconv_parameters["type"] == "gcn2":
             mp_layer = pyg_nn.GCN2Conv(self.gcnconv_parameters["dim"],
@@ -291,17 +298,31 @@ class GeneNetwork(nn.Module):
 
         return mp_layer
 
+    def get_linear(self, in_dim, out_dim, curvature=None):
+        if self.hyperbolic:
+            lin = layers.HypLinear(in_channels=in_dim, out_channels=out_dim, c=curvature)
+        else:
+            lin = pyg_nn.Linear(in_channels=in_dim, out_channels=out_dim)
+        return lin
+
     def make_pre_mp(self):
         pre_mp_list = []
 
         if self.hyperbolic:
-            pre_mp_list.append(self.get_act(first=True))
+            curvatures = self.pre_mp_curvatures
+            pre_mp_list.append(self.get_act(first=True, c_out=curvatures[0]))
+        else:
+            curvatures = [None for _ in range(self.npremp + 1)]
 
-        pre_mp_list.append(pyg_nn.Linear(self.input_dim, self.dim_hid))
-        pre_mp_list.append(self.get_act())
+        pre_mp_list.append(self.get_linear(self.input_dim, self.dim_hid, curvature = curvatures[0]))
+        pre_mp_list.append(self.get_act(c_in = curvatures[0], c_out=curvatures[1]))
+        
         for i in range(self.npremp):
-            pre_mp_list.append(pyg_nn.Linear(self.dim_hid, self.dim_hid))
-            pre_mp_list.append(self.get_act())
+            pre_mp_list.append(self.get_linear(self.dim_hid, self.dim_hid, curvature = curvatures[i+1]))
+            if i == self.npremp - 1:
+                pre_mp_list.append(self.get_act(c_in = curvatures[i+1], c_out=self.mp_curvatures[0]))
+            else:
+                pre_mp_list.append(self.get_act(c_in = curvatures[i+1], c_out=curvatures[i+2]))
 
         self.pre_mp = nn.Sequential(*pre_mp_list)
 
@@ -313,16 +334,22 @@ class GeneNetwork(nn.Module):
         else:
             start_factor = 1
 
+        if self.hyperbolic:
+            curvatures = self.post_mp_curvatures
+        else:
+            curvatures = [None for _ in range(self.npostmp + 2)]
+
         for i in range(self.npostmp):
-            post_mp_list.append(pyg_nn.Linear(self.dim_hid * start_factor, self.dim_hid))
-            post_mp_list.append(self.get_act())
+            post_mp_list.append(self.get_linear(self.dim_hid * start_factor, self.dim_hid, curvature=curvatures[i]))
+            post_mp_list.append(self.get_act(c_in = curvatures[i], c_out=curvatures[i+1]))
             start_factor = 1
 
-        post_mp_list.append(pyg_nn.Linear(self.dim_hid, self.dim_hid // 2))
-        post_mp_list.append(self.get_act())
-        post_mp_list.append(pyg_nn.Linear(self.dim_hid // 2, self.output_dim))
+        post_mp_list.append(self.get_linear(self.dim_hid, self.dim_hid // 2, curvature=curvatures[-2]))
+        post_mp_list.append(self.get_act(c_in=curvatures[-2], c_out=curvatures[-1]))
+        post_mp_list.append(self.get_linear(self.dim_hid // 2, self.output_dim, curvature=curvatures[-1]))
+
         if self.hyperbolic:
-            post_mp_list.append(self.get_act(act=torch.nn.Identity(), last=True))
+            post_mp_list.append(self.get_act(act=torch.nn.Identity(), c_in=curvatures[-1], last=True))
 
         self.post_mp = nn.Sequential(*post_mp_list)
 
@@ -333,6 +360,8 @@ class GeneNetwork(nn.Module):
             mpnorm = pyg_nn.LayerNorm(self.gcnconv_parameters["dim"])
         elif self.config.model.mp.normalize == "graph":
             mpnorm = pyg_nn.GraphNorm(self.gcnconv_parameters["dim"])
+        elif self.config.model.mp.normalize is None:
+            mpnorm = nn.Identity()
         return mpnorm
 
     def regularization(self):
