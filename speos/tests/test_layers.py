@@ -9,13 +9,38 @@ import numpy as np
 
 class HypLinearTest(unittest.TestCase):
 
-    def test_init(self):
+    def test_init_poincare(self):
         hlin = HypLinear(in_channels=10, out_channels=10, c=1.5)
 
-    def test_forward(self):
+    def test_init_hyperboloid(self):
+        hlin = HypLinear(in_channels=10, out_channels=10, manifold="Hyperboloid", c=1.5)
+
+    def test_forward_poincare(self):
         x_input = torch.rand((5, 10))
 
         hlin = HypLinear(in_channels=10, out_channels=10, c=1.5)
+        x = hlin.forward(x_input)
+        self.assertTrue(not torch.allclose(x, x_input))
+
+        # check if implicitely calling forward works too
+        x_direct = hlin(x_input)
+        self.assertTrue(torch.allclose(x_direct, x))
+
+    def test_forward_hyperboloid(self):
+        x_input = torch.rand((5, 10))
+
+        hlin = HypLinear(in_channels=10, out_channels=10, manifold="Hyperboloid", c=1.5)
+        x = hlin.forward(x_input)
+        self.assertTrue(not torch.allclose(x, x_input))
+
+         # check if implicitely calling forward works too
+        x_direct = hlin(x_input)
+        self.assertTrue(torch.allclose(x_direct, x))
+
+    def test_forward_hyperboloid_single_output(self):
+        x_input = torch.rand((5, 10))
+
+        hlin = HypLinear(in_channels=10, out_channels=2, manifold="Hyperboloid", c=1.5)
         x = hlin.forward(x_input)
         self.assertTrue(not torch.allclose(x, x_input))
 
@@ -32,6 +57,17 @@ class HypActTest(unittest.TestCase):
         x_input = torch.rand((5, 10))
 
         hact = HypAct(act=torch.nn.ELU(), c_in=1.5, c_out=1.5, first=True)
+        x = hact.forward(x_input)
+        self.assertTrue(not torch.allclose(x, x_input))
+
+         # check if implicitely calling forward works too
+        x_direct = hact(x_input)
+        self.assertTrue(torch.allclose(x_direct, x))
+
+    def test_forward_hyperboloid(self):
+        x_input = torch.rand((5, 10))
+
+        hact = HypAct(act=torch.nn.ELU(), c_in=1.5, c_out=1.5, manifold="Hyperboloid", first=True)
         x = hact.forward(x_input)
         self.assertTrue(not torch.allclose(x, x_input))
 

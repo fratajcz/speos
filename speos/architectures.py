@@ -314,15 +314,15 @@ class GeneNetwork(nn.Module):
         else:
             curvatures = [None for _ in range(self.npremp + 1)]
 
-        pre_mp_list.append(self.get_linear(self.input_dim, self.dim_hid, curvature = curvatures[0]))
-        pre_mp_list.append(self.get_act(c_in = curvatures[0], c_out=curvatures[1]))
+        pre_mp_list.append(self.get_linear(self.input_dim, self.dim_hid, curvature=curvatures[0]))
+        pre_mp_list.append(self.get_act(c_in=curvatures[0], c_out=curvatures[1]))
         
         for i in range(self.npremp):
-            pre_mp_list.append(self.get_linear(self.dim_hid, self.dim_hid, curvature = curvatures[i+1]))
+            pre_mp_list.append(self.get_linear(self.dim_hid, self.dim_hid, curvature=curvatures[i+1]))
             if i == self.npremp - 1:
-                pre_mp_list.append(self.get_act(c_in = curvatures[i+1], c_out=self.mp_curvatures[0]))
+                pre_mp_list.append(self.get_act(c_in=curvatures[i+1], c_out=self.mp_curvatures[0]))
             else:
-                pre_mp_list.append(self.get_act(c_in = curvatures[i+1], c_out=curvatures[i+2]))
+                pre_mp_list.append(self.get_act(c_in=curvatures[i+1], c_out=curvatures[i+2]))
 
         self.pre_mp = nn.Sequential(*pre_mp_list)
 
@@ -341,12 +341,12 @@ class GeneNetwork(nn.Module):
 
         for i in range(self.npostmp):
             post_mp_list.append(self.get_linear(self.dim_hid * start_factor, self.dim_hid, curvature=curvatures[i]))
-            post_mp_list.append(self.get_act(c_in = curvatures[i], c_out=curvatures[i+1]))
+            post_mp_list.append(self.get_act(c_in=curvatures[i], c_out=curvatures[i+1]))
             start_factor = 1
 
         post_mp_list.append(self.get_linear(self.dim_hid, self.dim_hid // 2, curvature=curvatures[-2]))
         post_mp_list.append(self.get_act(c_in=curvatures[-2], c_out=curvatures[-1]))
-        post_mp_list.append(self.get_linear(self.dim_hid // 2, self.output_dim + 1 if self.hyperbolic and self.config.hyperbolic.manifold == "Hyperboloid" else 1, curvature=curvatures[-1]))
+        post_mp_list.append(self.get_linear(self.dim_hid // 2, self.output_dim, curvature=curvatures[-1]))
 
         if self.hyperbolic:
             post_mp_list.append(self.get_act(act=torch.nn.Identity(), c_in=curvatures[-1], last=True))
@@ -386,7 +386,7 @@ class GeneNetwork(nn.Module):
 
         # post message passing
         x = self.post_mp(x)
-
+        
         return x
 
     def add_norm_layer(self, ndim):
