@@ -160,7 +160,7 @@ class GeneNetwork(nn.Module):
             elif isinstance(value, Config):
                 self.initialize_kwargs(value)
 
-    def get_act(self, act=None, c_in=None, c_out=None, last=False, first=False):
+    def get_act(self, act=None, c_in=None, c_out=None):
         if act is None:
             if self.config.model.pre_mp.act.lower() == "elu":
                 act = nn.ELU()
@@ -170,7 +170,7 @@ class GeneNetwork(nn.Module):
                 raise ValueError("Only implemented elu and relu")
 
         if self.hyperbolic:
-            act = layers.HypAct(act, c_in=c_in, c_out=c_out, last=last, first=first, manifold=self.config.model.hyperbolic.manifold)
+            act = layers.HypAct(act, c_in=c_in, c_out=c_out, manifold=self.config.model.hyperbolic.manifold)
         return act
 
     def make_mp(self):
@@ -183,11 +183,13 @@ class GeneNetwork(nn.Module):
             if self.hyperbolic:
                 mp_list.append(self.get_mp_layer(i, curvature=self.mp_curvatures[i]))
                 flow_list.append('x, edge_index -> x')
-                mp_list.append(self.get_act(last=True, c_in=self.mp_curvatures[i]))
+                mp_list.append(self.get_act(c_in=self.mp_curvatures[i], c_out=self.mp_curvatures[i]))
+                flow_list.append('x -> x')
+                mp_list.append(layers.HyperbolicDecoder(manifold=self.config.model.hyperbolic.manifold, curvature=self.mp_curvatures[i]))
                 flow_list.append('x -> x')
                 mp_list.append(self.get_mp_norm())
                 flow_list.append('x -> x')
-                mp_list.append(self.get_act(first=True, c_out=self.mp_curvatures[i+1] if i != self.gcnconv_num_layers - 1 else self.post_mp_curvatures[0]))
+                mp_list.append(layers.HyperbolicEncoder(manifold=self.config.model.hyperbolic.manifold, curvature=self.mp_curvatures[i+1] if i != self.gcnconv_num_layers - 1 else self.post_mp_curvatures[0]))
                 flow_list.append('x -> x')
             else:
                 mp_list.append(self.get_mp_layer(i))
@@ -310,7 +312,7 @@ class GeneNetwork(nn.Module):
 
         if self.hyperbolic:
             curvatures = self.pre_mp_curvatures
-            pre_mp_list.append(self.get_act(first=True, c_out=curvatures[0]))
+            pre_mp_list.append(layers.HyperbolicEncoder(manifold=self.config.model.hyperbolic.manifold, curvature=curvatures[0]))
         else:
             curvatures = [None for _ in range(self.npremp + 1)]
 
@@ -346,10 +348,9 @@ class GeneNetwork(nn.Module):
 
         post_mp_list.append(self.get_linear(self.dim_hid, self.dim_hid // 2, curvature=curvatures[-2]))
         post_mp_list.append(self.get_act(c_in=curvatures[-2], c_out=curvatures[-1]))
-        post_mp_list.append(self.get_linear(self.dim_hid // 2, self.output_dim, curvature=curvatures[-1]))
-
         if self.hyperbolic:
-            post_mp_list.append(self.get_act(act=torch.nn.Identity(), c_in=curvatures[-1], last=True))
+            post_mp_list.append(layers.HyperbolicDecoder(manifold=self.config.model.hyperbolic.manifold, curvature=curvatures[-1]))  # TODO we can shave off the last curvature
+        post_mp_list.append(pyg_nn.Linear(self.dim_hid // 2, self.output_dim))
 
         self.post_mp = nn.Sequential(*post_mp_list)
 
@@ -386,7 +387,7 @@ class GeneNetwork(nn.Module):
 
         # post message passing
         x = self.post_mp(x)
-        
+
         return x
 
     def add_norm_layer(self, ndim):
