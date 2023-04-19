@@ -116,6 +116,8 @@ class GeneNetwork(nn.Module):
         self.gcnconv_num_layers = self.config.model.mp.n_layers
         self.gcnconv_parameters = {"type": self.config.model.mp.type,
                                    "dim": self.config.model.mp.dim}
+        if self.hyperbolic and self.config.model.hyperbolic.manifold == "Hyperboloid":
+            self.gcnconv_parameters["dim"] += 1
         self.dim_hid = self.gcnconv_parameters["dim"]
         self.out_dim_hid = self.gcnconv_parameters["dim"]
         self.in_dim_hid = 2 * self.dim_hid if self.config.model.skip else self.dim_hid
@@ -322,7 +324,7 @@ class GeneNetwork(nn.Module):
         for i in range(self.npremp):
             pre_mp_list.append(self.get_linear(self.dim_hid, self.dim_hid, curvature=curvatures[i+1]))
             if i == self.npremp - 1:
-                pre_mp_list.append(self.get_act(c_in=curvatures[i+1], c_out=self.mp_curvatures[0]))
+                pre_mp_list.append(self.get_act(c_in=curvatures[i+1], c_out=curvatures[0]))
             else:
                 pre_mp_list.append(self.get_act(c_in=curvatures[i+1], c_out=curvatures[i+2]))
 
@@ -369,6 +371,10 @@ class GeneNetwork(nn.Module):
         return torch.Tensor((0,))
 
     def forward(self, x, edge_index, edge_weight=None):
+        if self.config.model.hyperbolic.manifold == 'Hyperboloid':
+            o = torch.zeros_like(x)
+            x = torch.cat([o[:, 0:1], x], dim=1)
+
         # pre message passing
         x_pre = self.pre_mp(x)
 
