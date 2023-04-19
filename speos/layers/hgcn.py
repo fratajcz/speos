@@ -21,7 +21,7 @@ class HGCNConv(MessagePassing):
     but implemented for the MessagePassing framework using the GCN template from https://pytorch-geometric.readthedocs.io/en/latest/tutorial/create_gnn.html#implementing-the-gcn-layer
     """
 
-    def __init__(self, in_channels, out_channels, c, manifold="PoincareBall", dropout=0, use_bias=True, aggr="add"):
+    def __init__(self, in_channels, out_channels, c, manifold="PoincareBall", dropout=0, use_bias=True, aggr="add", normalize=False):
         super(HGCNConv, self).__init__()
         super().__init__(aggr=aggr)
         self.c = c
@@ -30,6 +30,7 @@ class HGCNConv(MessagePassing):
         self.use_bias = use_bias
         self.bias = nn.Parameter(torch.Tensor(out_channels))
         self.reset_parameters()
+        self.normalize = normalize
 
     def forward(self, x, edge_index):
         # Step 1: Add self-loops to the adjacency matrix.
@@ -68,4 +69,4 @@ class HGCNConv(MessagePassing):
         # x_j has shape [E, out_channels]
 
         # Step 4: Normalize node features.
-        return norm.view(-1, 1) * x_j
+        return norm.view(-1, 1) * x_j if self.normalize else x_j

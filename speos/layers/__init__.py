@@ -7,3 +7,5 @@ from .filmfilm import *
 from .hgcn import *
 from .hact import *
 from .hlinear import *
+from .hencoder import *
+from .hdecoder import *
