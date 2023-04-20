@@ -59,7 +59,7 @@ model:
     dim: 50
     n_layers: 5        # resulting number of layers will be n_layers + 1 for the input layer
     normalize: None
-    dropout: None
+    dropout: 0
     act:  elu
   mp:
     type: gcn       # gcn, gin, gat, gcn2
@@ -69,12 +69,13 @@ model:
     nheads: None          # only relevant if type: gat is selected
     k: 3                  # only relevant if type: tag is selected
     kwargs: {}
+    dropout: 0
   post_mp:
     type: fc
     dim: 50
     n_layers: 5        # resulting number of layers will be n_layers + 2 for the output layer
     normalize: None
-    dropout: None
+    dropout: 0
     act:  elu
   
 optim:

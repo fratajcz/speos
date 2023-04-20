@@ -18,19 +18,19 @@ class HypLinearTest(unittest.TestCase):
     def test_forward_poincare(self):
         x_input = torch.rand((5, 10))
 
-        hlin = HypLinear(in_channels=10, out_channels=10, c=1.5)
-        x = hlin.forward(x_input)
-        self.assertTrue(not torch.allclose(x, x_input))
+        hlin = HypLinear(in_channels=10, out_channels=8, c=1.5)
+        x = hlin.forward(hlin.manifold.expmap0(x_input, hlin.c))
+        self.assertEqual(x.shape, (5, 8))
 
         # check if implicitely calling forward works too
-        x_direct = hlin(x_input)
+        x_direct = hlin(hlin.manifold.expmap0(x_input, hlin.c))
         self.assertTrue(torch.allclose(x_direct, x))
 
     def test_forward_hyperboloid(self):
         x_input = torch.rand((5, 10))
 
         hlin = HypLinear(in_channels=10, out_channels=10, manifold="Hyperboloid", c=1.5)
-        x = hlin.forward(x_input)
+        x = hlin.forward(hlin.manifold.expmap0(x_input, hlin.c))
         self.assertTrue(not torch.allclose(x, x_input))
 
          # check if implicitely calling forward works too

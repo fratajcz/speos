@@ -24,15 +24,18 @@ class Manifold(object):
         raise NotImplementedError
 
     def proj(self, p, c):
-        """Projects point p on the manifold."""
+        """Projects point p on the manifold.
+            This is sometimes needed to make sure that the points still lives on the manifold"""
         raise NotImplementedError
 
     def proj_tan(self, u, p, c):
-        """Projects u on the tangent space of p."""
+        """Projects u on the tangent space of p.
+            This is sometimes needed to make sure that the points still lives on the manifold"""
         raise NotImplementedError
 
     def proj_tan0(self, u, c):
-        """Projects u on the tangent space of the origin."""
+        """Projects u on the tangent space of the origin.
+         This is sometimes needed to make sure that the points still lives on the manifold"""
         raise NotImplementedError
 
     def expmap(self, u, p, c):
@@ -133,16 +136,11 @@ class PoincareBall(Manifold):
     def proj_tan0(self, u, c):
         return u
 
-    def expmap(self, u, p, c):
+    def logmap0(self, p, c):
         sqrt_c = c ** 0.5
-        u_norm = u.norm(dim=-1, p=2, keepdim=True).clamp_min(self.min_norm)
-        second_term = (
-                tanh(sqrt_c / 2 * self._lambda_x(p, c) * u_norm)
-                * u
-                / (sqrt_c * u_norm)
-        )
-        gamma_1 = self.mobius_add(p, second_term, c)
-        return gamma_1
+        p_norm = p.norm(dim=-1, p=2, keepdim=True).clamp_min(self.min_norm)
+        scale = 1. / sqrt_c * artanh(sqrt_c * p_norm) / p_norm
+        return scale * p
 
     def logmap(self, p1, p2, c):
         sub = self.mobius_add(-p1, p2, c)
@@ -157,11 +155,16 @@ class PoincareBall(Manifold):
         gamma_1 = tanh(sqrt_c * u_norm) * u / (sqrt_c * u_norm)
         return gamma_1
 
-    def logmap0(self, p, c):
+    def expmap(self, u, p, c):
         sqrt_c = c ** 0.5
-        p_norm = p.norm(dim=-1, p=2, keepdim=True).clamp_min(self.min_norm)
-        scale = 1. / sqrt_c * artanh(sqrt_c * p_norm) / p_norm
-        return scale * p
+        u_norm = u.norm(dim=-1, p=2, keepdim=True).clamp_min(self.min_norm)
+        second_term = (
+                tanh(sqrt_c / 2 * self._lambda_x(p, c) * u_norm)
+                * u
+                / (sqrt_c * u_norm)
+        )
+        gamma_1 = self.mobius_add(p, second_term, c)
+        return gamma_1
 
     def mobius_add(self, x, y, c, dim=-1):
         x2 = x.pow(2).sum(dim=dim, keepdim=True)
