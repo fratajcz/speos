@@ -113,6 +113,37 @@ class HypActTest(unittest.TestCase):
         # check if features mapped back to euclidean space are the same again
         self.assertTrue(torch.allclose(x_input, x_tangent))
 
+class HGATConvTest(unittest.TestCase):
+
+    def test_init(self):
+        hgcn = HGATConv(in_channels=10, out_channels=10, c=1.5)
+
+    def test_forward(self):
+        edges = torch.LongTensor([[0, 1], [0, 2], [2, 3], [2, 4]])
+        x_input = torch.rand((5, 10))
+
+        hgcn = HGATConv(in_channels=10, out_channels=10, c=1.5)
+        x = hgcn.forward(x_input, edges.T.long())
+        self.assertTrue(not torch.allclose(x, x_input))
+
+         # check if implicitely calling forward works too
+        x_direct = hgcn(x_input, edges.T.long())
+        self.assertTrue(torch.allclose(x_direct, x))
+
+    def test_local_agg_poincare(self):
+        edges = torch.LongTensor([[0, 1], [0, 2], [2, 3], [2, 4]])
+        x_input = torch.rand((5, 10))
+
+        hgcn0 = HGATConv(in_channels=10, out_channels=8, c=1.5)
+        hgcnlocal = HGATConv(in_channels=10, out_channels=8, c=1.5, local_agg=True)
+
+        hgcnlocal.lin = hgcn0.lin
+        hgcnlocal.lin_src = hgcn0.lin_src
+        hgcnlocal.lin_dst = hgcn0.lin_dst
+        x0 = hgcn0.forward(hgcn0.manifold.expmap0(x_input, hgcn0.c),  edges.T.long())
+        xlocal = hgcnlocal.forward(hgcnlocal.manifold.expmap0(x_input, hgcnlocal.c),  edges.T.long())
+        self.assertTrue(not torch.allclose(x0, xlocal))
+
 
 class HGCNConvTest(unittest.TestCase):
 
