@@ -50,7 +50,8 @@ model:
   hyperbolic:
     switch: off   # on/off/True/False if netowrk should be built hyperbolic
     manifold: PoincareBall
-    curvatures: None
+    init_curvature: None
+    curvature_trainable: True
     optimizer: Riemannian
 
   pre_mp:
