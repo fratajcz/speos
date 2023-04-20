@@ -177,7 +177,7 @@ class GeneNetwork(nn.Module):
 
     def make_mp(self):
         self.graph_message_passing = self.gcn_message_passing
-
+        dropout = self.config.model.mp.dropout
         mp_list = []
         flow_list = []
 
@@ -185,6 +185,8 @@ class GeneNetwork(nn.Module):
             if self.hyperbolic:
                 mp_list.append(self.get_mp_layer(i, curvature=self.mp_curvatures[i]))
                 flow_list.append('x, edge_index -> x')
+                mp_list.append(nn.Dropout(p=dropout))
+                flow_list.append('x -> x')
                 mp_list.append(self.get_act(c_in=self.mp_curvatures[i], c_out=self.mp_curvatures[i]))
                 flow_list.append('x -> x')
                 mp_list.append(layers.HyperbolicDecoder(manifold=self.config.model.hyperbolic.manifold, curvature=self.mp_curvatures[i]))
@@ -196,10 +198,14 @@ class GeneNetwork(nn.Module):
             else:
                 mp_list.append(self.get_mp_layer(i))
                 flow_list.append('x, edge_index -> x')
+                mp_list.append(nn.Dropout(p=dropout))
+                flow_list.append('x -> x')
                 mp_list.append(self.get_act())
                 flow_list.append('x -> x')
                 mp_list.append(self.get_mp_norm())
                 flow_list.append('x -> x')
+            
+                
 
         if len(mp_list) > 0:
             self.mp = pyg_nn.Sequential('x, edge_index', [(layer, flow) for layer, flow in zip(mp_list, flow_list)])
@@ -311,6 +317,7 @@ class GeneNetwork(nn.Module):
 
     def make_pre_mp(self):
         pre_mp_list = []
+        dropout = self.config.model.pre_mp.dropout
 
         if self.hyperbolic:
             curvatures = self.pre_mp_curvatures
@@ -322,6 +329,7 @@ class GeneNetwork(nn.Module):
         pre_mp_list.append(self.get_act(c_in=curvatures[0], c_out=curvatures[1]))
         
         for i in range(self.npremp):
+            pre_mp_list.append(nn.Dropout(p=dropout))
             pre_mp_list.append(self.get_linear(self.dim_hid, self.dim_hid, curvature=curvatures[i+1]))
             if i == self.npremp - 1:
                 pre_mp_list.append(self.get_act(c_in=curvatures[i+1], c_out=curvatures[0]))
@@ -332,6 +340,7 @@ class GeneNetwork(nn.Module):
 
     def make_post_mp(self):
         post_mp_list = []
+        dropout = self.config.model.post_mp.dropout
 
         if self.config.model.concat_after_mp and self.mp is not None:
             start_factor = 2
@@ -346,6 +355,7 @@ class GeneNetwork(nn.Module):
         for i in range(self.npostmp):
             post_mp_list.append(self.get_linear(self.dim_hid * start_factor, self.dim_hid, curvature=curvatures[i]))
             post_mp_list.append(self.get_act(c_in=curvatures[i], c_out=curvatures[i+1]))
+            post_mp_list.append(nn.Dropout(p=dropout))
             start_factor = 1
 
         post_mp_list.append(self.get_linear(self.dim_hid, self.dim_hid // 2, curvature=curvatures[-2]))
