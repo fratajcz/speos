@@ -125,10 +125,12 @@ class GeneNetwork(nn.Module):
         self.npremp = self.config.model.pre_mp.n_layers
         self.npostmp = self.config.model.post_mp.n_layers
 
-        if self.hyperbolic and config.model.hyperbolic.curvatures is None:
-            self.pre_mp_curvatures = [nn.Parameter(torch.Tensor([1.])) for _ in range(self.npremp + 1)]
-            self.post_mp_curvatures = [nn.Parameter(torch.Tensor([1.])) for _ in range(self.npostmp + 2)]
-            self.mp_curvatures = [nn.Parameter(torch.Tensor([1.])) for _ in range(self.config.model.mp.n_layers)]
+        if self.hyperbolic:
+            requires_grad = config.model.hyperbolic.curvature_trainable 
+            init_val = float(config.model.hyperbolic.init_curvature) if config.model.hyperbolic.init_curvature is not None else 1
+            self.pre_mp_curvatures = [nn.Parameter(torch.Tensor([init_val]), requires_grad=requires_grad) for _ in range(self.npremp + 1)]
+            self.post_mp_curvatures = [nn.Parameter(torch.Tensor([init_val]), requires_grad=requires_grad) for _ in range(self.npostmp + 2)]
+            self.mp_curvatures = [nn.Parameter(torch.Tensor([init_val]), requires_grad=requires_grad) for _ in range(self.config.model.mp.n_layers)]
 
         self.output_dim = 1
         self.nheads = self.config.model.mp.nheads if self.gcnconv_num_layers > 1 else 1
@@ -183,10 +185,9 @@ class GeneNetwork(nn.Module):
 
         for i in range(self.gcnconv_num_layers):
             if self.hyperbolic:
+                self.config.model.mp.kwargs["dropout"] = dropout
                 mp_list.append(self.get_mp_layer(i, curvature=self.mp_curvatures[i]))
                 flow_list.append('x, edge_index -> x')
-                mp_list.append(nn.Dropout(p=dropout))
-                flow_list.append('x -> x')
                 mp_list.append(self.get_act(c_in=self.mp_curvatures[i], c_out=self.mp_curvatures[i]))
                 flow_list.append('x -> x')
                 mp_list.append(layers.HyperbolicDecoder(manifold=self.config.model.hyperbolic.manifold, curvature=self.mp_curvatures[i]))

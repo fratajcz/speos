@@ -10,6 +10,8 @@ from torch_geometric.nn import MessagePassing
 from torch_geometric.utils import add_self_loops, degree
 from speos.layers.hlinear import HypLinear
 import speos.layers.hyperbolic.manifolds as manifolds
+from torch_geometric.typing import PairTensor
+from torch import Tensor
 
 class HGCNConv(MessagePassing):
     """
@@ -21,7 +23,7 @@ class HGCNConv(MessagePassing):
     but implemented for the MessagePassing framework using the GCN template from https://pytorch-geometric.readthedocs.io/en/latest/tutorial/create_gnn.html#implementing-the-gcn-layer
     """
 
-    def __init__(self, in_channels, out_channels, c, manifold="PoincareBall", dropout=0, use_bias=True, aggr="add", normalize=False):
+    def __init__(self, in_channels, out_channels, c, manifold="PoincareBall", dropout=0, use_bias=True, aggr="add", normalize=False, local_agg=False):
         super(HGCNConv, self).__init__()
         super().__init__(aggr=aggr)
         self.c = c
@@ -31,6 +33,7 @@ class HGCNConv(MessagePassing):
         self.bias = nn.Parameter(torch.Tensor(out_channels))
         self.reset_parameters()
         self.normalize = normalize
+        self.local_agg = True
 
     def forward(self, x, edge_index):
         # Step 1: Add self-loops to the adjacency matrix.
@@ -47,13 +50,20 @@ class HGCNConv(MessagePassing):
         norm = deg_inv_sqrt[row] * deg_inv_sqrt[col]
 
         # Step 3: Project Feature Matrix into Tangent Space.
-        x = self.manifold.logmap0(x, c=self.c)
+        if not self.local_agg:
+            x = self.manifold.logmap0(x, c=self.c)
+        
+        if isinstance(x, Tensor):
+            x: PairTensor = (x, x)
 
         # Step 4: Start propagating messages.
-        out = self.propagate(edge_index, x=x, norm=norm)
+        out = self.propagate(edge_index, x=x[0], x_j=x[1], norm=norm)
 
         # Step 5: Project Feature Map back in Hyperbolic Space.
-        out = self.manifold.proj(self.manifold.expmap0(out, c=self.c), c=self.c)
+        if self.local_agg:
+            out = self.manifold.proj(self.manifold.expmap(out, x[0], c=self.c), c=self.c)
+        else:
+            out = self.manifold.proj(self.manifold.expmap0(out, c=self.c), c=self.c)
 
         # Step 6: Apply a final bias vector.
         if self.use_bias:
@@ -65,8 +75,15 @@ class HGCNConv(MessagePassing):
 
         return out
 
-    def message(self, x_j, norm):
+    def message(self, x_i, x_j, norm):
         # x_j has shape [E, out_channels]
-
-        # Step 4: Normalize node features.
-        return norm.view(-1, 1) * x_j if self.normalize else x_j
+        
+        if self.local_agg:
+            # use features projected into local tangent space of center node x_i
+            x_j = self.manifold.proj(self.manifold.logmap(x_j, x_i, c=self.c), c=self.c)
+        if self.normalize:
+            # Normalize node features.
+            norm.view(-1, 1) * x_j
+        else:
+            x_j
+        return x_j
