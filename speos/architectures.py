@@ -256,6 +256,8 @@ class GeneNetwork(nn.Module):
             
         elif self.gcnconv_parameters["type"] == "hgcn":
             mp_layer = layers.HGCNConv(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], c=curvature, manifold=self.config.model.hyperbolic.manifold, **kwargs)
+        elif self.gcnconv_parameters["type"] == "hgat":
+            mp_layer = layers.HGATConv(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], c=curvature, manifold=self.config.model.hyperbolic.manifold, **kwargs)
 
         elif self.gcnconv_parameters["type"] == "gcn2":
             mp_layer = pyg_nn.GCN2Conv(self.gcnconv_parameters["dim"],

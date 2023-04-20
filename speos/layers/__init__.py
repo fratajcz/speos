@@ -9,3 +9,4 @@ from .hact import *
 from .hlinear import *
 from .hencoder import *
 from .hdecoder import *
+from .hgat import *
