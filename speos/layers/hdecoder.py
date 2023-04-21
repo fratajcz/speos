@@ -16,3 +16,6 @@ class HyperbolicDecoder(Module):
         """ Projects x from hyperbolic back into euclidean space """
         h = self.manifold.proj_tan0(self.manifold.logmap0(x, c=self.curvature), c=self.curvature)
         return h
+
+    def extra_repr(self):
+        return 'c={}'.format(self.curvature)
