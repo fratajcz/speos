@@ -17,3 +17,6 @@ class HyperbolicEncoder(Module):
         x_hyp = self.manifold.expmap0(x_tan, c=self.curvature)
         x_hyp = self.manifold.proj(x_hyp, c=self.curvature)
         return x_hyp
+
+    def extra_repr(self):
+        return 'c={}'.format(self.curvature)

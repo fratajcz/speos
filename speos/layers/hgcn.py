@@ -1,11 +1,6 @@
-"""Hyperbolic layers."""
-import math
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.nn.init as init
-from torch.nn.modules.module import Module
 from torch_geometric.nn import MessagePassing
 from torch_geometric.utils import add_self_loops, degree
 from speos.layers.hlinear import HypLinear
@@ -28,6 +23,8 @@ class HGCNConv(MessagePassing):
         super().__init__(aggr=aggr)
         self.use_att = use_att
         self.c = c
+        self.in_channels = in_channels
+        self.out_channels = out_channels
         self.manifold = getattr(manifolds, manifold)()
         self.lin = HypLinear(in_channels, out_channels, c, dropout, manifold, use_bias)
         if self.use_att:
@@ -38,8 +35,10 @@ class HGCNConv(MessagePassing):
         self.reset_parameters()
         self.normalize = normalize
         self.local_agg = True
+        self.dropout = dropout
 
     def forward(self, x, edge_index):
+        """ Assumes that x is already on the manifold, i.e. that features are hyperbolic """
         # Step 1: Add self-loops to the adjacency matrix.
         edge_index, _ = add_self_loops(edge_index, num_nodes=x.size(0))
 
@@ -98,3 +97,7 @@ class HGCNConv(MessagePassing):
             # Normalize node features.
             norm.view(-1, 1) * x_j
         return x_j
+
+    def __repr__(self) -> str:
+        return (f'{self.__class__.__name__}({self.in_channels}, '
+                f'{self.out_channels}, dropout={self.dropout}, c={self.c}')

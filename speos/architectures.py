@@ -3,8 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch_geometric.nn as pyg_nn
 import torch_geometric.utils as pyg_utils
-from sklearn.preprocessing import LabelEncoder
-from torch_sparse import SparseTensor
 from speos.utils.logger import setup_logger
 from speos.utils.config import Config
 import speos.utils.nn_utils as nn_utils
@@ -112,7 +110,7 @@ class GeneNetwork(nn.Module):
         self.input = None
         self.input_grads = None
         self.hyperbolic = config.model.hyperbolic.switch
-        
+
         self.gcnconv_num_layers = self.config.model.mp.n_layers
         self.gcnconv_parameters = {"type": self.config.model.mp.type,
                                    "dim": self.config.model.mp.dim}
@@ -205,8 +203,6 @@ class GeneNetwork(nn.Module):
                 flow_list.append('x -> x')
                 mp_list.append(self.get_mp_norm())
                 flow_list.append('x -> x')
-            
-                
 
         if len(mp_list) > 0:
             self.mp = pyg_nn.Sequential('x, edge_index', [(layer, flow) for layer, flow in zip(mp_list, flow_list)])
@@ -335,7 +331,11 @@ class GeneNetwork(nn.Module):
             pre_mp_list.append(nn.Dropout(p=dropout))
             pre_mp_list.append(self.get_linear(self.dim_hid, self.dim_hid, curvature=curvatures[i+1]))
             if i == self.npremp - 1:
-                pre_mp_list.append(self.get_act(c_in=curvatures[i+1], c_out=curvatures[0]))
+                if self.gcnconv_num_layers > 0:
+                    c_out = self.mp_curvatures[0]
+                else:
+                    c_out = self.post_mp_curvatures[0] 
+                pre_mp_list.append(self.get_act(c_in=curvatures[i+1], c_out=c_out))
             else:
                 pre_mp_list.append(self.get_act(c_in=curvatures[i+1], c_out=curvatures[i+2]))
 
