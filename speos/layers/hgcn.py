@@ -23,12 +23,16 @@ class HGCNConv(MessagePassing):
     but implemented for the MessagePassing framework using the GCN template from https://pytorch-geometric.readthedocs.io/en/latest/tutorial/create_gnn.html#implementing-the-gcn-layer
     """
 
-    def __init__(self, in_channels, out_channels, c, manifold="PoincareBall", dropout=0, use_bias=True, aggr="add", normalize=False, local_agg=False):
+    def __init__(self, in_channels, out_channels, c, manifold="PoincareBall", dropout=0, use_bias=True, aggr="add", normalize=False, use_att=False, local_agg=False):
         super(HGCNConv, self).__init__()
         super().__init__(aggr=aggr)
+        self.use_att = use_att
         self.c = c
         self.manifold = getattr(manifolds, manifold)()
         self.lin = HypLinear(in_channels, out_channels, c, dropout, manifold, use_bias)
+        if self.use_att:
+            self.attention_lin = nn.Linear(out_channels * 2, 1)
+
         self.use_bias = use_bias
         self.bias = nn.Parameter(torch.Tensor(out_channels))
         self.reset_parameters()
@@ -76,14 +80,21 @@ class HGCNConv(MessagePassing):
         return out
 
     def message(self, x_i, x_j, norm):
+        """ If we use local aggregation, x_i and x_j are still on the manifold, else they are in tangent space of origin """
         # x_j has shape [E, out_channels]
         
         if self.local_agg:
             # use features projected into local tangent space of center node x_i
             x_j = self.manifold.proj(self.manifold.logmap(x_j, x_i, c=self.c), c=self.c)
+        if self.use_att:
+            if self.local_agg:
+                x_i_o = self.manifold.logmap0(x_i, c=self.c)
+                x_j_o = self.manifold.logmap0(x_j, c=self.c)
+                alpha = F.softmax(self.attention_lin(torch.cat((x_i_o, x_j_o), dim=-1)).squeeze(), dim=0)
+            else:
+                alpha = F.softmax(self.attention_lin(torch.cat((x_i, x_j))))
+            x_j = alpha.view(-1, 1) * x_j
         if self.normalize:
             # Normalize node features.
             norm.view(-1, 1) * x_j
-        else:
-            x_j
         return x_j
