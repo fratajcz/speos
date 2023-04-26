@@ -51,6 +51,14 @@ class SimpleModelTest(unittest.TestCase):
         layers = [module for module in model.architectures[0].mp.modules() if not isinstance(module, nn.Sequential)]
         self.assertEqual("GraphConv", str(layers[1].__class__.__name__))
 
+    def test_assigns_from_hyperbolic_import(self):
+        config = self.config.deepcopy()
+        config.model.hyperbolic.switch = "on"
+        config.model.mp.type = "HGCNConv"  # a layer that isnt pre-implemented in speos but is imported dynamically
+        model = ModelBootstrapper(config, 90).get_model()
+        layers = [module for module in model.architectures[0].mp.modules() if not isinstance(module, nn.Sequential)]
+        self.assertEqual("HGCNConv", str(layers[1].__class__.__name__))
+
     def test_assigns_from_import_with_kwargs(self):
         config = self.config.deepcopy()
         config.model.mp.type = "GravNetConv"  # a layer that isnt pre-implemented in speos but is imported dynamically

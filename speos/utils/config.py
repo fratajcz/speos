@@ -91,3 +91,7 @@ class Config(dict):
 
     def get_hash(self):
         return self._hash
+
+    def to_dict(self):
+        new = self.copy()
+        return new.__dict__

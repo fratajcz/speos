@@ -1,7 +1,7 @@
 from speos.architectures import GeneNetwork, RelationalGeneNetwork, FCNN, LINKX, SimpleGCN
 import torch
 import torch.optim as optim
-from speos.layers.hyperbolic.optim import RiemannianAdam
+from speos.layers.torch_hyperbolic.optim import RiemannianAdam
 from speos.losses.approxndcg import approxNDCGLoss
 from speos.losses.lambdaloss import lambdaLoss
 from speos.losses.neuralndcg import neuralNDCGLoss
@@ -346,6 +346,7 @@ class AdversarialModel(BaseModel):
 
 class ModelBootstrapper:
     def __init__(self, config, dim, num_adjacencies=1):
+        # TODO: Remove this?
         if config.model.hyperbolic.manifold == "Hyperboloid":
             dim += 1
             

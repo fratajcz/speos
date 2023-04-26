@@ -41,6 +41,11 @@ class ConfigTest(unittest.TestCase):
         self.assertNotEqual(config.name, config2.name)
         self.assertNotEqual(config.model.mp.n_layers, config2.model.mp.n_layers)
 
+    def test_to_dict(self):
+        config = Config()
+        configdict = config.to_dict()
+        self.assertTrue(isinstance(configdict, dict))
+
     def test_model_kwargs_parsing(self):
 
         config_str = "model:\n  kwargs: {foo: 'bar'}"

@@ -8,8 +8,8 @@ import torch.nn.init as init
 from torch.nn.modules.module import Module
 from torch_geometric.nn import MessagePassing
 from torch_geometric.utils import degree
-from speos.layers.hlinear import HypLinear
-import speos.layers.hyperbolic.manifolds as manifolds
+from .hlinear import HypLinear
+import speos.layers.torch_hyperbolic.manifolds as manifolds
 from torch_geometric.typing import PairTensor
 from torch import Tensor
 from torch.nn import Parameter
