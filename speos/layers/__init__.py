@@ -4,9 +4,9 @@ from .filmtag import *
 from .rgattag import *
 from .mlpfilm import *
 from .filmfilm import *
-from .hgcn import *
-from .hact import *
-from .hlinear import *
-from .hencoder import *
-from .hdecoder import *
-from .hgat import *
+from speos.layers.torch_hyperbolic.nn.hgcn import *
+from speos.layers.torch_hyperbolic.nn.hact import *
+from speos.layers.torch_hyperbolic.nn.hlinear import *
+from speos.layers.torch_hyperbolic.nn.hencoder import *
+from speos.layers.torch_hyperbolic.nn.hdecoder import *
+from speos.layers.torch_hyperbolic.nn.hgat import *

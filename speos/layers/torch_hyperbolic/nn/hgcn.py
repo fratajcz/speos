@@ -3,8 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch_geometric.nn import MessagePassing
 from torch_geometric.utils import add_self_loops, degree
-from speos.layers.hlinear import HypLinear
-import speos.layers.hyperbolic.manifolds as manifolds
+from .hlinear import HypLinear
+import speos.layers.torch_hyperbolic.manifolds as manifolds
 from torch_geometric.typing import PairTensor
 from torch import Tensor
 

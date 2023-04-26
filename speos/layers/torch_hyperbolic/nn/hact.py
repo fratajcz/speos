@@ -1,7 +1,7 @@
 """Hyperbolic layers."""
 import torch.nn as nn
 from torch.nn.modules.module import Module
-import speos.layers.hyperbolic.manifolds as manifolds
+import speos.layers.torch_hyperbolic.manifolds as manifolds
 
 class HypAct(Module):
     """

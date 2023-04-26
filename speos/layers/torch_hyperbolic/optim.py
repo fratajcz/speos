@@ -1,7 +1,7 @@
 
 
 import torch.optim
-from speos.layers.hyperbolic.manifolds import Euclidean, ManifoldParameter
+from speos.layers.torch_hyperbolic.manifolds import Euclidean, ManifoldParameter
 
 # in order not to create it at each iteration
 _default_manifold = Euclidean()

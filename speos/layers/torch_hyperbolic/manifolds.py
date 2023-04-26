@@ -3,7 +3,7 @@ import torch
 """Base manifold."""
 
 from torch.nn import Parameter
-from speos.layers.hyperbolic.utils import artanh, tanh, arcosh, cosh, sinh 
+from speos.layers.torch_hyperbolic.utils import artanh, tanh, arcosh, cosh, sinh 
 
 
 class Manifold(object):
