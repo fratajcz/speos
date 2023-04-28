@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import json
 import extensions.preprocessing as hooks
+import os
 
 
 class PreProcessor:
@@ -15,18 +16,18 @@ class PreProcessor:
                  mapping_list: list,
                  adjacency_list: list,
                  translation_table: str = "data/hgnc_official_list.tsv",
-                 expression_files=["./data/GTEx_Analysis_2016-01-15_v7_RNASeQCv1.1.8_gene_median_tpm.gct",
-                                   "./data/human_protein_atlas_rna_blood_cell.tsv"],
+                 expression_files=["data/GTEx_Analysis_2016-01-15_v7_RNASeQCv1.1.8_gene_median_tpm.gct",
+                                   "data/human_protein_atlas_rna_blood_cell.tsv"],
                  name: str = "RBC",
                  extension_inputs: str = "./extensions/datasets.json"):
 
         self.name = name
         self.config = config
         self.mapping_list = mapping_list
-        self.translation_table_path = translation_table
+        self.translation_table_path = os.path.join(config.input.main_dir, translation_table)
         self.translation_table = None
         self.G = None
-        self.expression_files = expression_files
+        self.expression_files = [os.path.join(config.input.main_dir, expression_file) for expression_file in expression_files]
         self.num_random_features = 100
         self.features_list = []
         self.logger_args = [config, __name__]
@@ -177,7 +178,8 @@ class PreProcessor:
 
     def _handle_ppi(self, mapping: dict) -> list:
         edge_list = []
-        adjacency = pd.read_csv(mapping["file_path"], sep=mapping["sep"], header=0, usecols=[mapping["target"], mapping["source"]])
+        adjacency = pd.read_csv(os.path.join(self.config.input.main_dir, mapping["file_path"]),
+                                             sep=mapping["sep"], header=0, usecols=[mapping["target"], mapping["source"]])
 
         if mapping["symbol"] == "ensemble":
             mapping["symbol"] = "ensembl"
@@ -233,7 +235,7 @@ class PreProcessor:
 
     def translate_protein_to_gene(self, adjacency: pd.DataFrame):
 
-        table = pd.read_csv("data/protein_gene_table.tsv", header=0, sep="\t")
+        table = pd.read_csv(os.path.join(self.config.input.main_dir, "data/protein_gene_table.tsv"), header=0, sep="\t")
         protein_to_gene_dict = {row[0]: row[1] for _, row in table.iterrows()}
         adj_dict = adjacency.to_dict("list")
         new_adj_dict = {}
@@ -301,7 +303,8 @@ class PreProcessor:
             Thus, node indices before and after this method call can change and usually do.
         '''
 
-        feature_df_list = [pd.read_csv(mapping["features_file"], sep=" ", header=0)
+        feature_df_list = [pd.read_csv(os.path.join(self.config.input.main_dir, mapping["features_file"]),
+                                       sep=" ", header=0)
                            for mapping in self.mapping_list if mapping["features_file"] != ""]
 
         if len(feature_df_list) > 0:
@@ -393,8 +396,8 @@ class PreProcessor:
         try:
             known_positives_set = getattr(hooks, self.mapping_list[0]["function"])(*self.mapping_list[0]["args"], **self.mapping_list[0]["kwargs"])
         except KeyError:
-            known_positives_df = pd.read_csv(self.mapping_list[0]["ground_truth"], sep="\t", names=[
-                                      "chromosome", "start", "end", "symbol", "strand"])
+            known_positives_df = pd.read_csv(os.path.join(self.config.input.main_dir, self.mapping_list[0]["ground_truth"]), 
+                                                          sep="\t", names=["chromosome", "start", "end", "symbol", "strand"])
             known_positives_set = set(known_positives_df["symbol"].tolist())
 
         try:

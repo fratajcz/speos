@@ -15,23 +15,24 @@ input:
   adjacency: BioPlex30293T
   adjacency_field: name
   adjacency_blacklist: [recon3d, string]
-  adjacency_mappings: speos/adjacencies.json
+  adjacency_mappings: ./speos/adjacencies.json
   randomize_adjacency_percent: 0        # int, to which percentage the adjacency should be x-swapped, 100 makes sure that each edge will have a different tail node
   force_multigraph: False               # if multigraph dataset should be constructed for e.g. rgcn or film, even though we have only 1 adjacency
-  gene_sets: ./data/mendelian_gene_sets
+  gene_sets: data/mendelian_gene_sets
   use_gwas: True                        # if gwas features should be used
-  gwas: ./data/gwas
+  gwas: data/gwas
   gwas_mappings: ./speos/mapping.json
   use_expression: True                  # if tissue wise gene expression values should be used
   log_expression: False                 # if tissue wise gene expression values should be log transformed before robust scaling
   use_embeddings: False                 # if the embeddings obtained from node2vec should be concatenated to the input vectors (laoded from embedding_path)
-  embedding_path: ./data/misc/walking_all.output
+  embedding_path: data/misc/walking_all.output
   tag: Immune_Dysregulation
   field: ground_truth
   holdout_size: 0.1                     # is overwritten by any crossvalidation wrapper to 1/nfolds+1 or 1/nfolds
   holdout_positive_only: True           # is overwritten by any crossvalidation wrapper
   save_data: True
   save_dir: ./data/
+  main_dir: .                   # the path that is the prefix path for the paths specified inside adjacency_mappings and gwas_mappings as well as gene_sets, embedding_path and gwas files
 
 model:
   model: SimpleModel            # SimpleModel, LogisticRegressionModel, RandomForestModel, SupportVectorModel or AdversarialModel (untested)

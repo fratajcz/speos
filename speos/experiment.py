@@ -275,6 +275,11 @@ class Experiment:
 
             sns.violinplot(y=pred_proba, x=class_proba, cut=0)
 
+            try:
+                os.makedirs(self.config.model.plot_dir)
+            except FileExistsError:
+                pass
+
             fig.savefig(os.path.join(self.config.model.plot_dir,
                         "violin_{}_{}.png".format(name, self.name)))
             fig.clf()
