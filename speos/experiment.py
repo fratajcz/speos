@@ -162,6 +162,8 @@ class Experiment:
         """
         self.train_out, loss = self.model.step(self.data, self.data.train_mask)
 
+        self.reset_if_nan(loss)
+
         self.writer.add_scalar('Loss/train', loss, self.epoch)
 
         if self.model.requires_sgd:
@@ -210,6 +212,8 @@ class Experiment:
         with torch.no_grad():
             self.val_out, loss = self.model.step(
                 self.data, mask, eval_flag=True)
+
+        self.reset_if_nan(loss)
 
         if self.tensorboard:
             self.writer.add_scalar('Loss/eval', loss, self.epoch)
@@ -350,6 +354,14 @@ class Experiment:
             devices = ["cpu"]
 
         return devices
+
+    def reset_if_nan(self, value):
+        # hyperbolic models sometimes return nan due to floatin point accuracy and need to be reset
+
+        if torch.isnan(value):
+            epoch, performance_value = self.checkpointer.restore()
+            logger = setup_logger(self.config, self.logger_name)
+            logger.info("Reiceived nan value, reset model to epoch {} with value {}".format(epoch, performance_value))
 
 
 class InferenceEngine(Experiment):
