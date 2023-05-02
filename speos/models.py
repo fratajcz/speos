@@ -345,11 +345,7 @@ class AdversarialModel(BaseModel):
 
 
 class ModelBootstrapper:
-    def __init__(self, config, dim, num_adjacencies=1):
-        # TODO: Remove this?
-        if config.model.hyperbolic.manifold == "Hyperboloid":
-            dim += 1
-            
+    def __init__(self, config, dim, num_adjacencies=1):            
         if config.model.model == "AdversarialModel":
             self.model = AdversarialModel(config, dim)
         elif config.model.model == "SimpleModel":

@@ -43,12 +43,12 @@ class Experiment:
         node_data = self.dataset.data
 
         if self.config.model.architecture == "LINKX":
-            input_dim = (node_data.x.shape[1], node_data.x.shape[0])
+            self.input_dim = (node_data.x.shape[1], node_data.x.shape[0])
         else:
-            input_dim = node_data.x.shape[1]
+            self.input_dim = node_data.x.shape[1]
 
         self.model = ModelBootstrapper(
-            config, input_dim, self.dataset.num_relations).get_model()
+            config, self.input_dim, self.dataset.num_relations).get_model()
 
         logger.info(self.model.architectures[-1])
 
@@ -363,10 +363,16 @@ class Experiment:
     def reset_if_nan(self, value):
         # hyperbolic models sometimes return nan due to floatin point accuracy and need to be reset
 
-        if torch.isnan(value):
-            epoch, performance_value = self.checkpointer.restore()
+        if np.isnan(value):
             logger = setup_logger(self.config, self.logger_name)
-            logger.info("Reiceived nan value, reset model to epoch {} with value {}".format(epoch, performance_value))
+            try:
+                epoch, performance_value = self.checkpointer.restore()
+                logger.info("Reiceived nan value, reset model to epoch {} with value {}".format(epoch, performance_value))
+            except FileNotFoundError:
+                logger.info("Reiceived nan value, tried resetting model to last savepoint but failed, re-initializing model")
+                self.model = ModelBootstrapper(self.config, self.input_dim, self.dataset.num_relations).get_model()
+            
+            
 
 
 class InferenceEngine(Experiment):
