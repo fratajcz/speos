@@ -115,8 +115,8 @@ class GeneNetwork(nn.Module):
         self.gcnconv_num_layers = self.config.model.mp.n_layers
         self.gcnconv_parameters = {"type": self.config.model.mp.type,
                                    "dim": self.config.model.mp.dim}
-        if self.hyperbolic and self.config.model.hyperbolic.manifold == "Hyperboloid":
-            self.gcnconv_parameters["dim"] += 1
+        
+
         self.dim_hid = self.gcnconv_parameters["dim"]
         self.output_dim = 1
 
@@ -140,10 +140,6 @@ class GeneNetwork(nn.Module):
             self.pre_mp_curvatures = [nn.Parameter(torch.Tensor([init_val]), requires_grad=requires_grad) for _ in range(self.npremp + 1)]
             self.post_mp_curvatures = [nn.Parameter(torch.Tensor([init_val]), requires_grad=requires_grad) for _ in range(self.npostmp + 2)]
             self.mp_curvatures = [nn.Parameter(torch.Tensor([init_val]), requires_grad=requires_grad) for _ in range(self.config.model.mp.n_layers)]
-
-            if self.config.model.hyperbolic.manifold == "Hyperboloid":
-                self.output_dim += 1
-                self.dim_hid += 1
         
         self.nheads = self.config.model.mp.nheads if self.gcnconv_num_layers > 1 else 1
 
