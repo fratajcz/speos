@@ -1,0 +1,5 @@
+269776_test_benchmark_gcnrep0 2023-05-02 08:18:28,896 [INFO] speos.experiment (bootstrap): Starting run 269776_test_benchmark_gcnrep0
+269776_test_benchmark_gcnrep0 2023-05-02 08:18:28,896 [INFO] speos.experiment (bootstrap): Cuda is available: True
+269776_test_benchmark_gcnrep0 2023-05-02 08:18:28,909 [INFO] speos.experiment (bootstrap): Using device(s): ['cuda:0']
+269776_test_benchmark_gcnrep0 2023-05-02 08:18:28,910 [INFO] speos.preprocessing.preprocessor: Using Adjacency matrices: ['BioPlex30293T']
+269776_test_benchmark_gcnrep0 2023-05-02 08:18:28,911 [INFO] speos.preprocessing.preprocessor: Using 9 mappings with ground truth data/mendelian_gene_sets/Immune_Dysregulation_genes.bed 

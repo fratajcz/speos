@@ -1,0 +1,38 @@
+name: hyperbolo
+
+input:
+  main_dir: /mnt/storage/speos/
+  save_dir: /mnt/storage/speos/data/
+
+model:
+  hyperbolic: 
+    switch: on
+    manifold: PoincareBall
+  pre_mp:
+    n_layers: 1
+    dim: 8
+  mp:
+    type: HGCNConv
+    dim: 8
+    kwargs:
+      local_agg: False
+      use_att: False
+    n_layers: 2
+  post_mp:
+    n_layers: 1
+    dim: 8
+  save_dir: /mnt/storage/speos/models/
+  plot_dir: /mnt/storage/speos/plots/
+
+logging:
+  dir: /mnt/storage/speos/logs/
+
+inference:
+  save_dir: /mnt/storage/speos/results/
+
+pp:
+  save_dir: /mnt/storage/speos/results/
+  plot_dir: /mnt/storage/speos/plots/
+
+optim:
+  lr: 0.01

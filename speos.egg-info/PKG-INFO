@@ -1,0 +1,27 @@
+Metadata-Version: 2.1
+Name: speos
+Version: 0.2.4
+Summary: We good to go
+Home-page: https://github.com/fratajcz/speos
+Author: Florin Ratajczak
+Author-email: florin.ratajczak@helmholtz-muenchen.de
+License: MIT
+Project-URL: Bug Tracker, https://github.com/fratajcz/speos/issues
+Description-Content-Type: text/markdown
+License-File: LICENSE.md
+
+![SPEOS Header](img/speos_space_11_1080.png "SPEOS")
+
+# Identification of core genes from Biological Networks, GWAS and gene expression.
+
+Speos, pronounced almost like "space", is a machine learning framework to merge deep learning and the omnigenic model. Its goal is to predict core genes for several diseases which allow subsequent research to allocate resources to the most promising candidates.
+
+For the installation instructions please see the documentation.
+
+# Documentation
+
+https://speos.readthedocs.io/en/latest/index.html
+
+# Preprint 
+
+Preprint available at https://www.biorxiv.org/content/10.1101/2023.01.13.523556v1 

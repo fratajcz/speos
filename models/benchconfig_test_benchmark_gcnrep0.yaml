@@ -1,0 +1,143 @@
+crossval:
+  hold_out_test: false
+  key: _outer_{}
+  mode: kfold
+  n_folds: 4
+  outer_suffix: _outer_{}
+  positive_only: false
+  seed: 1
+  suffix: _fold_{}
+cuda: auto
+es:
+  key: auroc
+  metric: auroc
+  mode: max
+  patience: 100
+eval:
+  cutoff: 0.7
+  key: 50
+  log_prob_every: 50
+  target:
+  - train
+  - val
+inference:
+  cutoff_value: 0.7
+  gnn_explain: false
+  input_explain: false
+  key: false
+  save: true
+  save_dir: ./results/
+  save_sorted: false
+  save_tsv: false
+  switch: true
+  target: all
+input:
+  adjacency: BioPlex30293T
+  adjacency_blacklist:
+  - recon3d
+  - string
+  adjacency_field: name
+  adjacency_mappings: ./speos/adjacencies.json
+  embedding_path: data/misc/walking_all.output
+  field: ground_truth
+  force_multigraph: false
+  gene_sets: data/mendelian_gene_sets
+  gwas: data/gwas
+  gwas_mappings: ./speos/mapping.json
+  holdout_positive_only: true
+  holdout_size: 0.1
+  key: .
+  log_expression: false
+  main_dir: .
+  randomize_adjacency_percent: 0
+  save_data: true
+  save_dir: ./data/
+  tag: Immune_Dysregulation
+  use_embeddings: false
+  use_expression: true
+  use_gwas: true
+key: gcn
+logging:
+  dir: ./logs/
+  file: auto
+  key: auto
+  level: 20
+model:
+  architecture: GeneNetwork
+  args: []
+  concat_after_mp: false
+  key: false
+  kwargs: {}
+  loss: bce
+  model: SimpleModel
+  mp:
+    dim: 50
+    k: 3
+    key: 1
+    kwargs: {}
+    n_layers: 1
+    nheads: null
+    normalize: instance
+    type: gcn
+  plot: true
+  plot_dir: ./plots/
+  post_mp:
+    act: elu
+    dim: 50
+    dropout: null
+    key: elu
+    n_layers: 5
+    normalize: null
+    type: fc
+  pre_mp:
+    act: elu
+    dim: 50
+    dropout: null
+    key: elu
+    n_layers: 5
+    normalize: null
+    type: fc
+  regularization_lambda: 0.01
+  save: true
+  save_dir: ./models/
+  skip: false
+  skip_mp: false
+name: benchconfig_test_benchmark_gcnrep0
+optim:
+  key: loss
+  lr: 0.001
+  measure: loss
+  target: val
+pp:
+  consensus: top_down
+  cutoff_type: split
+  cutoff_value: 0.7
+  key: ./plots/
+  plot: true
+  plot_dir: ./plots/
+  save: true
+  save_dir: ./results/
+  switch: true
+  tasks:
+  - overlap_analysis
+  - dge
+  - pathway
+  - hpo_enrichment
+  - go_enrichment
+  - drugtarget
+  - druggable
+  - mouseKO
+  - lof_intolerance
+scheduler:
+  factor: 0.33
+  key: max
+  limit: 0.0001
+  mode: max
+  patience: 25
+timestamp: 1683016635.883077
+training:
+  dilution: 10
+  key: 10
+  max_epochs: 1
+  pos_weight: 2
+  switch: true

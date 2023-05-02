@@ -1,0 +1,4 @@
+name: benchconfig
+
+training:
+  max_epochs: 1
