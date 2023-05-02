@@ -15,16 +15,16 @@ class TestBenchTest(unittest.TestCase):
         config = tb.adapt_config(tb.parameter_list[0])
         self.assertEqual(config.name, "bar")
 
-    def test_runs(self):
-        # TODO: this needs to be shortened
-        tb = TestBench("speos/tests/files/benchmark_parameters.yaml")
-        df = tb.run()
-        print(df)
-
     def test_compile_resultshandlers(self):
-        tb = TestBench("speos/tests/files/benchmark_parameters.yaml")
+        tb = TestBench("speos/tests/files/benchmark_parameters.yaml", config_path="speos/tests/files/benchmark_config.yaml")
         tb.compile_resultshandlers()
-        self.assertEqual(tb.resultshandlers[0], "./results/cde005_test_benchmark_gcnrep0.h5")
+        self.assertEqual(tb.resultshandlers[0], "./results/benchconfig_test_benchmark_gcnrep0.h5")
+
+    def test_compile_configs(self):
+        tb = TestBench("speos/tests/files/benchmark_parameters.yaml", config_path="speos/tests/files/benchmark_config.yaml")
+        tb.compile_configs()
+        self.assertEqual(tb.configs[0].model.mp.n_layers, 1)
+        self.assertEqual(tb.configs[tb.repeats].model.mp.n_layers, 0)
 
 
 if __name__ == '__main__':
