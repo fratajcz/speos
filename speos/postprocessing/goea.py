@@ -7,7 +7,8 @@ import os
 class GOEA_Study:
     def __init__(self, base_path="./data/goa_human/",
                  filename_scheme="GO_{}_sym.txt",
-                 task_dict=None):
+                 task_dict=None,
+                 eps=1e-32):
         self.base_path = base_path
         self.filename_scheme = filename_scheme
         if task_dict is None:
@@ -18,6 +19,7 @@ class GOEA_Study:
             self.task_dict = task_dict
         self.go2name = None
         self.go2symbol = None
+        self.eps = eps
 
     def reset(self):
         """ Use this if you want to re-use the same goea object for another task without re-initiliazing it"""
@@ -95,7 +97,7 @@ class GOEA_Study:
         df["total"] = total_list
         df["expected"] = expected_list
         df["enrichment"] = enrichment_list
-        df["log_q"] = np.log10(df["fdr_q_value"]) * -1
+        df["log_q"] = np.log10(df["fdr_q_value"] + self.eps) * -1
 
         return df
 

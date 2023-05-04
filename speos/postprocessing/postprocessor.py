@@ -16,7 +16,7 @@ import traceback
 class PostProcessor:
     """Reads a results file and generates reports and analyses on it. The results file must contain identifers, labels and predictions per gene"""
 
-    def __init__(self, config, translation_table="./data/hgnc_official_list.tsv"):
+    def __init__(self, config, translation_table="data/hgnc_official_list.tsv"):
         self.config = config
         self.logger_args = [config, __name__]
         self.num_runs_for_random_experiments = 1000
@@ -32,7 +32,7 @@ class PostProcessor:
         self.pp_table = PostProcessingTable(index=all_genes)
         included_genes = self._read_results_file()["hgnc"].tolist()
         self.add_to_pp_table("Is Included", index=included_genes, values=True, remaining=False)
-        self.add_to_pp_table("Mendelian", index=positive_genes, values=True, remaining=False)
+        self.add_to_pp_table("Mendelian", index=list(positive_genes), values=True, remaining=False)
 
     def save_pp_table(self):
         path = os.path.join(pu.postprocessing_results_path(self.config), self.config.name + "_pp_table.tsv")
@@ -76,6 +76,7 @@ class PostProcessor:
         return value
 
     def register_translation_table(self, path_to_translation_table, hgnc_col="symbol", entrez_col="entrez_id", ensembl_col="ensembl_gene_id"):
+        path_to_translation_table = os.path.join(self.config.input.main_dir, path_to_translation_table)
         self.path_to_translation_table = path_to_translation_table
         self.hgnc_col = hgnc_col
         self.entrez_col = entrez_col
@@ -110,7 +111,7 @@ class PostProcessor:
         translation_table = self.get_translation_table()
         entrez2symbol = {line[1]: line[0] for i, line in translation_table.iterrows()}
 
-        path = "./data/pathways/wikipathways-20220710-gmt-Homo_sapiens.gmt"
+        path = os.path.join(self.config.input.main_dir, "data/pathways/wikipathways-20220710-gmt-Homo_sapiens.gmt")
 
         pathway2symbol = {}
         pathway2name = {}
@@ -179,7 +180,7 @@ class PostProcessor:
             return
 
         phenotype = self.config.input.tag
-        with open("./data/dge/mapping.yaml", "r") as file:
+        with open(os.path.join(self.config.input.main_dir, "data/dge/mapping.yaml"), "r") as file:
             mapping = yaml.load(file, Loader=yaml.SafeLoader)
 
         for option in mapping.keys():
@@ -317,7 +318,7 @@ class PostProcessor:
         translation_table = self.get_translation_table()
         entrez2symbol = {line[1]: line[0] for i, line in translation_table.iterrows()}
 
-        path = "./data/hpo/genes_to_phenotype.txt"
+        path = os.path.join(self.config.input.main_dir, "data/hpo/genes_to_phenotype.txt")
 
         df = pd.read_csv(path, skiprows=1, sep="\t", usecols=[0, 2, 3], names=["entrez", "hpo", "description"])
 
@@ -385,7 +386,7 @@ class PostProcessor:
 
         unknown_genes, all_genes, positive_genes = self.get_unknown_genes(results_path)
 
-        goea = GOEA_Study()
+        goea = GOEA_Study(base_path= os.path.join(self.config.input.main_dir, "data/goa_human/"))
 
         for task in ["biological process", "molecular function", "cellular component"]:
 
@@ -468,7 +469,7 @@ class PostProcessor:
 
         df["N Drug Targets"] = [len(mendelian_drug_targets), len(candidate_drug_targets), len(noncandidate_drug_targets)]
 
-        self.add_to_pp_table("Drug Target", valid_drug_targets, True, False)
+        self.add_to_pp_table("Drug Target", list(valid_drug_targets), True, False)
         valid_dict = {gene: degree for gene, degree in hgnc2degree.items() if gene in all_genes}
         genes, degree = list(zip(*valid_dict.items()))
         self.add_to_pp_table("Number of Drug Interactions", genes, degree, 0)
@@ -579,7 +580,7 @@ class PostProcessor:
         not_predicted_genes = unknown_genes - predicted_genes
         df["Group N"] = [len(positive_genes), len(predicted_genes), len(not_predicted_genes)]
 
-        druggable_genes = set(self.get_druggable_genes("./data/dgidb/druggable_genome.tsv"))
+        druggable_genes = set(self.get_druggable_genes(os.path.join(self.config.input.main_dir, "data/dgidb/druggable_genome.tsv")))
         unknown_druggable_genes = self._return_only_valid(druggable_genes, unknown_genes)
         positive_druggable_genes = self._return_only_valid(druggable_genes, positive_genes)
         predicted_druggable_genes = self._return_only_valid(druggable_genes, predicted_genes)
@@ -590,7 +591,7 @@ class PostProcessor:
 
         df["N Druggable"] = [len(positive_druggable_genes), len(predicted_druggable_genes), len(noncandidate_druggable_genes)]
 
-        self.add_to_pp_table("Druggable", valid_druggable_genes, True, False)
+        self.add_to_pp_table("Druggable", list(valid_druggable_genes), True, False)
 
         array = self.make_contingency_table(all_genes, positive_genes, valid_druggable_genes)
         total_druggable = []
@@ -683,7 +684,7 @@ class PostProcessor:
         background_ko_genes = set(self.get_mouse_knockout_background())
         valid_background_ko_genes = self._return_only_valid(background_ko_genes, all_genes)
         unknown_background_ko_genes = self._return_only_valid(valid_background_ko_genes, unknown_genes)
-        self.add_to_pp_table("Included in Mouse KO", valid_background_ko_genes, True, False)
+        self.add_to_pp_table("Included in Mouse KO", list(valid_background_ko_genes), True, False)
         
         try:
             ko_genes = set(self.get_mouse_knockout_genes())
@@ -695,7 +696,7 @@ class PostProcessor:
         mendelian_ko_enrichment_result = fisher_exact(mendelian_array)
 
         valid_ko_genes = self._return_only_valid(ko_genes, all_genes)
-        self.add_to_pp_table("Is Mouse KO", valid_ko_genes, True, False)
+        self.add_to_pp_table("Is Mouse KO", list(valid_ko_genes), True, False)
         unknown_ko_genes = self._return_only_valid(ko_genes, unknown_background_ko_genes)
 
         logger.info("Total of {} Mouse KO genes, {} of them match with our translation table.".format(len(ko_genes), len(ko_genes.intersection(all_genes))))
@@ -754,7 +755,7 @@ class PostProcessor:
         pli_enrichment_result_mendelian = fisher_exact(array_mendelian)
 
         valid_pli_genes = self._return_only_valid(pli_genes, all_genes)
-        self.add_to_pp_table("pLI>0.9", valid_pli_genes, True, False)
+        self.add_to_pp_table("pLI>0.9", list(valid_pli_genes), True, False)
 
         unknown_pli_genes = self._return_only_valid(pli_genes, unknown_genes)
 
@@ -848,12 +849,13 @@ class PostProcessor:
             os.makedirs(path_to_dir)
 
     def get_pli_table(self, path_to_table="data/forweb_cleaned_exac_r03_march16_z_data_pLI.txt") -> tuple:
-        return pd.read_csv(path_to_table, header=0, sep="\t")
+        return pd.read_csv(os.path.join(self.config.input.main_dir, path_to_table), header=0, sep="\t")
     
     @property
-    def mouse2human(self, path="./data/mgi/HOM_MouseHumanSequence.rpt"):
+    def mouse2human(self, path="data/mgi/HOM_MouseHumanSequence.rpt"):
         import pandas as pd
-
+        
+        path = os.path.join(self.config.input.main_dir, path)
         if hasattr(self, "_mouse2human"):
             return self._mouse2human
 
@@ -907,7 +909,7 @@ class PostProcessor:
 
         for option, value in mapping.items():
             if option.startswith(tag.lower()):
-                path_to_table = value["file"]
+                path_to_table = os.path.join(self.config.input.main_dir, value["file"])
 
         if path_to_table is None:
             logger.error("Could not find mouse knockout genes for tag {} in mapping {}".format(tag.lower(), mapping))
@@ -940,11 +942,13 @@ class PostProcessor:
 
         return graph
 
-    def get_drugtargets(self, path_to_graph="./data/drkg/cgi.tsv") -> set:
+    def get_drugtargets(self, path_to_graph="data/drkg/cgi.tsv") -> set:
+        path_to_graph = os.path.join(self.config.input.main_dir, path_to_graph)
         hgnc2degree = self.get_drugtarget_dict(path_to_graph)
         return set(hgnc2degree.keys())
 
-    def get_drugtarget_dict(self, path_to_graph="./data/drkg/cgi.tsv") -> dict:
+    def get_drugtarget_dict(self, path_to_graph="data/drkg/cgi.tsv") -> dict:
+        path_to_graph = os.path.join(self.config.input.main_dir, path_to_graph)
         graph = self.load_drugtarget_graph(path_to_graph)
         node2entrez = {node: "".join(node.split("::")[1:]) for node in graph.nodes if node.startswith("Gene")}
         # node2entrez = {value: "".join(value.split("::")[1:]) for value in df["Gene"] if not "".join(value.split("::")[1:]).startswith("drugbank")}
@@ -1137,11 +1141,12 @@ class PostProcessor:
         if plot:
             plot_title = "Overlap in predicted disease genes between {} runs, type {} {}".format(len(results_paths), cutoff_type, cutoff_value)
             plot_name = self.longest_common_string(results_paths[0].split("/")[-1], results_paths[1].split("/")[-1]) + "_overlap.svg"
+            plot_name = os.path.join(self.config.pp.plot_dir, plot_name)
             pos_test_pvals, df = self.plot_overlap(count_counters, total_gene_set_sizes, plot_title, plot_name)
 
         return gene_counters["Unknown"], count_counters["Unknown"], pos_test_pvals, df
 
-    def get_random_overlap(self, eligible_genes, kept_genes, algorithm="descriptive", n_models = None):
+    def get_random_overlap(self, eligible_genes, kept_genes, algorithm="fast", n_models = None):
         """
             Gets the same number of random genes as in kept_genes out of eligible genes and repeats this procedure self.num_runs_for_random_experiments times to get mean and standard deviation of overlaps
 

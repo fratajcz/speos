@@ -52,7 +52,7 @@ class PostProcessingTable:
             self.table.loc[self.table.index.difference(index), column_header] = remaining
 
         if RAISERROR:
-            raise TypeError("Sets of indices are of arbitrary order, passing iterators als values alongside will lead to invalid results.")
+            raise TypeError("Sets of indices are of arbitrary order, passing iterators as values alongside will lead to invalid results.")
 
     def add(self, column_header: str, index: Iterable, values, remaining=None) -> None:
         """
