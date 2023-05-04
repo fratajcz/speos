@@ -7,41 +7,46 @@ metrics:
 
 parameters:
   - name: dim4
-    pre_mp:
-      dim: 4
-    mp:
-      dim: 4
-    post_mp:
-      dim: 4
+    model:
+      pre_mp:
+        dim: 4
+      mp:
+        dim: 4
+      post_mp:
+        dim: 4
 
   - name: dim8
-    pre_mp:
-      dim: 8
-    mp:
-      dim: 8
-    post_mp:
-      dim: 8
+    model:
+      pre_mp:
+        dim: 8
+      mp:
+        dim: 8
+      post_mp:
+        dim: 8
 
   - name: dim12
-    pre_mp:
-      dim: 12
-    mp:
-      dim: 12
-    post_mp:
-      dim: 12
+    model:
+      pre_mp:
+        dim: 12
+      mp:
+        dim: 12
+      post_mp:
+        dim: 12
 
   - name: dim16
-    pre_mp:
-      dim: 16
-    mp:
-      dim: 16
-    post_mp:
-      dim: 16
+    model:
+      pre_mp:
+        dim: 16
+      mp:
+        dim: 16
+      post_mp:
+        dim: 16
 
   - name: dim20
-    pre_mp:
-      dim: 20
-    mp:
-      dim: 20
-    post_mp:
-      dim: 20
+    model:
+      pre_mp:
+        dim: 20
+      mp:
+        dim: 20
+      post_mp:
+        dim: 20

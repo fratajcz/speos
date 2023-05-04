@@ -60,11 +60,18 @@ model:
   architecture: GeneNetwork
   args: []
   concat_after_mp: false
+  hyperbolic:
+    curvature_trainable: true
+    init_curvature: 1
+    manifold: PoincareBall
+    optimizer: Riemannian
+    switch: false
   kwargs: {}
   loss: bce
   model: SimpleModel
   mp:
     dim: 50
+    dropout: 0
     k: 3
     kwargs: {}
     n_layers: 2
@@ -76,14 +83,14 @@ model:
   post_mp:
     act: elu
     dim: 50
-    dropout: null
+    dropout: 0
     n_layers: 5
     normalize: null
     type: fc
   pre_mp:
     act: elu
     dim: 50
-    dropout: null
+    dropout: 0
     n_layers: 5
     normalize: null
     type: fc
@@ -121,7 +128,7 @@ scheduler:
   limit: 0.0001
   mode: max
   patience: 25
-timestamp: 1683016635.883077
+timestamp: 1683018541.0927463
 training:
   dilution: 10
   key: 1

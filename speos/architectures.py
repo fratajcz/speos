@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import torch_hyperbolic.nn as th_nn
 import torch.nn.functional as F
 import torch_geometric.nn as pyg_nn
 import torch_geometric.utils as pyg_utils
@@ -174,15 +173,21 @@ class GeneNetwork(nn.Module):
 
     def get_act(self, act=None, c_in=None, c_out=None):
         if act is None:
-            if self.config.model.pre_mp.act.lower() == "elu":
-                act = nn.ELU()
-            elif self.config.model.pre_mp.act.lower() == "relu":
-                act = nn.ReLU()
-            else:
-                raise ValueError("Only implemented elu and relu")
+            act = self.config.model.pre_mp.act
+
+        if act == "elu":
+            act = nn.ELU()
+        elif act == "relu":
+            act = nn.ReLU()
+        else:
+            try:
+                act = getattr(nn, act)()
+            except AttributeError:
+                raise ValueError("Could not import activation layer {} from torch.nn".format(act))
 
         if self.hyperbolic:
-            act = layers.HypAct(act, c_in=c_in, c_out=c_out, manifold=self.config.model.hyperbolic.manifold)
+            import torch_hyperbolic.nn as th_nn
+            act = th_nn.HypAct(act, c_in=c_in, c_out=c_out, manifold=self.config.model.hyperbolic.manifold)
         return act
 
     def make_mp(self):
@@ -193,23 +198,24 @@ class GeneNetwork(nn.Module):
 
         for i in range(self.gcnconv_num_layers):
             if self.hyperbolic:
+                import torch_hyperbolic.nn as th_nn
                 self.config.model.mp.kwargs["dropout"] = dropout
                 mp_list.append(self.get_mp_layer(i, curvature=self.mp_curvatures[i]))
                 flow_list.append('x, edge_index -> x')
-                mp_list.append(self.get_act(c_in=self.mp_curvatures[i], c_out=self.mp_curvatures[i]))
+                mp_list.append(self.get_act(act=self.config.model.mp.act, c_in=self.mp_curvatures[i], c_out=self.mp_curvatures[i]))
                 flow_list.append('x -> x')
-                mp_list.append(layers.HyperbolicDecoder(manifold=self.config.model.hyperbolic.manifold, curvature=self.mp_curvatures[i]))
+                mp_list.append(th_nn.HyperbolicDecoder(manifold=self.config.model.hyperbolic.manifold, curvature=self.mp_curvatures[i]))
                 flow_list.append('x -> x')
                 mp_list.append(self.get_mp_norm())
                 flow_list.append('x -> x')
-                mp_list.append(layers.HyperbolicEncoder(manifold=self.config.model.hyperbolic.manifold, curvature=self.mp_curvatures[i+1] if i != self.gcnconv_num_layers - 1 else self.post_mp_curvatures[0]))
+                mp_list.append(th_nn.HyperbolicEncoder(manifold=self.config.model.hyperbolic.manifold, curvature=self.mp_curvatures[i+1] if i != self.gcnconv_num_layers - 1 else self.post_mp_curvatures[0]))
                 flow_list.append('x -> x')
             else:
                 mp_list.append(self.get_mp_layer(i))
                 flow_list.append('x, edge_index -> x')
                 mp_list.append(nn.Dropout(p=dropout))
                 flow_list.append('x -> x')
-                mp_list.append(self.get_act())
+                mp_list.append(self.get_act(act=self.config.model.mp.act))
                 flow_list.append('x -> x')
                 mp_list.append(self.get_mp_norm())
                 flow_list.append('x -> x')
@@ -220,6 +226,8 @@ class GeneNetwork(nn.Module):
             self.mp = None
 
     def get_mp_layer(self, i, curvature=None):
+        if self.hyperbolic:
+            import torch_hyperbolic.nn as th_nn
         kwargs = self.config.model.mp.kwargs
         if self.gcnconv_parameters["type"] == "sage":
             mp_layer = pyg_nn.SAGEConv(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], **kwargs)
@@ -260,11 +268,6 @@ class GeneNetwork(nn.Module):
                 # if its anything between the first or the last layer, keep dim_in = dim_out = dim_hid * n_heads
                 mp_layer = pyg_nn.GATConv(self.gcnconv_parameters["dim"] * self.nheads, self.gcnconv_parameters["dim"] * self.nheads, heads=1, concat=True, **kwargs)
             
-        elif self.gcnconv_parameters["type"] == "hgcn":
-            mp_layer = layers.HGCNConv(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], c=curvature, manifold=self.config.model.hyperbolic.manifold, **kwargs)
-        elif self.gcnconv_parameters["type"] == "hgat":
-            mp_layer = layers.HGATConv(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], c=curvature, manifold=self.config.model.hyperbolic.manifold, **kwargs)
-
         elif self.gcnconv_parameters["type"] == "gcn2":
             mp_layer = pyg_nn.GCN2Conv(self.gcnconv_parameters["dim"],
                                        alpha=self.gcnconv_parameters["alpha"],
@@ -304,8 +307,9 @@ class GeneNetwork(nn.Module):
             
         else:
             try:
+                import torch_hyperbolic.nn as th_nn
                 mp_layer_uninitialized = getattr(th_nn, self.gcnconv_parameters["type"])
-            except AttributeError:
+            except (AttributeError, ImportError):
                 try:
                     mp_layer_uninitialized = getattr(pyg_nn, self.gcnconv_parameters["type"])
                 except AttributeError:
@@ -326,7 +330,8 @@ class GeneNetwork(nn.Module):
 
     def get_linear(self, in_dim, out_dim, curvature=None):
         if self.hyperbolic:
-            lin = layers.HypLinear(in_channels=in_dim, out_channels=out_dim, c=curvature, manifold=self.config.model.hyperbolic.manifold)
+            import torch_hyperbolic.nn as th_nn
+            lin = th_nn.HypLinear(in_channels=in_dim, out_channels=out_dim, c=curvature, manifold=self.config.model.hyperbolic.manifold)
         else:
             lin = pyg_nn.Linear(in_channels=in_dim, out_channels=out_dim)
         return lin
@@ -336,6 +341,7 @@ class GeneNetwork(nn.Module):
         dropout = self.config.model.pre_mp.dropout
 
         if self.hyperbolic:
+            import torch_hyperbolic.nn as th_nn
             curvatures = self.pre_mp_curvatures
             pre_mp_list.append(th_nn.HyperbolicEncoder(manifold=self.config.model.hyperbolic.manifold, curvature=curvatures[0]))
         else:
@@ -382,6 +388,7 @@ class GeneNetwork(nn.Module):
         post_mp_list.append(self.get_act(c_in=curvatures[-2], c_out=curvatures[-1]))
         post_mp_list.append(self.get_linear(self.dim_hid // 2, self.output_dim, curvature=curvatures[-1]))
         if self.hyperbolic:
+            import torch_hyperbolic.nn as th_nn
             post_mp_list.append(th_nn.HyperbolicDecoder(manifold=self.config.model.hyperbolic.manifold, curvature=curvatures[-1])) 
 
         self.post_mp = nn.Sequential(*post_mp_list)
@@ -473,8 +480,6 @@ class GeneNetwork(nn.Module):
 
 class RelationalGeneNetwork(GeneNetwork):
     def __init__(self, config, dim, num_adjacencies):
-        if config.model.mp.type not in ["rgcn", "rgat", "film", "filmtag", "rgattag", "rtag"]:
-            config.model.mp.type = "rgcn"
         super(RelationalGeneNetwork, self).__init__(config, dim, num_adjacencies)
         self.has_cache = False
 

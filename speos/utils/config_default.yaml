@@ -71,6 +71,7 @@ model:
     k: 3                  # only relevant if type: tag is selected
     kwargs: {}
     dropout: 0
+    act: elu
   post_mp:
     type: fc
     dim: 50

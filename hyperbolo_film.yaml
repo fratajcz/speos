@@ -11,16 +11,18 @@ model:
     manifold: PoincareBall
   pre_mp:
     n_layers: 1
-    dim: 10
+    dim: 20
   mp:
     type: HFiLMConv
-    dim: 10
+    dim: 20
     kwargs:
-      local_agg: True
+      local_agg: False
+      c_per_relation: True
     n_layers: 2
+    act: Identity
   post_mp:
     n_layers: 1
-    dim: 10
+    dim: 20
   save_dir: /mnt/storage/speos/models/
   plot_dir: /mnt/storage/speos/plots/
 
