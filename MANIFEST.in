@@ -1,0 +1,7 @@
+include LICENSE.md
+include speos/adjacencies.json
+include speos/mapping.json
+include speos/utils/config_default.yaml
+include extensions/mapping.json
+include extensions/adjacencies.json
+include extensions/datasets.json
