@@ -383,6 +383,9 @@ class GeneNetwork(nn.Module):
             flow_list.append('x -> x')
             layer_list.append(layer)
 
+        flow_list.append('x -> x')
+        layer_list.append(ExplanationOutputLayer())
+
         return pyg_nn.Sequential('x, edge_index', [(layer, flow) for layer, flow in zip(layer_list, flow_list)])
 
 
@@ -461,3 +464,11 @@ class SimpleHeteroGCN(nn.Module):
         x = self.conv1(x, edge_index).relu()
         x = self.conv2(x, edge_index).relu()
         return x
+
+
+class ExplanationOutputLayer(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x):
+        return torch.hstack((x, -1 * x))
