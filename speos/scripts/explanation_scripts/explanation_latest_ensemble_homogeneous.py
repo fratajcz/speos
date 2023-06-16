@@ -38,6 +38,8 @@ parser.add_argument('--device', "-d", type=str,
 
 args = parser.parse_args()
 
+torch.set_default_dtype(torch.float64)
+
 assert args.gene != "" or args.index != -1 or args.mincs != -1, ("At least a gene name, index or minimal cs has to be chosen")
 
 config = Config()
@@ -138,7 +140,7 @@ for i, (output_idx, gene) in enumerate(zip(candidates, genes)):
                 node_mask_type='attributes',
                 edge_mask_type='object',
                 model_config = dict(
-                    mode='regression',
+                    mode='binary_classification',
                     task_level="node",
                     return_type='raw',  # Model returns probabilities.
                     ),
@@ -195,7 +197,7 @@ for i, (output_idx, gene) in enumerate(zip(candidates, genes)):
     torch.save(ig_attr_node_all, os.path.join(config.pp.save_dir, '{}_ig_attr_node_{}.pt'.format(old_config_name, gene)))
     
     # write node attributions to csv
-    input_attributions = ig_attr_self_all.numpy().tolist()
+    input_attributions = ig_attr_self_all.cpu().numpy().tolist()
     input_values = normalized_data[dataset.preprocessor.hgnc2id[gene]].tolist()
     list1, list2, list3 = zip(*sorted(zip(input_attributions, features, input_values)))
 
