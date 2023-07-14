@@ -3,7 +3,7 @@ import os
 
 def processed_data_dir(config) -> str:
     """ Returns the processed data dir """
-    return os.path.join(config.input.save_dir, "processed")
+    return os.path.join(config.input.main_dir, config.input.save_dir, "processed")
 
 
 def processed_data_filename(config) -> tuple:

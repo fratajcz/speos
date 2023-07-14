@@ -93,7 +93,7 @@ class Experiment:
                 node_data, self.model, self.dataset.preprocessor.get_feature_names(), config)
 
             self.scheduler = LRScheduler(self.model.optimizers, mode=config.scheduler.mode,
-                                        factor=config.scheduler.factor, patience=config.scheduler.patience, limit=config.scheduler.limit)
+                                         factor=config.scheduler.factor, patience=config.scheduler.patience, limit=config.scheduler.limit)
 
             self.earlystopper = EarlyStopper(patience=self.config.es.patience, mode=self.config.es.mode)
             self.max_epochs = config.training.max_epochs

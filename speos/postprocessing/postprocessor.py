@@ -180,7 +180,7 @@ class PostProcessor:
             return
 
         phenotype = self.config.input.tag
-        with open(os.path.join(self.config.input.main_dir, "data/dge/mapping.yaml"), "r") as file:
+        with open("data/dge/mapping.yaml", "r") as file:
             mapping = yaml.load(file, Loader=yaml.SafeLoader)
 
         for option in mapping.keys():
@@ -232,7 +232,7 @@ class PostProcessor:
         for subtype, values in zip(phenotypes, value_list):
             
             if subtype != "Union":
-                dge_genes = set(pd.read_csv(values["file"], header=0, comment='#', index_col=False, sep="\t")["Symbol"].to_list())
+                dge_genes = set(pd.read_csv(os.path.join(self.config.input.main_dir, values["file"]), header=0, comment='#', index_col=False, sep="\t")["Symbol"].to_list())
                 dge_genes_union.update(dge_genes)
                 valid_dge_genes = self._return_only_valid(dge_genes, all_genes)
                 valid_union_genes.update(valid_dge_genes)
@@ -258,8 +258,6 @@ class PostProcessor:
             mendelian_odds_ratios.append(is_enriched_result[0])
             mendelian_pvals.append(is_enriched_result[1])
             n_dge.append(len(valid_dge_genes))
-            
-            
 
             predicted_genes = set([key for key, value in self.outer_result[0].items() if value >= convergence_score])
             array = self.make_contingency_table(unknown_genes, predicted_genes, unknown_dge_genes)
@@ -827,6 +825,7 @@ class PostProcessor:
 
         return unlabeled_genes, all_genes, positive_genes
 
+    @classmethod
     def _return_only_valid(self, subset: set, super_set: set) -> set:
         """check if each entry in subset are present in super_set and return only those wo are"""
 
@@ -850,7 +849,7 @@ class PostProcessor:
 
     def get_pli_table(self, path_to_table="data/forweb_cleaned_exac_r03_march16_z_data_pLI.txt") -> tuple:
         return pd.read_csv(os.path.join(self.config.input.main_dir, path_to_table), header=0, sep="\t")
-    
+
     @property
     def mouse2human(self, path="data/mgi/HOM_MouseHumanSequence.rpt"):
         import pandas as pd
@@ -891,7 +890,7 @@ class PostProcessor:
         #df.rename(columns={hgnc_col: self.hgnc_key, entrez_col: self.entrez_key, ensembl_col: self.ensembl_key}, inplace=True)
         return df
 
-    def get_mouse_knockout_genes(self, tag=None, mapping="./data/mgi/query_mapping.yaml") -> list:
+    def get_mouse_knockout_genes(self, tag=None, mapping="./data/mgi/query_mapping.yaml", main_dir=None) -> list:
         """ 
             Reads the Mouse Knockout genes from mapping file, 
             matches it against the mouse to human homologs (self.mouse2human) and returns the human homologs with a corresponding mouse KO gene 
@@ -899,7 +898,8 @@ class PostProcessor:
             Mouse KO genes which do not have human homologs will not be returned.
         """
         import yaml
-        logger = setup_logger(*self.logger_args)
+        if hasattr(self, "logger_args"):
+            logger = setup_logger(*self.logger_args)
 
         tag = self.config.input.tag if tag is None else tag
         with open(mapping, "r") as file:
@@ -909,13 +909,14 @@ class PostProcessor:
 
         for option, value in mapping.items():
             if option.startswith(tag.lower()):
-                path_to_table = os.path.join(self.config.input.main_dir, value["file"])
+                path_to_table = os.path.join(self.config.input.main_dir if main_dir is None else main_dir, value["file"])
 
         if path_to_table is None:
             logger.error("Could not find mouse knockout genes for tag {} in mapping {}".format(tag.lower(), mapping))
             return
-
-        logger.info("Reading mouse knockout genes from {}".format(path_to_table))
+        
+        if hasattr(self, "logger_args"):
+            logger.info("Reading mouse knockout genes from {}".format(path_to_table))
         mouse_symbols = [entry.split("<")[0] for entry in pd.read_csv(path_to_table, sep="\t", header=0)["Allele Symbol"].tolist()]
         human_homolog_symbols = set()
 

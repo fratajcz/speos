@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import argparse
 import pandas as pd
 import re
+import json
 
 parser = argparse.ArgumentParser(description='''Takes the results of a Wikipathways GSEA, downloads the path html and highligts relevant nodes.
                                               example usage: python speos/scripts/map_to_pathway_html.py -i rescued/gsea/immune_dysregulation_film_pathwayea.tsv -o WP5130 -m /mnt/storage/speos/data/mendelian_gene_sets/Immune_Dysregulation_genes.bed''')
@@ -13,6 +14,7 @@ parser.add_argument('--input', "-i", type=str, help="Path to the resulting dataf
 parser.add_argument('--only', "-o", type=str, default="", help="Limit the analysis to one path (by Wikipathways ID, i.e. WP1234)")
 parser.add_argument('--top', "-t", type=int, default=-1, help="Limit the analysis to the top n paths by p-value")
 parser.add_argument('--mendelian', "-m", type=str, default="", help="Path to a Mendelian Gene file that will be used for additional highlighting")
+parser.add_argument('--gwas', "-g", type=str, default="", help="Path to a gene list of GWAS genes for comparison")
 
 args = parser.parse_args()
 
@@ -23,6 +25,10 @@ def get_translation_table(path="/mnt/storage/speos/data/hgnc_official_list.tsv",
 
 
 df = pd.read_csv(args.input, header=0, index_col=0, sep="\t")
+
+if args.gwas is not None:
+    with open(args.gwas, "r") as file:
+        gwas_hgnc = set(json.load(file)[0].keys())
 
 if args.top != -1:
     df = df[:args.top, :]
@@ -83,6 +89,8 @@ for index, URL in URLs:
 
             for tag in tags:
                 text = tag.findChildren("text" , recursive=False)[0]
+                if text.tspan.string in gwas_hgnc:
+                    text.tspan.string += "*"
                 if text["fill"] == "#000000":
                     text["fill"] = indicator_color
                 elif text["fill"] == "#FF0000" or text["fill"] == "#00FF00":
@@ -90,8 +98,19 @@ for index, URL in URLs:
                 else:
                     text["fill"] = "#0000FF"
 
-                text = tag.findChildren("rect" , recursive=False)[0]
-                text["stroke"] = "#FF0000"
+                rect = tag.findChildren("rect" , recursive=False)[0]
+                rect["stroke"] = "#FF0000"
 
-    with open("{}_mapped.html".format(index), "w") as file:
+    with open("{}_mapped_closest.html".format(index), "w") as file:
         file.write(str(soup.prettify()))
+
+    from playwright.sync_api import sync_playwright
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+    
+        page = browser.new_page()
+        page.goto("file:///home/ubuntu/speos/{}_mapped_closest.html".format(index))
+        # print(page.title())
+        page.screenshot(path="screenshot.svg", full_page=True)
+        browser.close()

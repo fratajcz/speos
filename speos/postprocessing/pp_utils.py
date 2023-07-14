@@ -41,7 +41,7 @@ class PostProcessingTable:
         except TypeError:
             values = [values] * len(index)
 
-        self.table.loc[index, column_header] = values
+        self.table.loc[list(index), column_header] = values
         if remaining is not None:
             try:
                 _ = iter(remaining)
@@ -49,7 +49,7 @@ class PostProcessingTable:
                     RAISERROR = True
             except TypeError:
                 remaining = [remaining] * len(self.table.index.difference(index))
-            self.table.loc[self.table.index.difference(index), column_header] = remaining
+            self.table.loc[list(self.table.index.difference(index)), column_header] = remaining
 
         if RAISERROR:
             raise TypeError("Sets of indices are of arbitrary order, passing iterators as values alongside will lead to invalid results.")

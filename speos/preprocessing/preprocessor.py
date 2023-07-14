@@ -44,13 +44,14 @@ class PreProcessor:
         self.assign_new_ground_truth(mapping_list, compile=False)
         self.read_extension_inputs(extension_inputs)
 
-    def build_graph(self, features=True, use_embeddings=None):
+    def build_graph(self, features=True, use_embeddings=None, adjacency=True):
         """Builds the graph given the adjacency matrices and input features specified during initialization.
 
             Args:
                 features (bool): If features should be added to nodes. This leads to longer compilation times, but it changes the number and indices of nodes, 
                     as nodes with missing features will be removed from the graph.
                 use_embeddings (bool): If node embeddings should be added to node features. If :obj:`None`, the respective setting will be read from the config provided during initialization.
+                adjacency (bool): If adjacencies should be loaded and the graph constructed or if only features and labels should be loaded.
            """
 
         self._read_translation_table()
@@ -66,7 +67,8 @@ class PreProcessor:
 
         self.G.add_nodes_from(node_list)
 
-        self._add_adjacencies()
+        if adjacency:
+            self._add_adjacencies()
 
         self.graph_is_built = True
 
@@ -320,7 +322,7 @@ class PreProcessor:
 
         if use_embeddings:
             from gensim.models import KeyedVectors
-            wv = KeyedVectors.load(self.config.input.embedding_path, mmap='r')
+            wv = KeyedVectors.load(os.path.join(self.config.input.main_dir, self.config.input.embedding_path), mmap='r')
 
         if len(self.additional_inputs) > 0:
             addtl_dfs = [getattr(hooks, addtl_input["function"])(*addtl_input["args"], **addtl_input["kwargs"]) for addtl_input in self.additional_inputs]
