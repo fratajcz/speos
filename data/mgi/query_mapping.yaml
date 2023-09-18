@@ -16,5 +16,9 @@
     file: "data/mgi/diabetes_query.txt"
 "insulin_disorder":
     file: "data/mgi/new_insulin_query.txt"
+"mtoxphos":
+    file: "data/mgi/mito_query.txt"
+"mtcentraldogma":
+    file: "data/mgi/mito_query.txt"
 
 
