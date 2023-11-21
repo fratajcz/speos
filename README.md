@@ -22,7 +22,7 @@ If you use Speos in your work, please cite the paper above. You can use the foll
 ```
 @article{ratajczak_speos_2023,
 	title = {Speos: an ensemble graph representation learning framework to predict core gene candidates for complex diseases},
-  author = {Ratajczak, Florin and Joblin, Mitchell and Hildebrandt, Marcel and Ringsquandl, Martin and Falter-Braun, Pascal and Heinig, Matthias},
+  	author = {Ratajczak, Florin and Joblin, Mitchell and Hildebrandt, Marcel and Ringsquandl, Martin and Falter-Braun, Pascal and Heinig, Matthias},
 	journal = {Nature Communications},
 	volume = {14},
 	url = {https://www.nature.com/articles/s41467-023-42975-z},
