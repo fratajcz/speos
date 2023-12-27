@@ -26,9 +26,11 @@ def get_translation_table(path="/mnt/storage/speos/data/hgnc_official_list.tsv",
 
 df = pd.read_csv(args.input, header=0, index_col=0, sep="\t")
 
-if args.gwas is not None:
-    with open(args.gwas, "r") as file:
-        gwas_hgnc = set(json.load(file)[0].keys())
+#if args.gwas is not None:
+#    with open(args.gwas, "r") as file:
+#        gwas_hgnc = set(json.load(file)[0].keys())
+
+gwas_hgnc = set(pd.read_csv("notebooks/UC_film_nohetio_master_regulators.csv", header=0)["HGNC"].tolist())
 
 if args.top != -1:
     df = df[:args.top, :]
@@ -39,7 +41,8 @@ else:
     URLs = [(index, "https://pathway-viewer.toolforge.org/embed/{}".format(index)) for index in df.index]
 
 if args.mendelian != "":
-    mendelian_genes = pd.read_csv(args.mendelian, sep="\t", names=["chr", "start", "stop", "gene", "strang"], usecols=["gene"])["gene"].tolist()
+    #mendelian_genes = pd.read_csv(args.mendelian, sep="\t", names=["chr", "start", "stop", "gene", "strang"], usecols=["gene"])["gene"].tolist()
+    mendelian_genes = pd.read_csv(args.mendelian, sep="\t", header=0)["HGNC"].tolist()
     translation_table = get_translation_table()
     entrez2symbol = {line[1]: line[0] for i, line in translation_table.iterrows()}
 
@@ -111,6 +114,7 @@ for index, URL in URLs:
     
         page = browser.new_page()
         page.goto("file:///home/ubuntu/speos/{}_mapped_closest.html".format(index))
+        page.set_viewport_size({"width": 3200, "height": 2400})
         # print(page.title())
-        page.screenshot(path="screenshot.svg", full_page=True)
+        page.screenshot(path="{}_screenshot.png".format(index), full_page=True)
         browser.close()
