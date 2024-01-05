@@ -1,0 +1,137 @@
+crossval:
+  hold_out_test: true
+  key: _outer_{}
+  mode: kfold
+  n_folds: 10
+  outer_suffix: _outer_{}
+  positive_only: true
+  seed: 1
+  suffix: _fold_{}
+cuda: auto
+es:
+  metric: auroc
+  mode: max
+  patience: 100
+eval:
+  cutoff: 0.7
+  key: 50
+  log_prob_every: 50
+  target:
+  - train
+  - val
+inference:
+  cutoff_value: 0.7
+  gnn_explain: false
+  input_explain: true
+  key: true
+  save: true
+  save_dir: speos/tests/results
+  save_sorted: true
+  save_tsv: false
+  switch: true
+  target: all
+input:
+  adjacency: BioPlex30293T
+  adjacency_blacklist:
+  - recon3d
+  - string
+  adjacency_field: name
+  adjacency_mappings: ./speos/adjacencies.json
+  embedding_path: data/misc/walking_all.output
+  field: ground_truth
+  force_multigraph: false
+  gene_sets: ./data/mendelian_gene_sets
+  gwas: ./data/gwas
+  gwas_mappings: ./speos/mapping.json
+  holdout_positive_only: true
+  holdout_size: 0.1
+  key: true
+  log_expression: false
+  main_dir: .
+  randomize_adjacency_percent: 0
+  save_data: true
+  save_dir: ./data/
+  tag: Insulin_Disorder
+  use_embeddings: false
+  use_expression: true
+  use_gwas: true
+key: 1644247649.293581
+logging:
+  dir: speos/tests/logs/
+  file: auto
+  key: auto
+  level: 20
+model:
+  architecture: GeneNetwork
+  args: []
+  concat_after_mp: false
+  key: false
+  kwargs: {}
+  loss: bce
+  model: SimpleModel
+  mp:
+    dim: 50
+    k: 3
+    key: null
+    kwargs: {}
+    n_layers: 2
+    nheads: null
+    normalize: instance
+    type: gcn
+  plot: true
+  plot_dir: ./tests/
+  post_mp:
+    act: elu
+    dim: 50
+    dropout: null
+    key: null
+    n_layers: 5
+    normalize: null
+    type: fc
+  pre_mp:
+    act: elu
+    dim: 50
+    dropout: null
+    key: null
+    n_layers: 5
+    normalize: null
+    type: fc
+  regularization_lambda: 0.01
+  save: true
+  save_dir: speos/tests/files/
+  skip: false
+  skip_mp: false
+name: inference_test
+optim:
+  key: loss
+  lr: 0.001
+  measure: loss
+  target: val
+pp:
+  consensus: bottom_up
+  cutoff_type: split
+  cutoff_value: 0.7
+  key: ./tests/
+  plot: true
+  plot_dir: ./tests/
+  save: true
+  save_dir: ./tests/
+  switch: false
+  tasks:
+  - overlap_analysis
+  - drugtarget
+  - druggable
+  - mouseKO
+scheduler:
+  factor: 0.33
+  key: min
+  limit: 0.0001
+  mode: min
+  patience: 50
+timestamp: 1644247649.293581
+training:
+  dilution: 10
+  key: 10
+  max_epochs: 1000
+  pos_weight: 2
+  switch: false
