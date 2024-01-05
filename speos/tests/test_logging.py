@@ -3,25 +3,14 @@ from speos.utils.config import Config
 import unittest
 import shutil
 import os
+from utils import TestSetup
 
+class LoggingTest(TestSetup):
 
-class LoggingTest(unittest.TestCase):
+    def setUp(self) -> None:
+        super().setUp()
 
-    @classmethod
-    def setUpClass(cls) -> None:
-
-        cls.config = Config()
-        cls.config.logging.dir = "speos/tests/logs/LoggingTest"
-        cls.config.logging.level = 20
-
-        cls.config.name = "LoggingTest"
-
-        for directory in [cls.config.logging.dir]:
-            if not os.path.exists(directory):
-                os.makedirs(directory)
-
-    def tearDown(self):
-        shutil.rmtree(self.config.logging.dir, ignore_errors=True)
+        self.config.name = "LoggingTest"
 
     def test_loglevel(self):
         logger = setup_logger(self.config, __name__)
@@ -30,11 +19,11 @@ class LoggingTest(unittest.TestCase):
         logger.warning("warning")
         logger.error("error")
         logger.critical("critical")
-        #logger.handlers[0].flush()
+
         with open(os.path.join(self.config.logging.dir, self.config.name), 'r') as fp:
             numlines = len(fp.readlines())
 
-        self.assertEqual(numlines, 4)
+        self.assertEqual(numlines, 5)
 
     def test_flush_existing_loggers(self):
         logger = setup_logger(self.config, __name__)

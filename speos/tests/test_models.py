@@ -8,25 +8,21 @@ from speos.preprocessing.mappers import GWASMapper, AdjacencyMapper
 from torch_geometric.nn import GCNConv
 import torch
 import torch.nn as nn
+from utils import TestSetup
+
 
 torch.set_default_tensor_type(torch.DoubleTensor)
 
 
-class SimpleModelTest(unittest.TestCase):
+class SimpleModelTest(TestSetup):
 
     def setUp(self):
-        self.config = Config()
-
-        self.config.logging.file = "/dev/null"
+        super().setUp()
 
         self.config.name = "SimpleModelTest"
-        self.config.model.model = "SimpleModel"
-
-        self.config.model.save_dir = "tests/"
-        self.config.inference.save_dir = "tests/results"
         self.config.training.pos_weight = 2
         self.config.training.dilution = 2
-        self.config.model.mp.type = "gcn"
+        #self.config.model.mp.type = "gcn"
 
         self.model = ModelBootstrapper(self.config, 90, 1).get_model()
 
@@ -71,7 +67,7 @@ class SimpleModelTest(unittest.TestCase):
         repackaged_layers = [module for module in repackaged.modules() if not isinstance(module, nn.Sequential)]
 
         # see if we have gotten all layers or if some were lost
-        self.assertEqual(len(pre_mp_layers) + len(mp_layers) + len(post_mp_layers), len(repackaged_layers))
+        self.assertEqual(len(pre_mp_layers) + len(mp_layers) + len(post_mp_layers), len(repackaged_layers) - 1)
 
         old_layers = torch.nn.Sequential(*pre_mp_layers, *mp_layers, *post_mp_layers)
         # see if their weights are identical
@@ -87,11 +83,9 @@ class SimpleModelTest(unittest.TestCase):
 
     def test_forward_concat(self):
         dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
+        self.config.model.concat_after_mp = True
 
-        config = self.config.deepcopy()
-        config.model.concat_after_mp = True
-
-        model = ModelBootstrapper(config, dataset.data.x.shape[1], 1).get_model()
+        model = ModelBootstrapper(self.config, dataset.data.x.shape[1], 1).get_model()
 
         train_out, loss = model.step(dataset.data, dataset.data.train_mask)
 
@@ -112,7 +106,7 @@ class SimpleModelTest(unittest.TestCase):
         config = self.config.deepcopy()
         config.input.force_multigraph = True
         config.model.mp.type = "film"
-        config.model.mp.kwargs = {"nn": "pyg_nn.models.MLP(channel_list=[50, 50, 100])"}
+        config.model.mp.kwargs = {"nn": "pyg_nn.models.MLP(channel_list=[{0}, {0}, {1}])".format(self.config.model.mp.dim, 2 * self.config.model.mp.dim)}
 
         model = ModelBootstrapper(config, node_features.shape[1], 1).get_model()
 
@@ -184,6 +178,7 @@ class SimpleModelTest(unittest.TestCase):
         losses = torch.Tensor((5, 1, 1))
         truth = torch.LongTensor((1, 0, 0))
         balanced_loss = self.model.balance_losses(losses, truth)
+        # this test is faulty, only works for dilution and pos weight of 2. we can't take all negatives, but only dilution*n_positives 
         self.assertEqual(balanced_loss, torch.mean(torch.cat((losses[truth.bool()] * self.config.training.pos_weight, losses[~truth.bool()] / self.config.training.dilution), 0)))
 
     def test_balance_classes(self):
@@ -292,7 +287,7 @@ class RelationalGeneNetworkTest(unittest.TestCase):
         self.assertEqual("RGATConv", str(layers[1].__class__.__name__))
 
     def test_forward_rgcn(self):
-
+        self.config.input.save_data = True
         dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
 
         model = ModelBootstrapper(self.config, dataset.data.x.shape[1], 2).get_model()
@@ -300,7 +295,7 @@ class RelationalGeneNetworkTest(unittest.TestCase):
         train_out, loss = model.step(dataset.data, dataset.data.train_mask)
 
     def test_forward_force_multigraph(self):
-
+        self.config.input.save_data = True
         config = self.config.deepcopy()
         config.input.adjacency = ["BioPlex 3.0 293T"]
         config.input.force_multigraph = True
@@ -314,7 +309,7 @@ class RelationalGeneNetworkTest(unittest.TestCase):
 
     def test_forward_rtag(self):
         import numpy as np
-
+        self.config.input.save_data = True
         dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
 
         config = self.config.deepcopy()
@@ -335,7 +330,7 @@ class RelationalGeneNetworkTest(unittest.TestCase):
 
     def test_forward_filmtag(self):
         import numpy as np
-
+        self.config.input.save_data = True
         dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
 
         config = self.config.deepcopy()

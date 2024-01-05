@@ -80,7 +80,7 @@ class PreProcessor:
         logger = setup_logger(*self.logger_args)
         logger.info(nx.info(self.G))
 
-    def get_data(self):
+    def get_data(self, features=True):
         """ Returns the data in the same format produced by self.format_for_pygeo(), but compiles the data beforehand (i.e. builds the graph etc.) if that has not happened yet.
         
             Returns:
@@ -88,9 +88,9 @@ class PreProcessor:
         """
         if not self.graph_is_built:
             # if graph has not been set up first
-            self.build_graph()
+            self.build_graph(features)
 
-        if not self.has_features:
+        if features and not self.has_features:
             # if features arent loaded yet
             self._add_x_features()
 
@@ -180,8 +180,12 @@ class PreProcessor:
 
     def _handle_ppi(self, mapping: dict) -> list:
         edge_list = []
+
+        logger = setup_logger(*self.logger_args)
+        logger.debug("Reading Adjacency {} in {} mode.".format(mapping["name"], "directed" if mapping["directed"] else "undirected"))
+
         adjacency = pd.read_csv(os.path.join(self.config.input.main_dir, mapping["file_path"]),
-                                             sep=mapping["sep"], header=0, usecols=[mapping["target"], mapping["source"]])
+                                             sep=mapping["sep"], header=0, usecols=[mapping["source"], mapping["target"]])
 
         if mapping["symbol"] == "ensemble":
             mapping["symbol"] = "ensembl"
@@ -491,7 +495,10 @@ class PreProcessor:
             y.append(node[1]["y"])
 
         X = np.array(X).astype(np.float64)
-        X = robust_scale(X, axis=0)
+        try:
+            X = robust_scale(X, axis=0)
+        except ValueError:
+            X = None
         y = np.array(y)
 
         return X, y, adj

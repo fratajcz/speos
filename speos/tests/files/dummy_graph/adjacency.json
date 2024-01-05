@@ -6,7 +6,7 @@
     "sep": " ",
     "symbol": "hgnc",
     "weight": "None",
-    "directed": "True"},
+    "directed": true},
 {"name": "DummyUndirectedGraph",
     "type": "ppi",
     "file_path": "speos/tests/files/dummy_graph/edgelist.txt",
@@ -15,7 +15,7 @@
     "sep": " ",
     "symbol": "hgnc",
     "weight": "None",
-    "directed": "False"},
+    "directed": false},
 {"name": "DummyUndirectedOtherGraph",
     "type": "ppi",
     "file_path": "speos/tests/files/dummy_graph/edgelist.txt",
@@ -24,4 +24,4 @@
     "sep": " ",
     "symbol": "hgnc",
     "weight": "None",
-    "directed": "False"}]
+    "directed": false}]

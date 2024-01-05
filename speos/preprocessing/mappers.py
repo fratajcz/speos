@@ -7,7 +7,7 @@ class Mapper:
     def __init__(self, blacklist: list = []):
         self.blacklist = blacklist
 
-    def get_mappings(self, tags: str = "", fields: str = "name"):
+    def get_mappings(self, tags: str = "", fields: str = "name", logic="or"):
         '''goes through the mapping list and returns all mappings that include the provided tag in the provided field (default is name field)
 
           If called without arguments, returns all mappings (tag = "") 
@@ -32,8 +32,8 @@ class Mapper:
             for mapping in self.mapping_list:
                 appendFlags = []
                 for tag, field in zip(tags, fields):
-                    appendFlags.append(tag.lower() in mapping[field].lower()) 
-                if any(appendFlags):
+                    appendFlags.append(tag.lower() in str(mapping[field]).lower()) 
+                if (logic == "or" and any(appendFlags)) or (logic == "and" and all(appendFlags)):
                     mappings.append(mapping)
 
         return self.remove_blacklisted_mappings(tags, mappings)
@@ -80,9 +80,10 @@ class GWASMapper(Mapper):
         
 
         for mapping in [mapping_file, extension_mappings]:
-            with open(mapping, "r") as file:
-                content = file.read()
-                self.mapping_list.extend(json.loads(content))
+            if mapping is not None:
+                with open(mapping, "r") as file:
+                    content = file.read()
+                    self.mapping_list.extend(json.loads(content))
 
     def get_mappings(self, *args, **kwargs):
         """ Returns mappings fitting the description. If the description returns no mappings due to missing GWAS files, just return one of them so we have the mapping to the labels """

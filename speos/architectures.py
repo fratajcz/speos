@@ -298,7 +298,7 @@ class GeneNetwork(nn.Module):
             post_mp_list.append(self.get_act())
             start_factor = 1
 
-        post_mp_list.append(pyg_nn.Linear(self.dim_hid, self.dim_hid // 2))
+        post_mp_list.append(pyg_nn.Linear(self.dim_hid * start_factor, self.dim_hid // 2))
         post_mp_list.append(self.get_act())
         post_mp_list.append(pyg_nn.Linear(self.dim_hid // 2, self.output_dim))
 

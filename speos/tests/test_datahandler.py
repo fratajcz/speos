@@ -24,9 +24,6 @@ class DataHandlerReadTest(unittest.TestCase):
     def test_get_results_for_gene(self):
         self.resultshandler.get_results_for_gene("A1CF")
 
-    #def test_get_explanation_for_gene(self):
-    #    self.resultshandler.get_explanation_for_gene("A1CF")
-
 
 class DataHandlerWriteTest(unittest.TestCase):
 

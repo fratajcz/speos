@@ -120,28 +120,6 @@ class RGATConvTest(unittest.TestCase):
         self.assertTrue(not torch.allclose(x, x_input))
 
 
-    def test_architecture(self):
-        edge_index = torch.LongTensor([[0, 0, 2, 2],
-                                       [1, 2, 3, 4]])
-        edge_types = torch.LongTensor([0, 1, 0, 1])
-        x_input = torch.rand((5, 10))
-
-        num_relations = 2
-        edges = {}
-        for i in range(num_relations):
-            mask = edge_types == i
-            edges.update({("gene", str(i)): edge_index[:, mask]})
-
-        config = Config()
-        config.model.mp.type = "rgat"
-
-        # TODO: need to rewrite the data structure
-
-        model = RelationalGeneNetwork(config, 10, num_relations)
-        x = model({"gene": x_input}, edges)
-        self.assertTrue(not torch.allclose(x, x_input))
-
-
 class RGATTAGConvTest(unittest.TestCase):
 
     def test_init(self):

@@ -2,7 +2,6 @@ from speos.utils.config import Config
 import unittest
 import shutil
 
-
 class ConfigTest(unittest.TestCase):
 
     def tearDown(self) -> None:

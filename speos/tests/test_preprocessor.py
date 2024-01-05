@@ -15,22 +15,22 @@ class GWASMapperTest(unittest.TestCase):
                          "ground_truth": "Immune_Dysregulation_genes.bed",
                          "features_file": "UC.genes.out",
                          "match_type": "perfect",
-                         "significant": "False"},
+                         "significant": False},
                         {"name": "RA-immune_dysregulation",
                          "ground_truth": "Immune_Dysregulation_genes.bed",
                          "features_file": "RA.genes.out",
                          "match_type": "perfect",
-                         "significant": "True"},
+                         "significant": True},
                         {"name": "XY-cardiovascular_disease",
                          "ground_truth": "Cardiovascular_Disease_genes.bed",
                          "features_file": "XY.genes.out",
                          "match_type": "perfect",
-                         "significant": "True"},
+                         "significant": True},
                         {"name": "FOO-bar",
                          "ground_truth": "bar_genes.bed",
                          "features_file": "FOO.genes.out",
                          "match_type": "perfect",
-                         "significant": "True"}]
+                         "significant": True}]
         self.mapping_file_path = "speos/tests/files/mappings.json"
         with open(self.mapping_file_path, "w") as file:
             json.dump(self.mapping, file)
@@ -38,23 +38,23 @@ class GWASMapperTest(unittest.TestCase):
                          "ground_truth": "Immune_Dysregulation_genes.bed",
                          "features_file": "UC.genes.out",
                          "match_type": "perfect",
-                         "significant": "False"},
+                         "significant": False},
                         {"name": "RA-immune_dysregulation",
                          "ground_truth": "Immune_Dysregulation_genes.bed",
                          "features_file": "RA.genes.out",
                          "match_type": "perfect",
-                         "significant": "True"},
+                         "significant": True},
                         {"name": "XY-cardiovascular_disease",
                          "ground_truth": "Cardiovascular_Disease_genes.bed",
                          "features_file": "XY.genes.out",
                          "match_type": "perfect",
-                         "significant": "True"},
+                         "significant": True},
                         {"name": "FOO-bar",
                          "ground_truth": "bar_genes.bed",
                          "features_file": "FOO.genes.out",
                          "match_type": "perfect",
-                         "significant": "True"}]
-        self.mapper = GWASMapper(mapping_file=self.mapping_file_path)
+                         "significant": True}]
+        self.mapper = GWASMapper(mapping_file=self.mapping_file_path, extension_mappings=None)
 
     def tearDown(self) -> None:
         os.remove(self.mapping_file_path)
@@ -68,7 +68,7 @@ class GWASMapperTest(unittest.TestCase):
         self.assertEqual(read_mappings[0]["name"], self.mapping[1]["name"])
         self.assertEqual(len(read_mappings), len(self.mapping) - 3)
 
-        read_mappings = self.mapper.get_mappings(tags=["immune_dysregulation", "True"], fields=["name", "significant"])
+        read_mappings = self.mapper.get_mappings(tags=["immune_dysregulation", "True"], fields=["name", "significant"], logic="and")
         self.assertEqual(read_mappings[0]["name"], self.mapping[1]["name"])
         self.assertEqual(len(read_mappings), len(self.mapping) - 3)
 
@@ -691,6 +691,27 @@ class DummyPreProcessorTest(unittest.TestCase):
         prepro.build_graph(features=False)
         pos, neg = prepro.find_pos_and_neg_idx()
         self.assertEqual(len(pos), 3)
+
+    def test_directed_graph(self):
+        import pandas as pd
+
+        edges = pd.read_csv("speos/tests/files/dummy_graph/edgelist.txt", header=0, sep=" ")
+
+        gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
+        adjacencies = self.adjacencymapper.get_mappings(tags="DummyDirectedGraph", fields="name")
+        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
+        preprocessor.build_graph()
+
+        data = preprocessor.get_data()
+
+        edges_sender = [preprocessor.hgnc2id[sender] for sender in edges["geneA"]]
+        edges_receiver = [preprocessor.hgnc2id[receiver] for receiver in edges["geneB"]]
+
+        edge_index = data[2]["DummyDirectedGraph"]
+
+        self.assertEqual(edge_index[0, :].tolist(), edges_sender)
+        self.assertEqual(edge_index[1, :].tolist(), edges_receiver)
+
 
 if __name__ == '__main__':
     unittest.main(warnings='ignore')
