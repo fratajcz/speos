@@ -18,10 +18,9 @@ class PreProcessor:
                  translation_table: str = "data/hgnc_official_list.tsv",
                  expression_files=["data/GTEx_Analysis_2016-01-15_v7_RNASeQCv1.1.8_gene_median_tpm.gct",
                                    "data/human_protein_atlas_rna_blood_cell.tsv"],
-                 name: str = "RBC",
                  extension_inputs: str = "./extensions/datasets.json"):
 
-        self.name = name
+        self.name = config.name
         self.config = config
         self.mapping_list = mapping_list
         self.translation_table_path = os.path.join(config.input.main_dir, translation_table)
@@ -228,10 +227,11 @@ class PreProcessor:
             rows_to_swap = np.asarray(range(len(adjacency)))
             np.random.shuffle(rows_to_swap)
         else:
-            _, rows_to_swap = train_test_split(np.asarray(range(len(adjacency))), test_size=randomize_factor, )
+            _, rows_to_swap = train_test_split(np.asarray(range(len(adjacency))), test_size=randomize_factor)
         _adjacency = adjacency.copy(deep=True)
         if len(rows_to_swap) % 2 == 1:
             rows_to_swap = rows_to_swap[:-1]
+
         swapped_row_indices_mask = [i - 1 if i % 2 == 1 else i + 1 for i in range(len(rows_to_swap))]
         swapped_row_indices = rows_to_swap[swapped_row_indices_mask]
         adjacency_values = _adjacency.values
@@ -264,6 +264,9 @@ class PreProcessor:
     def _build_expression_table(self) -> None:
         self.expression_table = None
 
+        if not self.config.input.use_expression:
+            return
+
         for expression_file in self.expression_files:
 
             if "gtex" in expression_file.lower():
@@ -278,9 +281,7 @@ class PreProcessor:
                 if self.config.input.log_expression:
                     new_expression_table = np.log(new_expression_table + (new_expression_table[new_expression_table > 0].min() / 2))
 
-                self._join_expression_tables(new_expression_table)
-
-            if "human_protein_atlas" in expression_file.lower():
+            elif "human_protein_atlas" in expression_file.lower():
                 raw_table = pd.read_csv(
                     expression_file, sep="\t", header=0, index_col=0)
 
@@ -295,7 +296,10 @@ class PreProcessor:
                 if self.config.input.log_expression:
                     new_expression_table = np.log(new_expression_table + (new_expression_table[new_expression_table > 0].min() / 2))
 
-                self._join_expression_tables(new_expression_table)
+            else:
+                raise ValueError("The Expression File {} that was put in does not adhere to naming conventions.".format(expression_file))
+            
+            self._join_expression_tables(new_expression_table)
 
     def _join_expression_tables(self, new_table) -> None:
         if self.expression_table is None:
@@ -308,7 +312,6 @@ class PreProcessor:
         ''' this removes nodes that do not have all the features that we request.
             Thus, node indices before and after this method call can change and usually do.
         '''
-
         feature_df_list = [pd.read_csv(os.path.join(self.config.input.main_dir, mapping["features_file"]),
                                        sep=" ", header=0)
                            for mapping in self.mapping_list if mapping["features_file"] != ""]
@@ -403,7 +406,7 @@ class PreProcessor:
             known_positives_set = getattr(hooks, self.mapping_list[0]["function"])(*self.mapping_list[0]["args"], **self.mapping_list[0]["kwargs"])
         except KeyError:
             known_positives_df = pd.read_csv(os.path.join(self.config.input.main_dir, self.mapping_list[0]["ground_truth"]), 
-                                                          sep="\t", names=["chromosome", "start", "end", "symbol", "strand"])
+                                             sep="\t", names=["chromosome", "start", "end", "symbol", "strand"])
             known_positives_set = set(known_positives_df["symbol"].tolist())
 
         try:

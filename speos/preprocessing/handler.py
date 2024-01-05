@@ -2,11 +2,12 @@ from speos.preprocessing.mappers import *
 from speos.preprocessing.preprocessor import PreProcessor
 
 class InputHandler:
-    def __init__(self, config):
+    def __init__(self, config, **preprocessor_kwargs):
         """ Utility class that strings together gwas and adjacency mapping and feeds it into the preprocessor 
 
             Args:
                 config (speos.utils.config.Config): A Config object that contains all the details of the required data.
+                **preprocessor_kwargs (dict): Keyword arguments that are handed down to the preprocessor
 
         """
         self.config = config
@@ -14,7 +15,7 @@ class InputHandler:
 
         adjacencies = AdjacencyMapper(config.input.adjacency_mappings, blacklist=self.config.input.adjacency_blacklist).get_mappings(config.input.adjacency, fields=config.input.adjacency_field)
 
-        self.prepro = PreProcessor(config, mappings, adjacencies)
+        self.prepro = PreProcessor(config, mappings, adjacencies, **preprocessor_kwargs)
 
     def get_preprocessor(self):
         """ 

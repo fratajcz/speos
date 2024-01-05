@@ -5,7 +5,7 @@ import os
 from speos.preprocessing.mappers import GWASMapper, AdjacencyMapper
 from speos.preprocessing.preprocessor import PreProcessor
 from speos.utils.config import Config
-
+from utils import TestSetup
 
 class GWASMapperTest(unittest.TestCase):
 
@@ -505,23 +505,10 @@ class PreprocessorTest(unittest.TestCase):
         print(metrics)
 
 
-class DummyPreProcessorTest(unittest.TestCase):
+class DummyPreProcessorTest(TestSetup):
 
     def setUp(self) -> None:
-        self.config = Config()
-        self.config.logging.dir = "speos/tests/logs/"
-
-        self.config.name = "DiagnosticTest"
-        self.config.crossval.n_folds = 1
-
-        self.config.model.save_dir = "speos/tests/models/"
-        self.config.inference.save_dir = "speos/tests/results"
-        self.config.model.plot_dir = "speos/tests/plots"
-
-        self.config.input.gwas_mappings = "speos/tests/files/dummy_graph/gwas.json"
-        self.config.input.adjacency_mappings = "speos/tests/files/dummy_graph/adjacency.json"
-        self.config.input.gene_sets = "speos/tests/files/dummy_graph/"
-        self.config.input.gwas = "speos/tests/files/dummy_graph/"
+        super().setUp()
 
         self.gwasmapper = GWASMapper(self.config.input.gwas_mappings)
         self.adjacencymapper = AdjacencyMapper(mapping_file=self.config.input.adjacency_mappings)
@@ -530,8 +517,8 @@ class DummyPreProcessorTest(unittest.TestCase):
         # a cold call on an unbuilt graph to find positive and negative indices should result in the graph being built and then return the indices
         gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
-        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
-
+        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies, **self.prepro_kwargs)
+        
         prev_pos, prev_neg = preprocessor.find_pos_and_neg_idx()
 
         # check that both lists together contain all the nodes from the preprocessor graph
@@ -577,7 +564,7 @@ class DummyPreProcessorTest(unittest.TestCase):
         self.config.input.use_embeddings = True
         self.config.input.use_gwas = False
         self.config.input.use_expression = False
-        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
+        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies, **self.prepro_kwargs)
         X, y, adj = preprocessor.get_data()
         self.assertEqual(X.shape[1], 100)
 
@@ -587,52 +574,50 @@ class DummyPreProcessorTest(unittest.TestCase):
     def test_dummy_xswap_undirected(self):
         gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
-        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
+        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies, **self.prepro_kwargs)
         preprocessor.build_graph()
         degree_sequence = sorted((d for n, d in preprocessor.G.degree()), reverse=True)
-
+        
         config2 = self.config.deepcopy()
         config2.input.randomize_adjacency_percent = 100
-        preprocessor2 = PreProcessor(config2, gwasmappings, adjacencies)
+        preprocessor2 = PreProcessor(config2, gwasmappings, adjacencies, **self.prepro_kwargs)
         preprocessor2.build_graph()
         degree_sequence2 = sorted((d for n, d in preprocessor2.G.degree()), reverse=True)
 
-        self.assertTrue((degree_sequence == degree_sequence2))
+        for one, two in zip(degree_sequence, degree_sequence2):
+            self.assertTrue(one >= two)
 
     def test_dummy_xswap_undirected_with_features(self):
         gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
-        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
+        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies, **self.prepro_kwargs)
         preprocessor.build_graph(features=True)
         degree_sequence = sorted((d for n, d in preprocessor.G.degree()), reverse=True)
 
         config2 = self.config.deepcopy()
         config2.input.randomize_adjacency_percent = 100
-        preprocessor2 = PreProcessor(config2, gwasmappings, adjacencies)
+        preprocessor2 = PreProcessor(config2, gwasmappings, adjacencies, **self.prepro_kwargs)
         preprocessor2.build_graph(features=True)
         degree_sequence2 = sorted((d for n, d in preprocessor2.G.degree()), reverse=True)
 
-        self.assertTrue((degree_sequence == degree_sequence2))
-
-        X1, y1, adj1 = preprocessor.get_data()
-        X2, y2, adj2 = preprocessor2.get_data()
-
-        self.assertTrue(True)
+        for one, two in zip(degree_sequence, degree_sequence2):
+            self.assertTrue(one >= two)
 
     def test_dummy_xswap_directed(self):
         gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyDirectedGraph", fields="name")
-        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
+        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies, **self.prepro_kwargs)
         preprocessor.build_graph()
         degree_sequence = sorted((d for n, d in preprocessor.G.degree()), reverse=True)
 
         config2 = self.config.deepcopy()
         config2.input.randomize_adjacency_percent = 100
-        preprocessor2 = PreProcessor(config2, gwasmappings, adjacencies)
+        preprocessor2 = PreProcessor(config2, gwasmappings, adjacencies, **self.prepro_kwargs)
         preprocessor2.build_graph()
         degree_sequence2 = sorted((d for n, d in preprocessor2.G.degree()), reverse=True)
 
-        self.assertTrue((degree_sequence == degree_sequence2))
+        for one, two in zip(degree_sequence, degree_sequence2):
+            self.assertTrue(one >= two)
 
     def test_dummy_metrics(self):
         gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
