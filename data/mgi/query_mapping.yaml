@@ -20,5 +20,6 @@
     file: "data/mgi/mito_query.txt"
 "mtcentraldogma":
     file: "data/mgi/mito_query.txt"
-
+"uc_only":
+    file: "data/mgi/uc_only_query.txt"
 

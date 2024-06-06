@@ -222,7 +222,7 @@ class Experiment:
 
         self.recall = recall
         # if val set has only positives, use composite f1, else use normal f1
-        if self.data.y[self.data.val_mask].sum() == self.data.val_mask.sum():
+        if self.data.y[self.data.val_mask].sum() == self.data.val_mask.sum() and self.config.es.metric != "mean_rank_filtered":
             self.checkpoint_on = 2 * (self.train_precision * self.recall) / (
                 self.train_precision + self.recall) if self.train_precision is not None else self.recall
         else:

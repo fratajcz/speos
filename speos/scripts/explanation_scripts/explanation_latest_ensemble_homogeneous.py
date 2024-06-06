@@ -98,7 +98,10 @@ for i, (output_idx, gene) in enumerate(zip(candidates, genes)):
     
     #if os.path.exists(path):
     #    continue
-    print("Processing Candidate Gene #{} out of {}: {}".format(i + 1, len(candidates), dataset.preprocessor.id2hgnc[output_idx]))
+    try:
+        print("Processing Candidate Gene #{} out of {}: {}".format(i + 1, len(candidates), dataset.preprocessor.id2hgnc[output_idx]))
+    except AttributeError:
+        print("Processing Candidate Gene #{} out of {}: {}".format(i + 1, len(candidates), output_idx))
     ig_attr_edge_all = None
     ig_attr_node_all = None
     ig_attr_self_all = None

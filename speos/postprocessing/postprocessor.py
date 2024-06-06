@@ -384,7 +384,7 @@ class PostProcessor:
 
         unknown_genes, all_genes, positive_genes = self.get_unknown_genes(results_path)
 
-        goea = GOEA_Study(base_path= os.path.join(self.config.input.main_dir, "data/goa_human/"))
+        goea = GOEA_Study(base_path=os.path.join(self.config.input.main_dir, "data/goa/"))
 
         for task in ["biological process", "molecular function", "cellular component"]:
 
@@ -947,7 +947,8 @@ class PostProcessor:
         path_to_graph = os.path.join(self.config.input.main_dir, path_to_graph)
         hgnc2degree = self.get_drugtarget_dict(path_to_graph)
         return set(hgnc2degree.keys())
-
+    
+    
     def get_drugtarget_dict(self, path_to_graph="data/drkg/cgi.tsv") -> dict:
         path_to_graph = os.path.join(self.config.input.main_dir, path_to_graph)
         graph = self.load_drugtarget_graph(path_to_graph)

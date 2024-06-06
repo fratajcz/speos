@@ -2,6 +2,9 @@ from speos.utils.config import Config
 from speos.models import ModelBootstrapper
 from speos.preprocessing.datasets import DatasetBootstrapper
 from speos.preprocessing.mappers import GWASMapper, AdjacencyMapper
+import speos.utils.nn_utils  as nn_utils
+import torch_geometric.nn as pyg_nn
+import gc
 
 from speos.helpers import CheckPointer
 import pandas as pd
@@ -57,10 +60,15 @@ if args.index == -1:
     dataset.preprocessor.build_graph(features=True)
 
 data = dataset.data
+
+data.edge_index, edge_encoder = nn_utils.typed_edges_to_sparse_tensor(data.x, data.edge_index_dict)
+edge_types = data.edge_index.storage.value().cuda()
 data.to(args.device)
 input_dim = data.x.shape[1]
 model = ModelBootstrapper(
             config, input_dim, dataset.num_relations).get_model()
+model.to(args.device)
+
 
 ig_attr_edge_ = None
 ig_attr_node_ = None
@@ -80,7 +88,10 @@ with open(outer_results_file, "r") as file:
     outer_results = json.load(file)[0]
     
 if args.gene == "" and args.index == -1:
-    genes = [key for key, value in outer_results.items() if value >= args.mincs]
+    if args.mincs == 12:
+        genes = [dataset.preprocessor.id2hgnc[id] for id in dataset.data.y.nonzero().squeeze().tolist()]
+    else:
+        genes = [key for key, value in outer_results.items() if value >= args.mincs]
     candidates = [dataset.preprocessor.hgnc2id[gene] for gene in genes]
     print("Candidates: {} / {}".format(genes, candidates))
 
@@ -99,7 +110,10 @@ for i, (output_idx, gene) in enumerate(zip(candidates, genes)):
     
     #if os.path.exists(path):
     #    continue
-    print("Processing Candidate Gene #{} out of {}: {}".format(i + 1, len(candidates), dataset.preprocessor.id2hgnc[output_idx]))
+    try:
+        print("Processing Candidate Gene #{} out of {}: {}".format(i + 1, len(candidates), dataset.preprocessor.id2hgnc[output_idx]))
+    except AttributeError:
+        print("Processing Candidate Gene #{} out of {}: {}".format(i + 1, len(candidates), output_idx))
     ig_attr_edge_all = None
     ig_attr_node_all = None
     ig_attr_self_all = None
@@ -113,12 +127,12 @@ for i, (output_idx, gene) in enumerate(zip(candidates, genes)):
                 ig_attr_node = torch.load(os.path.join(config.pp.save_dir, "{}_ig_attr_node_outer{}_inner{}_{}.pt".format(old_config_name, outer_fold, inner_fold, gene)), map_location=torch.device(args.device))
                 ig_attr_edge = torch.load(os.path.join(config.pp.save_dir, "{}_ig_attr_edge_outer{}_inner{}_{}.pt".format(old_config_name, outer_fold, inner_fold, gene)), map_location=torch.device(args.device))
                 ig_attr_self = torch.load(os.path.join(config.pp.save_dir, "{}_ig_attr_self_outer{}_inner{}_{}.pt".format(old_config_name, outer_fold, inner_fold, gene)), map_location=torch.device(args.device))
-                ig_attr_self_abs = torch.load(os.path.join(config.pp.save_dir, "{}_ig_attr_self_abs_outer{}_inner{}_{}.pt".format(old_config_name, outer_fold, inner_fold, gene)), map_location=torch.device(args.device))
+                #ig_attr_self_abs = torch.load(os.path.join(config.pp.save_dir, "{}_ig_attr_self_abs_outer{}_inner{}_{}.pt".format(old_config_name, outer_fold, inner_fold, gene)), map_location=torch.device(args.device))
                 print("Loaded edge and node attributes for outer {} inner {}".format(outer_fold, inner_fold))
                 ig_attr_node.requires_grad = False
                 ig_attr_edge.requires_grad = False
                 ig_attr_self.requires_grad = False
-                ig_attr_self_abs.requires_grad = False
+                #ig_attr_self_abs.requires_grad = False
 
             except FileNotFoundError:
                 if args.readonly:
@@ -132,7 +146,12 @@ for i, (output_idx, gene) in enumerate(zip(candidates, genes)):
                 checkpointer.restore()
 
                 surrogate_model = model.architectures[0].repackage_into_one_sequential()
-                surrogate_model.to(args.device)
+                #surrogate_model.to(args.device)
+
+                for module in surrogate_model.modules():
+                    #print(module)
+                    if isinstance(module, pyg_nn.FiLMConv):
+                        module.add_types(edge_types)
                 #for module in surrogate_model.modules():
                 #    #print(module)
                 #    if isinstance(module, pyg_nn.FiLMConv):
@@ -149,34 +168,40 @@ for i, (output_idx, gene) in enumerate(zip(candidates, genes)):
 
                 ig_attr_node, ig_attr_edge = ig.attribute(
                     (data.x.float().unsqueeze(0), edge_mask.unsqueeze(0)),
-                    additional_forward_args=(data.edge_index), internal_batch_size=1)
+                    additional_forward_args=(data.edge_index), internal_batch_size=1, target=0)
+                
+                captum_model = to_captum(surrogate_model, mask_type='node_and_edge',
+                                output_idx=output_idx)
+
 
                 # Scale attributions to [0, 1]:
-                explanation = explainer(data.x, data.edge_index, index=output_idx)
-
-                # Scale attributions to [0, 1]:
-                ig_attr_self = explanation.node_mask.squeeze(0)[output_idx]
-                ig_attr_self_abs = explanation.node_mask.squeeze(0)[output_idx].abs()
-                ig_attr_node = explanation.node_mask.squeeze(0).abs().sum(dim=1)
+                ig_attr_self = ig_attr_node.squeeze(0)[output_idx].detach()
+                #ig_attr_self_abs = ig_attr_node.squeeze(0)[output_idx].abs()
+                ig_attr_node = ig_attr_node.squeeze(0).abs().sum(dim=1).detach()
                 
                 ig_attr_self /= ig_attr_self.abs().max().detach()
-                ig_attr_self_abs /= ig_attr_self_abs.max().detach()
+                #ig_attr_self_abs /= ig_attr_self_abs.max()
                 ig_attr_node /= ig_attr_node.max().detach()
 
                 ig_attr_edge = ig_attr_edge.squeeze(0).abs().detach()
                 ig_attr_edge /= ig_attr_edge.max().detach()
                 
                 torch.save(ig_attr_self, os.path.join(config.pp.save_dir, "{}_ig_attr_self_outer{}_inner{}_{}.pt".format(old_config_name, outer_fold, inner_fold, gene)))
-                torch.save(ig_attr_self_abs, os.path.join(config.pp.save_dir, "{}_ig_attr_self_abs_outer{}_inner{}_{}.pt".format(old_config_name, outer_fold, inner_fold, args.gene)))
+                #torch.save(ig_attr_self_abs, os.path.join(config.pp.save_dir, "{}_ig_attr_self_abs_outer{}_inner{}_{}.pt".format(old_config_name, outer_fold, inner_fold, args.gene)))
                 torch.save(ig_attr_node, os.path.join(config.pp.save_dir, "{}_ig_attr_node_outer{}_inner{}_{}.pt".format(old_config_name, outer_fold, inner_fold, gene)))
                 torch.save(ig_attr_edge, os.path.join(config.pp.save_dir, "{}_ig_attr_edge_outer{}_inner{}_{}.pt".format(old_config_name, outer_fold, inner_fold, gene)))
+                
+                del surrogate_model
+                del captum_model
+                del ig
+                del edge_mask
             
             num_processed += 1
 
-            if ig_attr_self_abs_all is None:
-                ig_attr_self_abs_all = ig_attr_self_abs
-            else:
-                ig_attr_self_abs_all += ig_attr_self_abs
+            #if ig_attr_self_abs_all is None:
+            #    ig_attr_self_abs_all = ig_attr_self_abs
+            #else:
+            #    ig_attr_self_abs_all += ig_attr_self_abs
 
             if ig_attr_self_all is None:
                 ig_attr_self_all = ig_attr_self
@@ -193,18 +218,25 @@ for i, (output_idx, gene) in enumerate(zip(candidates, genes)):
             else:
                 ig_attr_node_all += ig_attr_node
 
+            #del ig_attr_self_abs
+            del ig_attr_self
+            del ig_attr_edge
+            del ig_attr_node
+            gc.collect()
+            torch.cuda.empty_cache()
+
     ig_attr_self_all /= num_processed
-    ig_attr_self_abs_all /= num_processed
+    #ig_attr_self_abs_all /= num_processed
     ig_attr_edge_all /= num_processed
     ig_attr_node_all /= num_processed
 
     torch.save(ig_attr_self_all, os.path.join(config.pp.save_dir,  '{}_ig_attr_self_abs_{}.pt'.format(old_config_name, gene)))
-    torch.save(ig_attr_self_abs_all, os.path.join(config.pp.save_dir, '{}_ig_attr_self_{}.pt'.format(old_config_name, gene)))
+    #torch.save(ig_attr_self_abs_all, os.path.join(config.pp.save_dir, '{}_ig_attr_self_{}.pt'.format(old_config_name, gene)))
     torch.save(ig_attr_edge_all, os.path.join(config.pp.save_dir, '{}_ig_attr_edge_{}.pt'.format(old_config_name, gene)))
     torch.save(ig_attr_node_all, os.path.join(config.pp.save_dir, '{}_ig_attr_node_{}.pt'.format(old_config_name, gene)))
     
     # write node attributions to csv
-    input_attributions = ig_attr_self_all.numpy().tolist()
+    input_attributions = ig_attr_self_all.cpu().numpy().tolist()
     input_values = normalized_data[dataset.preprocessor.hgnc2id[gene]].tolist()
     list1, list2, list3 = zip(*sorted(zip(input_attributions, features, input_values)))
 
@@ -224,14 +256,17 @@ for i, (output_idx, gene) in enumerate(zip(candidates, genes)):
     # write 100 most important edge attributions to csv
     k = 100
     id2hgnc = dataset.preprocessor.id2hgnc
-    top_indices = torch.topk(ig_attr_edge, k).indices
-    top_edges = [(id2hgnc[key1.item()], dataset.data.y[key1.item()].item(), id2hgnc[key2.item()],  dataset.data.y[key2.item()].item(), value.item()) for key1, key2, value in zip(data.edge_index[0, top_indices], data.edge_index[1, top_indices], ig_attr_edge_all[top_indices])]
-    df = pd.DataFrame(data=top_edges, columns=["Sender", "Sender Label", "Receiver", "Receiver Label", "Importance"])
+    ig_attr_edge_all = ig_attr_edge_all.detach().cpu()
+    top_indices = torch.topk(ig_attr_edge_all, k).indices
+    senders = data.edge_index.storage.row().cpu()
+    receivers = data.edge_index.storage.col().cpu()
+    top_edges = [(id2hgnc[key1.item()], dataset.data.y[key1.item()].item(), id2hgnc[key2.item()],  dataset.data.y[key2.item()].item(), edge_encoder.inverse_transform([int(edgetype.item())]), value.item()) for key1, key2, edgetype, value in zip(senders[top_indices], receivers[top_indices], edge_types.cpu()[top_indices], ig_attr_edge_all[top_indices])]
+    df = pd.DataFrame(data=top_edges, columns=["Sender", "Sender Label", "Receiver", "Receiver Label", "Type", "Importance"])
     for column in df.columns:
         if column.endswith("Label"):
             df[column] = df[column].astype(int)
     df.to_csv(os.path.join(config.pp.save_dir, "Edge_Importance_{}_{}.tsv".format(old_config_name, gene)), sep="\t", index=False)
-
+    """
     fig, ax = plt.subplots(figsize=(12, 12))
     # Visualize absolute values of attributions:
 
@@ -262,4 +297,5 @@ for i, (output_idx, gene) in enumerate(zip(candidates, genes)):
     fig.tight_layout()
     path = "{}/{}_{}.png".format(config.model.plot_dir, old_config_name, dataset.preprocessor.id2hgnc[output_idx])
     plt.savefig(path, dpi=350)
-    print("Saved Explanation for {}".format(id2hgnc[output_idx]))
+    """
+    print("Saved Explanation for {}".format(output_idx))
