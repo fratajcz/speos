@@ -7,6 +7,10 @@ from speos.preprocessing.preprocessor import PreProcessor
 from speos.utils.config import Config
 from speos.tests.utils import TestSetup
 
+import logging
+
+logging.disable()
+
 class GWASMapperTest(unittest.TestCase):
 
     def setUp(self):
@@ -297,52 +301,52 @@ class PreprocessorTest(TestSetup):
         self.assertEqual(adj[adjacencies[0]["name"]].shape[1], 242512)
 
     def test_two_adjacencies(self):
-        gwasmappings = self.gwasmapper.get_mappings(tags="immune_dysregulation", fields="name")
-        adjacencies = self.adjacencymapper.get_mappings(tags="BioPlex", fields="name")
+        gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
+        adjacencies = self.adjacencymapper.get_mappings(tags="dummy", fields="name")
 
         preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
         X, y, adj = preprocessor.get_data()
-        self.assertEqual(adj["BioPlex30293T"].shape[1], 168892)
-        self.assertEqual(adj["BioPlex30HCT116"].shape[1], 105364)
+        self.assertEqual(adj["DummyUndirectedGraph"].shape[1], 12)
+        self.assertEqual(adj["DummyDirectedGraph"].shape[1], 6)
 
     def test_contains_directed(self):
         # only undirected
-        gwasmappings = self.gwasmapper.get_mappings(tags="immune_dysregulation", fields="name")
-        adjacencies = self.adjacencymapper.get_mappings(tags="BioPlex", fields="name")
+        gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
+        adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
 
         preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
 
         self.assertFalse(preprocessor.contains_directed_graphs())
 
         # only directed
-        adjacencies = self.adjacencymapper.get_mappings(tags="hetionet_regulates", fields="name")
+        adjacencies = self.adjacencymapper.get_mappings(tags="DummyDirectedGraph", fields="name")
 
         preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
         self.assertTrue(preprocessor.contains_directed_graphs())
 
         # undirected and directed
-        adjacencies = self.adjacencymapper.get_mappings(tags=["hetionet_regulates", "BioPlex"], fields="name")
+        adjacencies = self.adjacencymapper.get_mappings(tags=["dummy"], fields="name")
 
         preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
         self.assertTrue(preprocessor.contains_directed_graphs())
 
     def test_contains_only_directed(self):
         # only undirected
-        gwasmappings = self.gwasmapper.get_mappings(tags="immune_dysregulation", fields="name")
-        adjacencies = self.adjacencymapper.get_mappings(tags="BioPlex", fields="name")
+        gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
+        adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
 
         preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
 
         self.assertFalse(preprocessor.contains_only_directed_graphs())
 
         # only directed
-        adjacencies = self.adjacencymapper.get_mappings(tags="hetionet_regulates", fields="name")
+        adjacencies = self.adjacencymapper.get_mappings(tags="DummyDirectedGraph", fields="name")
 
         preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
         self.assertTrue(preprocessor.contains_only_directed_graphs())
 
         # undirected and directed
-        adjacencies = self.adjacencymapper.get_mappings(tags=["hetionet_regulates", "BioPlex"], fields="name")
+        adjacencies = self.adjacencymapper.get_mappings(tags=["dummy"], fields="name")
 
         preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
         self.assertFalse(preprocessor.contains_only_directed_graphs())
