@@ -4,7 +4,7 @@ import unittest
 import shutil
 import numpy as np
 import os
-from utils import TestSetup
+from speos.tests.utils import TestSetup
 
 class OuterCrossvalTest(TestSetup):
     def setUp(self):

@@ -5,7 +5,7 @@ import os
 from speos.preprocessing.mappers import GWASMapper, AdjacencyMapper
 from speos.preprocessing.preprocessor import PreProcessor
 from speos.utils.config import Config
-from utils import TestSetup
+from speos.tests.utils import TestSetup
 
 class GWASMapperTest(unittest.TestCase):
 

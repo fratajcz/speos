@@ -8,7 +8,7 @@ from speos.preprocessing.mappers import GWASMapper, AdjacencyMapper
 from torch_geometric.nn import GCNConv
 import torch
 import torch.nn as nn
-from utils import TestSetup
+from speos.tests.utils import TestSetup
 
 
 torch.set_default_tensor_type(torch.DoubleTensor)

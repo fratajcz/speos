@@ -3,7 +3,7 @@ from speos.utils.config import Config
 from speos.preprocessing.mappers import GWASMapper, AdjacencyMapper
 from speos.preprocessing.datasets import MultiGeneDataset, GeneDataset, DatasetBootstrapper
 import shutil
-from utils import TestSetup
+from speos.tests.utils import TestSetup
 
 
 class MultiGeneDatasetTest(TestSetup):

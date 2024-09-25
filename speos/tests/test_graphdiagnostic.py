@@ -5,7 +5,7 @@ from speos.visualization.diagnosticwrapper import GraphDiagnosticWrapper
 import matplotlib.pyplot as plt
 import os
 import numpy as np
-from utils import TestSetup
+from speos.tests.utils import TestSetup
 
 class PanoramaTest(TestSetup):
     """ This class tests the panorama diagnostics on fake data (i.e without relying on preprocessor)"""

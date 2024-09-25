@@ -3,7 +3,7 @@ from speos.utils.config import Config
 import unittest
 import shutil
 import os
-from utils import TestSetup
+from speos.tests.utils import TestSetup
 
 class LoggingTest(TestSetup):
 

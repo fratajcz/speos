@@ -3,7 +3,7 @@ import json
 
 from speos.postprocessing.postprocessor import PostProcessor
 from speos.utils.config import Config
-from utils import TestSetup
+from speos.tests.utils import TestSetup
 
 
 class PostProcessorTest(TestSetup):
@@ -14,8 +14,8 @@ class PostProcessorTest(TestSetup):
 
         self.pp = PostProcessor(self.config)
 
-        self.test_outer_results = "speos/tests/files/uc_film_nohetioouter_results.json"
-        self.results_file = "speos/tests/files/uc_film_nohetio_outer_0_fold_1.tsv"
+        self.test_outer_results = "speos/tests/files/dummy_outer_results.json"
+        self.results_file = "speos/tests/files/dummy_inner_results.tsv"
 
     def test_random_overlap_descriptive_algorithm(self):
         import numpy as np

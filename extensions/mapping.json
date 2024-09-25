@@ -1,1 +1,10 @@
-[]
+[
+    {  "name": "obesity",
+       "ground_truth": "data/mendelian_gene_sets/Body_Mass_Disorder_genes.bed",
+       "phenotype": "bodymass_disorder",
+       "features_file": "data/gwas/BW.genes.out",
+       "function": "test_preprocess_labels",
+       "args": ["./extensions/obesity_label_genes.txt"],
+       "kwargs": {}
+      }
+    ]

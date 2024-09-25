@@ -3,7 +3,7 @@ from speos.utils.config import Config
 from speos.experiment import Experiment
 import shutil
 import os
-from utils import TestSetup
+from speos.tests.utils import TestSetup
 
 
 class CompanionTest(TestSetup):
