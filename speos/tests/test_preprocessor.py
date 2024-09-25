@@ -258,28 +258,28 @@ class AdjacencyMapperTest(unittest.TestCase):
         self.assertEqual(len(full_mappings), len(also_full_mappings))
 
 
-class PreprocessorTest(unittest.TestCase):
+class PreprocessorTest(TestSetup):
     def setUp(self):
-        self.config = Config()
-        self.mapping = [{"name": "UC-immune_dysregulation",
-                         "ground_truth": "data/mendelian_gene_sets/Immune_Dysregulation_genes.bed",
-                         "features_file": "data/gwas/UC.genes.out",
-                         "match_type": "perfect",
-                         "significant": "False"},
-                        {"name": "RA-immune_dysregulation",
-                         "ground_truth": "data/mendelian_gene_sets/Immune_Dysregulation_genes.bed",
-                         "features_file": "data/gwas/RA.genes.out",
-                         "match_type": "perfect",
-                         "significant": "True"}]
-        self.mapping_file_path = "speos/tests/files/mappings.json"
-        with open(self.mapping_file_path, "w") as file:
-            json.dump(self.mapping, file)
-        self.gwasmapper = GWASMapper(mapping_file=self.mapping_file_path)
+        #self.config = Config()
+        #self.mapping = [{"name": "UC-immune_dysregulation",
+        #                 "ground_truth": "data/mendelian_gene_sets/Immune_Dysregulation_genes.bed",
+        #                 "features_file": "data/gwas/UC.genes.out",
+        #                 "match_type": "perfect",
+        #                 "significant": "False"},
+        #                {"name": "RA-immune_dysregulation",
+        #                 "ground_truth": "data/mendelian_gene_sets/Immune_Dysregulation_genes.bed",
+        #                 "features_file": "data/gwas/RA.genes.out",
+        #                 "match_type": "perfect",
+        #                 "significant": "True"}]
+        #self.mapping_file_path = "speos/tests/files/mappings.json"
+        #with open(self.mapping_file_path, "w") as file:
+        #    json.dump(self.mapping, file)
+        #self.gwasmapper = GWASMapper(mapping_file=self.mapping_file_path)
 
-        self.adjacencymapper = AdjacencyMapper()
-
-    def tearDown(self) -> None:
-        os.remove(self.mapping_file_path)
+        #self.adjacencymapper = AdjacencyMapper()
+        super().setUp()
+        self.gwasmapper = GWASMapper(self.config.input.gwas_mappings)
+        self.adjacencymapper = AdjacencyMapper(mapping_file=self.config.input.adjacency_mappings)
 
     def test_single_adjacency(self):
         gwasmappings = self.gwasmapper.get_mappings(tags="immune_dysregulation", fields="name")
@@ -349,8 +349,8 @@ class PreprocessorTest(unittest.TestCase):
 
     def test_log_expression(self):
         # check if logarithmizing protein expression works
-        gwasmappings = self.gwasmapper.get_mappings(tags="immune_dysregulation", fields="name")
-        adjacencies = self.adjacencymapper.get_mappings(tags="BioPlex 3-0 293T", fields="name")
+        gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
+        adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
         config = self.config.deepcopy()
         config.input.log_expression = True
         preprocessor = PreProcessor(config, gwasmappings, adjacencies)
@@ -359,8 +359,8 @@ class PreprocessorTest(unittest.TestCase):
 
     def test_no_gwas(self):
         # check if toggling use_gwas works
-        gwasmappings = self.gwasmapper.get_mappings(tags="immune_dysregulation", fields="name")
-        adjacencies = self.adjacencymapper.get_mappings(tags="BioPlex 3-0 293T", fields="name")
+        gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
+        adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
         config = self.config.deepcopy()
         preprocessor = PreProcessor(config, gwasmappings, adjacencies)
         X, y, adj = preprocessor.get_data()
@@ -378,8 +378,8 @@ class PreprocessorTest(unittest.TestCase):
 
     def test_no_expression(self):
         # check if toggling use_expression works
-        gwasmappings = self.gwasmapper.get_mappings(tags="immune_dysregulation", fields="name")
-        adjacencies = self.adjacencymapper.get_mappings(tags="BioPlex 3.0 293T", fields="name")
+        gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
+        adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
         config = self.config.deepcopy()
         preprocessor = PreProcessor(config, gwasmappings, adjacencies)
 
@@ -399,8 +399,8 @@ class PreprocessorTest(unittest.TestCase):
 
     def test_random_features(self):
         # check if toggling off use_expression and use_gwas simultaneously produces random features
-        gwasmappings = self.gwasmapper.get_mappings(tags="immune_dysregulation", fields="name")
-        adjacencies = self.adjacencymapper.get_mappings(tags="BioPlex 3.0 293T", fields="name")
+        gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
+        adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
         config = self.config.deepcopy()
         config.input.use_gwas = False
         config.input.use_expression = False
@@ -417,7 +417,7 @@ class PreprocessorTest(unittest.TestCase):
         import numpy as np
         adjacency = pd.DataFrame(data=np.array([list(range(0, 10)), list(range(10, 20))]).reshape(10, 2))
 
-        adjacency_swapped = PreProcessor.xswap(adjacency, 0.4)
+        adjacency_swapped = PreProcessor._xswap(adjacency, 0.4)
 
         is_identical = 0
         for i, row in adjacency.iterrows():
@@ -427,7 +427,7 @@ class PreprocessorTest(unittest.TestCase):
         self.assertTrue((adjacency.iloc[:, 0] == adjacency_swapped.iloc[:, 0]).all())
         self.assertEqual(is_identical/len(adjacency), 1 - 0.4)
 
-        adjacency_swapped = PreProcessor.xswap(adjacency, 0.8)
+        adjacency_swapped = PreProcessor._xswap(adjacency, 0.8)
 
         is_identical = 0
         for i, row in adjacency.iterrows():
@@ -436,7 +436,7 @@ class PreprocessorTest(unittest.TestCase):
 
         self.assertAlmostEqual(is_identical/len(adjacency), 1 - 0.8)
 
-        adjacency_swapped = PreProcessor.xswap(adjacency, 1)
+        adjacency_swapped = PreProcessor._xswap(adjacency, 1)
 
         is_identical = 0
         for i, row in adjacency.iterrows():
@@ -450,7 +450,7 @@ class PreprocessorTest(unittest.TestCase):
         import numpy as np
         adjacency = pd.DataFrame(data=np.array([list(range(0, 11)), list(range(10, 21))]).reshape(11, 2))
 
-        adjacency_swapped = PreProcessor.xswap(adjacency, 0.4)
+        adjacency_swapped = PreProcessor._xswap(adjacency, 0.4)
 
         is_identical = 0
         for i, row in adjacency.iterrows():
@@ -459,7 +459,7 @@ class PreprocessorTest(unittest.TestCase):
 
         self.assertAlmostEqual(is_identical/len(adjacency), 1 - (4/11))
 
-        adjacency_swapped = PreProcessor.xswap(adjacency, 0.8)
+        adjacency_swapped = PreProcessor._xswap(adjacency, 0.8)
 
         is_identical = 0
         for i, row in adjacency.iterrows():
@@ -468,7 +468,7 @@ class PreprocessorTest(unittest.TestCase):
 
         self.assertAlmostEqual(is_identical/len(adjacency), 1 - (8/11))
 
-        adjacency_swapped = PreProcessor.xswap(adjacency, 1)
+        adjacency_swapped = PreProcessor._xswap(adjacency, 1)
 
         is_identical = 0
         for i, row in adjacency.iterrows():
@@ -626,8 +626,6 @@ class DummyPreProcessorTest(TestSetup):
         preprocessor.build_graph()
 
         metrics = preprocessor.get_metrics()
-
-        print(metrics)
 
     def test_label_extension(self):
         config = Config()
