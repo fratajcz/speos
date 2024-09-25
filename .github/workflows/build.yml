@@ -27,8 +27,8 @@ jobs:
     - name: Install dependencies
       run: |
         pip install --upgrade pip
-        pip install torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0
-        pip install torch-scatter torch-sparse -f https://data.pyg.org/whl/torch-2.0.0+cpu.html
+        pip install torch==2.0.0 torchvision==0.15.1 torchaudio==2.0.1 --index-url https://download.pytorch.org/whl/cpu
+        pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.0.0+cpu.html
         pip install -r requirements.yaml
         pip install .
     - name: Test with unittest
