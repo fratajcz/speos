@@ -9,7 +9,7 @@ from speos.tests.utils import TestSetup
 
 import logging
 
-logging.disable()
+#logging.disable()
 
 class GWASMapperTest(unittest.TestCase):
 
@@ -286,19 +286,19 @@ class PreprocessorTest(TestSetup):
         self.adjacencymapper = AdjacencyMapper(mapping_file=self.config.input.adjacency_mappings)
 
     def test_single_adjacency(self):
-        gwasmappings = self.gwasmapper.get_mappings(tags="immune_dysregulation", fields="name")
-        adjacencies = self.adjacencymapper.get_mappings(tags="BioPlex 3-0 293T", fields="name")
+        gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
+        adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
 
         preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
         X, y, adj = preprocessor.get_data()
-        self.assertEqual(adj[adjacencies[0]["name"]].shape[1], 168892)
+        self.assertEqual(adj[adjacencies[0]["name"]].shape[1], 12)
 
-        gwasmappings = self.gwasmapper.get_mappings(tags="immune_dysregulation", fields="name")
-        adjacencies = self.adjacencymapper.get_mappings(tags="hetionet_regulates", fields="name")
+        gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
+        adjacencies = self.adjacencymapper.get_mappings(tags="DummyDirectedGraph", fields="name")
 
         preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
         X, y, adj = preprocessor.get_data()
-        self.assertEqual(adj[adjacencies[0]["name"]].shape[1], 242512)
+        self.assertEqual(adj[adjacencies[0]["name"]].shape[1], 6)
 
     def test_two_adjacencies(self):
         gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
@@ -482,8 +482,8 @@ class PreprocessorTest(TestSetup):
         self.assertAlmostEqual(is_identical/len(adjacency), 1 - (10/11))
 
     def test_xswap_runs_real_data(self):
-        gwasmappings = self.gwasmapper.get_mappings(tags="immune_dysregulation", fields="name")
-        adjacencies = self.adjacencymapper.get_mappings(tags="BioPlex 3.0 293T", fields="name")
+        gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
+        adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
         config = self.config.deepcopy()
         preprocessor = PreProcessor(config, gwasmappings, adjacencies)
         X, y, adj = preprocessor.get_data()
@@ -499,8 +499,8 @@ class PreprocessorTest(TestSetup):
         adj2 = list(adj2.values())[0]
 
     def test_metrics(self):
-        gwasmappings = self.gwasmapper.get_mappings(tags="immune_dysregulation", fields="name")
-        adjacencies = self.adjacencymapper.get_mappings(tags="BioPlex 3.0 293T", fields="name")
+        gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
+        adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
         preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
         preprocessor.build_graph()
 
@@ -639,7 +639,7 @@ class DummyPreProcessorTest(TestSetup):
                          "match_type": "perfect",
                          "significant": "True",
                          "function": "test_preprocess_labels",
-                         "args": ["./speos/tests/files/dummy_graph/labels.tsv"],
+                         "args": ["./speos/tests/files/dummy_graph/dummy_other_label.tsv"],
                          "kwargs": {}
                          }]
 
@@ -663,7 +663,7 @@ class DummyPreProcessorTest(TestSetup):
                          "match_type": "perfect",
                          "significant": "True",
                          "function": "test_preprocess_labels",
-                         "args": ["./speos/tests/files/dummy_graph/labels_ensembl.tsv"],
+                         "args": ["./speos/tests/files/dummy_graph/dummy_other_label_ensembl.tsv"],
                          "kwargs": {},
                          "symbol": "ensembl"}]
 
