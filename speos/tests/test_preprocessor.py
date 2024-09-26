@@ -9,7 +9,7 @@ from speos.tests.utils import TestSetup
 
 import logging
 
-logging.disable()
+#logging.disable()
 
 class GWASMapperTest(unittest.TestCase):
 
@@ -657,8 +657,8 @@ class DummyPreProcessorTest(TestSetup):
 
     def test_label_extension_other_symbol(self):
         config = Config()
-        mapping = [{"name": "UNK-immune_dysregulation",
-                         "ground_truth": "Immune_Dysregulation_genes.bed",
+        mapping = [{"name": "UNK-dummy",
+                         "ground_truth": "dummy_mendelian.bed",
                          "features_file": "",
                          "match_type": "perfect",
                          "significant": "True",
@@ -671,12 +671,13 @@ class DummyPreProcessorTest(TestSetup):
         with open(mapping_file_path, "w") as file:
             json.dump(mapping, file)
         gwasmapper = GWASMapper(mapping_file=mapping_file_path)
-        mappings = gwasmapper.get_mappings(tags="immune_dysregulation", fields="name")
+        mappings = gwasmapper.get_mappings(tags="dummy", fields="name")
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
 
         prepro = PreProcessor(config, mappings, adjacencies, **self.prepro_kwargs)
         prepro.build_graph(features=False)
         pos, neg = prepro.find_pos_and_neg_idx()
+        
         self.assertEqual(len(pos), 3)
 
     def test_directed_graph(self):
