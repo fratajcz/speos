@@ -1,3 +1,6 @@
+[![Documentation Status](https://readthedocs.org/projects/speos/badge/?version=latest)](https://speos.readthedocs.io/en/latest/?badge=latest)
+
+
 ![SPEOS Header](img/speos_space_11_1080.png "SPEOS")
 
 # Identification of core genes from Biological Networks, GWAS and gene expression.
