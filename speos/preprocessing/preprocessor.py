@@ -241,10 +241,56 @@ class PreProcessor:
 
     def translate_protein_to_gene(self, adjacency: pd.DataFrame):
 
+        """
+        Translates a protein adjacency DataFrame to a gene adjacency DataFrame.
+
+        This method reads a protein-gene mapping from a TSV file and uses it to 
+        convert a given adjacency DataFrame containing protein identifiers into 
+        a new adjacency DataFrame containing corresponding gene identifiers.
+
+        Parameters:
+        ----------
+        adjacency : pd.DataFrame
+            A DataFrame where each row represents a pair of proteins, with 
+            protein identifiers formatted as "prefix:protein_id". The columns 
+            should correspond to protein pairs whose relationships are being 
+            represented.
+
+        Returns:
+        -------
+        pd.DataFrame
+            A DataFrame where each row represents a pair of genes, with each 
+            protein identifier replaced by its corresponding gene identifier 
+            based on the mapping. If a protein does not have a corresponding gene 
+            in the mapping, that row is skipped.
+
+        Raises:
+        ------
+        FileNotFoundError
+            If the protein-gene mapping file cannot be found.
+        
+        KeyError
+            If a protein identifier in the adjacency DataFrame does not exist in 
+            the protein-gene mapping.
+        
+        Notes:
+        -----
+        The method expects the protein-gene mapping file to be located at 
+        "data/protein_gene_table.tsv" within the main input directory specified 
+        in the class's configuration.
+
+        Example:
+        --------
+        >>> adjacency_df = pd.DataFrame({
+        ...     'ProteinA': ['prefix:prot1', 'prefix:prot2'],
+        ...     'ProteinB': ['prefix:prot3', 'prefix:prot4']
+        ... })
+        >>> gene_adjacency_df = self.translate_protein_to_gene(adjacency_df)
+        """
+
         table = pd.read_csv(os.path.join(self.config.input.main_dir, "data/protein_gene_table.tsv"), header=0, sep="\t")
         protein_to_gene_dict = {row[0]: row[1] for _, row in table.iterrows()}
         adj_dict = adjacency.to_dict("list")
-        new_adj_dict = {}
         genes_A = []
         genes_B = []
         for i, row in adjacency.iterrows():

@@ -9,7 +9,7 @@ from speos.tests.utils import TestSetup
 
 import logging
 
-#logging.disable()
+logging.disable()
 
 class GWASMapperTest(unittest.TestCase):
 
@@ -289,14 +289,14 @@ class PreprocessorTest(TestSetup):
         gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
 
-        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
+        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies, **self.prepro_kwargs)
         X, y, adj = preprocessor.get_data()
         self.assertEqual(adj[adjacencies[0]["name"]].shape[1], 12)
 
         gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyDirectedGraph", fields="name")
 
-        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
+        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies, **self.prepro_kwargs)
         X, y, adj = preprocessor.get_data()
         self.assertEqual(adj[adjacencies[0]["name"]].shape[1], 6)
 
@@ -304,7 +304,7 @@ class PreprocessorTest(TestSetup):
         gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
         adjacencies = self.adjacencymapper.get_mappings(tags="dummy", fields="name")
 
-        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
+        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies, **self.prepro_kwargs)
         X, y, adj = preprocessor.get_data()
         self.assertEqual(adj["DummyUndirectedGraph"].shape[1], 12)
         self.assertEqual(adj["DummyDirectedGraph"].shape[1], 6)
@@ -314,20 +314,20 @@ class PreprocessorTest(TestSetup):
         gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
 
-        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
+        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies, **self.prepro_kwargs)
 
         self.assertFalse(preprocessor.contains_directed_graphs())
 
         # only directed
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyDirectedGraph", fields="name")
 
-        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
+        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies, **self.prepro_kwargs)
         self.assertTrue(preprocessor.contains_directed_graphs())
 
         # undirected and directed
         adjacencies = self.adjacencymapper.get_mappings(tags=["dummy"], fields="name")
 
-        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
+        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies, **self.prepro_kwargs)
         self.assertTrue(preprocessor.contains_directed_graphs())
 
     def test_contains_only_directed(self):
@@ -335,20 +335,20 @@ class PreprocessorTest(TestSetup):
         gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
 
-        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
+        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies, **self.prepro_kwargs)
 
         self.assertFalse(preprocessor.contains_only_directed_graphs())
 
         # only directed
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyDirectedGraph", fields="name")
 
-        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
+        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies, **self.prepro_kwargs)
         self.assertTrue(preprocessor.contains_only_directed_graphs())
 
         # undirected and directed
         adjacencies = self.adjacencymapper.get_mappings(tags=["dummy"], fields="name")
 
-        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
+        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies, **self.prepro_kwargs)
         self.assertFalse(preprocessor.contains_only_directed_graphs())
 
     def test_log_expression(self):
@@ -357,7 +357,7 @@ class PreprocessorTest(TestSetup):
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
         config = self.config.deepcopy()
         config.input.log_expression = True
-        preprocessor = PreProcessor(config, gwasmappings, adjacencies)
+        preprocessor = PreProcessor(config, gwasmappings, adjacencies, **self.prepro_kwargs)
 
         X, y, adj = preprocessor.get_data()
 
@@ -366,12 +366,12 @@ class PreprocessorTest(TestSetup):
         gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
         config = self.config.deepcopy()
-        preprocessor = PreProcessor(config, gwasmappings, adjacencies)
+        preprocessor = PreProcessor(config, gwasmappings, adjacencies, **self.prepro_kwargs)
         X, y, adj = preprocessor.get_data()
 
         config2 = self.config.deepcopy()
         config2.input.use_gwas = False
-        preprocessor2 = PreProcessor(config2, gwasmappings, adjacencies)
+        preprocessor2 = PreProcessor(config2, gwasmappings, adjacencies, **self.prepro_kwargs)
         X2, y2, adj2 = preprocessor2.get_data()
         self.assertLess(X2.shape[1], X.shape[1])
         self.assertLessEqual(X.shape[0], X2.shape[0])
@@ -385,13 +385,13 @@ class PreprocessorTest(TestSetup):
         gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
         config = self.config.deepcopy()
-        preprocessor = PreProcessor(config, gwasmappings, adjacencies)
+        preprocessor = PreProcessor(config, gwasmappings, adjacencies, **self.prepro_kwargs)
 
         X, y, adj = preprocessor.get_data()
 
         config2 = self.config.deepcopy()
         config2.input.use_expression = False
-        preprocessor2 = PreProcessor(config2, gwasmappings, adjacencies)
+        preprocessor2 = PreProcessor(config2, gwasmappings, adjacencies, **self.prepro_kwargs)
         X2, y2, adj2 = preprocessor2.get_data()
         self.assertLess(X2.shape[1], X.shape[1])
         self.assertLessEqual(X.shape[0], X2.shape[0])
@@ -408,7 +408,7 @@ class PreprocessorTest(TestSetup):
         config = self.config.deepcopy()
         config.input.use_gwas = False
         config.input.use_expression = False
-        preprocessor = PreProcessor(config, gwasmappings, adjacencies)
+        preprocessor = PreProcessor(config, gwasmappings, adjacencies, **self.prepro_kwargs)
 
         X, y, adj = preprocessor.get_data()
         self.assertEqual(preprocessor.num_random_features, X.shape[1])
@@ -485,12 +485,12 @@ class PreprocessorTest(TestSetup):
         gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
         config = self.config.deepcopy()
-        preprocessor = PreProcessor(config, gwasmappings, adjacencies)
+        preprocessor = PreProcessor(config, gwasmappings, adjacencies, **self.prepro_kwargs)
         X, y, adj = preprocessor.get_data()
 
         config2 = self.config.deepcopy()
         config2.input.randomize_adjacency_percent = 50
-        preprocessor2 = PreProcessor(config2, gwasmappings, adjacencies)
+        preprocessor2 = PreProcessor(config2, gwasmappings, adjacencies, **self.prepro_kwargs)
         X2, y2, adj2 = preprocessor2.get_data()
 
         # Cannot compare them directly because some edges get lost. Where? it is less than 1% though
@@ -501,7 +501,7 @@ class PreprocessorTest(TestSetup):
     def test_metrics(self):
         gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
-        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
+        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies, **self.prepro_kwargs)
         preprocessor.build_graph()
 
         metrics = preprocessor.get_metrics()
@@ -544,21 +544,21 @@ class DummyPreProcessorTest(TestSetup):
     def test_dump_edgelist(self):
         gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
-        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
+        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies, **self.prepro_kwargs)
         preprocessor.build_graph()
         preprocessor.dump_edgelist(os.path.join("speos/tests/data/edgelist.tsv.gz"))
 
     def test_dump_edgelist_directed(self):
         gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyDirectedGraph", fields="name")
-        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
+        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies, **self.prepro_kwargs)
         preprocessor.build_graph()
         preprocessor.dump_edgelist(os.path.join("speos/tests/data/edgelist_directed.tsv.gz"))
 
     def test_node_dicts(self):
         gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
-        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
+        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies, **self.prepro_kwargs)
         preprocessor.build_graph(features=True)
         self.assertEqual(len(preprocessor.id2hgnc), len(preprocessor.G))
 
@@ -650,7 +650,7 @@ class DummyPreProcessorTest(TestSetup):
         mappings = gwasmapper.get_mappings(tags="immune_dysregulation", fields="name")
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
 
-        prepro = PreProcessor(config, mappings, adjacencies)
+        prepro = PreProcessor(config, mappings, adjacencies, **self.prepro_kwargs)
         prepro.build_graph(features=False)
         pos, neg = prepro.find_pos_and_neg_idx()
         self.assertEqual(len(pos), 3)
@@ -674,7 +674,7 @@ class DummyPreProcessorTest(TestSetup):
         mappings = gwasmapper.get_mappings(tags="immune_dysregulation", fields="name")
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyUndirectedGraph", fields="name")
 
-        prepro = PreProcessor(config, mappings, adjacencies)
+        prepro = PreProcessor(config, mappings, adjacencies, **self.prepro_kwargs)
         prepro.build_graph(features=False)
         pos, neg = prepro.find_pos_and_neg_idx()
         self.assertEqual(len(pos), 3)
@@ -686,7 +686,7 @@ class DummyPreProcessorTest(TestSetup):
 
         gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyDirectedGraph", fields="name")
-        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
+        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies, **self.prepro_kwargs)
         preprocessor.build_graph()
 
         data = preprocessor.get_data()
