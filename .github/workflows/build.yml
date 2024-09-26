@@ -19,7 +19,10 @@ jobs:
         python-version: ["3.10"]
 
     steps:
-    - uses: actions/checkout@v4
+    - name: check out repository with submodules
+      run: |
+        git clone --recurse-submodules -b latest --single-branch https://github.com/fratajcz/speos.git
+        cd speos
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
       with:
