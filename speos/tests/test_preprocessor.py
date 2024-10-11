@@ -626,7 +626,7 @@ class DummyPreProcessorTest(TestSetup):
     def test_dummy_metrics(self):
         gwasmappings = self.gwasmapper.get_mappings(tags="dummy", fields="name")
         adjacencies = self.adjacencymapper.get_mappings(tags="DummyDirectedGraph", fields="name")
-        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies)
+        preprocessor = PreProcessor(self.config, gwasmappings, adjacencies, **self.prepro_kwargs)
         preprocessor.build_graph()
 
         metrics = preprocessor.get_metrics()

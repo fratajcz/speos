@@ -7,7 +7,6 @@ from speos.tests.utils import TestSetup
 import os
 
 NODATA = int(os.getenv('NODATA', '1'))
-print(NODATA)
 
 class PostProcessorTestNoData(TestSetup):
     def setUp(self):
@@ -98,19 +97,6 @@ class PostProcessorTestNoData(TestSetup):
         descriptive = timeit.timeit(lambda: pp.get_random_overlap(eligible_genes, kept_genes, algorithm="descriptive"), number=3)
         self.assertLess(fast, descriptive)
 
-    def test_dge_missing_phenotype(self):
-
-        config = self.config.copy()
-        config.input.tag = "autism"
-
-        pp = PostProcessor(config, translation_table=self.translation_table_path)
-
-        with open(self.test_outer_results, "r") as file:
-            outer_results = json.load(file)
-        
-        pp.outer_result = outer_results
-
-        self.assertIsNone(pp.dge(self.results_file))
 
     def test_contingency_table(self):
         import numpy as np
@@ -213,6 +199,21 @@ class PostProcessorTest(TestSetup):
         self.pp.outer_result = outer_results
 
         self.pp.go_enrichment(self.results_file)
+
+    
+    def test_dge_missing_phenotype(self):
+
+        config = self.config.copy()
+        config.input.tag = "autism"
+
+        pp = PostProcessor(config, translation_table=self.translation_table_path)
+
+        with open(self.test_outer_results, "r") as file:
+            outer_results = json.load(file)
+        
+        pp.outer_result = outer_results
+
+        self.assertIsNone(pp.dge(self.results_file))
 
    
 
