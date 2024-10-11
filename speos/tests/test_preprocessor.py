@@ -691,14 +691,19 @@ class DummyPreProcessorTest(TestSetup):
         preprocessor.build_graph()
 
         data = preprocessor.get_data()
+        
 
         edges_sender = [preprocessor.hgnc2id[sender] for sender in edges["geneA"]]
         edges_receiver = [preprocessor.hgnc2id[receiver] for receiver in edges["geneB"]]
 
         edge_index = data[2]["DummyDirectedGraph"]
 
-        self.assertEqual(edge_index[0, :].tolist(), edges_sender)
-        self.assertEqual(edge_index[1, :].tolist(), edges_receiver)
+        edges_sender, edges_receiver = (list(x) for x in zip(*sorted(zip(edges_sender, edges_receiver), key=lambda pair: pair[0])))
+
+        edges_sender_prepro, edges_receiver_prepro = (list(x) for x in zip(*sorted(zip(edge_index[0, :].tolist(), edge_index[1, :].tolist()), key=lambda pair: pair[0])))
+
+        self.assertEqual(edges_sender_prepro, edges_sender)
+        self.assertEqual(edges_receiver_prepro, edges_receiver)
 
 
 if __name__ == '__main__':

@@ -33,19 +33,17 @@ class TestSetup(unittest.TestCase):
         self.config.model.mp.n_layers = 1
         self.config.model.mp.dim = 5
         self.config.model.post_mp.n_layers = 0
-        self.config.model.post_mp.dim = 5
-
-        
+        self.config.model.post_mp.dim = 5        
 
         self.setup_dirs = [self.purge_dir + "logs/", self.purge_dir + "results/", self.purge_dir + "plots", self.purge_dir + "models/", self.purge_dir + "data/"]
 
         
 
-        translation_table_path = "speos/tests/files/dummy_graph/dummy_translation_table.tsv"
-        expression_file_paths = ["speos/tests/files/dummy_graph/dummy_gtex_file.tsv", "speos/tests/files/dummy_graph/dummy_human_protein_atlas_file.tsv"]
+        self.translation_table_path = "speos/tests/files/dummy_graph/dummy_translation_table.tsv"
+        self.expression_file_paths = ["speos/tests/files/dummy_graph/dummy_gtex_file.tsv", "speos/tests/files/dummy_graph/dummy_human_protein_atlas_file.tsv"]
 
-        self.prepro_kwargs = {"translation_table": translation_table_path,
-                              "expression_files": expression_file_paths}
+        self.prepro_kwargs = {"translation_table": self.translation_table_path,
+                              "expression_files": self.expression_file_paths}
 
         for dir in self.setup_dirs:
             pathlib.Path(dir).mkdir(parents=True, exist_ok=True) 
