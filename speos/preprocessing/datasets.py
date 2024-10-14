@@ -12,13 +12,13 @@ import speos.utils.path_utils as pu
 
 
 class GeneDataset(InMemoryDataset):
-    def __init__(self, name, config, holdout_size: float = 0.5, transform=None, pre_transform=None):
+    def __init__(self, name, config, holdout_size: float = 0.5, transform=None, pre_transform=None, preprocessor_kwargs={}):
         self.root = config.input.save_dir
         self.save = config.input.save_data
         self.name = name
         self.config = config
         self.holdout_size = holdout_size
-        self.preprocessor = InputHandler(config).get_preprocessor()
+        self.preprocessor = InputHandler(config, preprocessor_kwargs=preprocessor_kwargs).get_preprocessor()
         self.logger_args = [config, __name__]
         self.num_relations = self.preprocessor.get_num_relations()
         logger = setup_logger(*self.logger_args)
@@ -143,15 +143,15 @@ class MultiGeneDataset(GeneDataset):
 
 
 class DatasetBootstrapper:
-    def __init__(self, name, config, holdout_size: float = 0.05):
+    def __init__(self, name, config, holdout_size: float = 0.05, preprocessor_kwargs={}):
         
         # sadly we have to check here how many adjacencies we are gonna get. The actual preprocessing starts within the dataset class
         adjacencies = AdjacencyMapper(config.input.adjacency_mappings, blacklist=config.input.adjacency_blacklist).get_mappings(config.input.adjacency, fields=config.input.adjacency_field)
 
         if len(adjacencies) > 1 or config.input.force_multigraph:
-            self.dataset = MultiGeneDataset(name, config, holdout_size)
+            self.dataset = MultiGeneDataset(name, config, holdout_size, preprocessor_kwargs=preprocessor_kwargs)
         else:
-            self.dataset = GeneDataset(name, config, holdout_size)
+            self.dataset = GeneDataset(name, config, holdout_size, preprocessor_kwargs=preprocessor_kwargs)
 
     def get_dataset(self):
         return self.dataset

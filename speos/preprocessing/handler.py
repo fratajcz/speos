@@ -2,7 +2,7 @@ from speos.preprocessing.mappers import *
 from speos.preprocessing.preprocessor import PreProcessor
 
 class InputHandler:
-    def __init__(self, config, **preprocessor_kwargs):
+    def __init__(self, config, preprocessor_kwargs):
         """ Utility class that strings together gwas and adjacency mapping and feeds it into the preprocessor 
 
             Args:

@@ -75,14 +75,16 @@ class SimpleModelTest(TestSetup):
             self.assertTrue(torch.eq(old_param, new_param).all())
 
     def test_forward(self):
-        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
+        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config,
+                                      preprocessor_kwargs=self.prepro_kwargs).get_dataset()
 
         model = ModelBootstrapper(self.config, dataset.data.x.shape[1], 1).get_model()
 
         train_out, loss = model.step(dataset.data, dataset.data.train_mask)
 
     def test_forward_concat(self):
-        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
+        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config,
+                                      preprocessor_kwargs=self.prepro_kwargs).get_dataset()
         self.config.model.concat_after_mp = True
 
         model = ModelBootstrapper(self.config, dataset.data.x.shape[1], 1).get_model()
@@ -90,7 +92,8 @@ class SimpleModelTest(TestSetup):
         train_out, loss = model.step(dataset.data, dataset.data.train_mask)
 
     def test_forward_skip(self):
-        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
+        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config,
+                                      preprocessor_kwargs=self.prepro_kwargs).get_dataset()
 
         config = self.config.deepcopy()
         config.model.skip_mp = True
@@ -190,11 +193,12 @@ class SimpleModelTest(TestSetup):
     def test_forward_random_input_features(self):
 
         config = self.config.deepcopy()
-        config.input.adjacency = ["BioPlex 3.0 293T"]
+        config.input.adjacency = ["DummyUndirected"]
         config.input.use_gwas = False
         config.input.use_expression = False
         
-        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
+        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config,
+                                      preprocessor_kwargs=self.prepro_kwargs).get_dataset()
 
         self.model = ModelBootstrapper(config, dataset.data.x.shape[1], 1).get_model()
 
@@ -203,12 +207,13 @@ class SimpleModelTest(TestSetup):
     def test_forward_mlp_random_input_features(self):
 
         config = self.config.deepcopy()
-        config.input.adjacency = ["BioPlex 3.0 293T"]
+        config.input.adjacency = ["DummyUndirected"]
         config.input.use_gwas = False
         config.input.use_expression = False
         config.model.mp.n_layers = 0
 
-        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
+        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config,
+                                      preprocessor_kwargs=self.prepro_kwargs).get_dataset()
 
         self.model = ModelBootstrapper(config, dataset.data.x.shape[1], 1).get_model()
 
@@ -288,7 +293,8 @@ class RelationalGeneNetworkTest(unittest.TestCase):
 
     def test_forward_rgcn(self):
         self.config.input.save_data = True
-        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
+        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config,
+                                      preprocessor_kwargs=self.prepro_kwargs).get_dataset()
 
         model = ModelBootstrapper(self.config, dataset.data.x.shape[1], 2).get_model()
 
@@ -301,7 +307,8 @@ class RelationalGeneNetworkTest(unittest.TestCase):
         config.input.force_multigraph = True
         config.model.mp.type = "film"
 
-        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
+        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config,
+                                      preprocessor_kwargs=self.prepro_kwargs).get_dataset()
 
         self.model = ModelBootstrapper(config, dataset.data.x.shape[1], 1).get_model()
 
@@ -310,7 +317,8 @@ class RelationalGeneNetworkTest(unittest.TestCase):
     def test_forward_rtag(self):
         import numpy as np
         self.config.input.save_data = True
-        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
+        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config,
+                                      preprocessor_kwargs=self.prepro_kwargs).get_dataset()
 
         config = self.config.deepcopy()
         config.model.mp.type = "rtag"
@@ -331,7 +339,8 @@ class RelationalGeneNetworkTest(unittest.TestCase):
     def test_forward_filmtag(self):
         import numpy as np
         self.config.input.save_data = True
-        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config).get_dataset()
+        dataset = DatasetBootstrapper(holdout_size=self.config.input.holdout_size, name=self.config.name, config=self.config,
+                                      preprocessor_kwargs=self.prepro_kwargs).get_dataset()
 
         config = self.config.deepcopy()
         config.model.mp.type = "filmtag"
