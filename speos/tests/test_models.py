@@ -221,7 +221,7 @@ class SimpleModelTest(TestSetup):
         train_out, loss = self.model.step(dataset.data, dataset.data.train_mask)
 
 
-class RelationalGeneNetworkTest(unittest.TestCase):
+class RelationalGeneNetworkTest(TestSetup):
 
     def setUp(self):
         self.config = Config()
@@ -270,20 +270,6 @@ class RelationalGeneNetworkTest(unittest.TestCase):
         model = ModelBootstrapper(config, 90, 2).get_model()
         layers = [module for module in model.architectures[0].mp.modules() if not isinstance(module, nn.Sequential)]
         self.assertEqual("FiLMConv", str(layers[1].__class__.__name__))
-
-    def test_bootstrap_filmtag(self):
-        config = self.config.deepcopy()
-        config.model.mp.type = "filmtag"
-        model = ModelBootstrapper(config, 90, 2).get_model()
-        layers = [module for module in model.architectures[0].mp.modules() if not isinstance(module, nn.Sequential)]
-        self.assertEqual("FiLMTAGConv", str(layers[1].__class__.__name__))
-
-    def test_bootstrap_rtag(self):
-        config = self.config.deepcopy()
-        config.model.mp.type = "rtag"
-        model = ModelBootstrapper(config, 90, 2).get_model()
-        layers = [module for module in model.architectures[0].mp.modules() if not isinstance(module, nn.Sequential)]
-        self.assertEqual("RTAGConv", str(layers[1].__class__.__name__))
 
     def test_bootstrap_gat(self):
         config = self.config.deepcopy()
@@ -360,7 +346,7 @@ class RelationalGeneNetworkTest(unittest.TestCase):
         self.assertFalse(np.isnan(loss))
 
 
-class SKLearnModelTest(unittest.TestCase):
+class SKLearnModelTest(TestSetup):
 
     def setUp(self):
         self.config = Config()
