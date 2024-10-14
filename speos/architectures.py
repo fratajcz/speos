@@ -8,7 +8,6 @@ from torch_sparse import SparseTensor
 from speos.utils.logger import setup_logger
 from speos.utils.config import Config
 import speos.utils.nn_utils as nn_utils
-import speos.layers as layers
 
 
 class LINKX(nn.Module):
@@ -244,20 +243,8 @@ class GeneNetwork(nn.Module):
 
             if self.gcnconv_parameters["type"] == "rgcn":
                 mp_layer = pyg_nn.RGCNConv(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], self.num_adjacencies, **kwargs)
-            if self.gcnconv_parameters["type"] == "rtag":
-                mp_layer = layers.RTAGConv(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], self.num_adjacencies, **kwargs)
-            elif self.gcnconv_parameters["type"] == "rgat":
-                mp_layer = layers.RGATConv(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], self.num_adjacencies, **kwargs)
-            elif self.gcnconv_parameters["type"] == "rgattag":
-                mp_layer = layers.RGATTAGConv(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], self.num_adjacencies, **kwargs)
             elif self.gcnconv_parameters["type"] == "film":
                 mp_layer = pyg_nn.FiLMConv(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], self.num_adjacencies, **kwargs)
-            elif self.gcnconv_parameters["type"] == "filmtag":
-                mp_layer = layers.FiLMTAGConv(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], self.num_adjacencies, **kwargs)
-            elif self.gcnconv_parameters["type"] == "mlpfilm":
-                mp_layer = layers.MLPFiLM(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], self.num_adjacencies, **kwargs)
-            elif self.gcnconv_parameters["type"] == "filmfilm":
-                mp_layer = layers.FiLMFiLM(self.gcnconv_parameters["dim"], self.gcnconv_parameters["dim"], self.num_adjacencies, **kwargs)
 
         else:
             try:
