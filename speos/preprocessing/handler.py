@@ -11,7 +11,7 @@ class InputHandler:
 
         """
         self.config = config
-        mappings = GWASMapper().get_mappings(config.input.tag, fields=config.input.field)
+        mappings = GWASMapper(self.config.input.gwas_mappings).get_mappings(config.input.tag, fields=config.input.field)
 
         adjacencies = AdjacencyMapper(config.input.adjacency_mappings, blacklist=self.config.input.adjacency_blacklist).get_mappings(config.input.adjacency, fields=config.input.adjacency_field)
 

@@ -20,6 +20,7 @@ class SimpleModelTest(TestSetup):
         super().setUp()
 
         self.config.name = "SimpleModelTest"
+        self.config.input.tag = "dummy"
         self.config.training.pos_weight = 2
         self.config.training.dilution = 2
         #self.config.model.mp.type = "gcn"
