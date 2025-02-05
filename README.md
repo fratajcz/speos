@@ -8,7 +8,7 @@ Speos, pronounced almost like "space", is a machine learning framework to merge 
 
 This branch contains the analyses accompanying the manuscript "Exploring the Omnigenic Architecture of Common Complex Traits". It is based on Speos `latest` branch, so if you want to install Speos to explore the omnigenic architecture of common complex traits yourself, first go to its [documentation](https://speos.readthedocs.io/en/latest/index.html) for instructions on how to install Speos.
 
-First, you will need to train a Speos model. You can use the configs and training genes included in this branch or add your own, as detailed in the respective part of the [documentation](https://speos.readthedocs.io/en/latest/index.html).
+First, you will need to train a Speos model. You can use the configs in `arch_configs` and training genes in `extensions` or add your own, as detailed in the respective part of the [documentation](https://speos.readthedocs.io/en/latest/index.html).
 
 Second, or if you only want to redo our analyses with a gene set you have obtained from other sources, we have broken the analyses from the manuscript down into steps which can be execuded from jupyter notebooks.
 This will run all included analyses and generate the same figures as in the manuscript. Note that some analyses, such as inspecting input feature importance, will only be possible if you trained your own Speos model.
