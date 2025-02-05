@@ -24,7 +24,11 @@
     file: "data/mgi/mito_query.txt"
 "uc_only":
     file: "data/mgi/uc_only_query.txt"
+"uc_redux":
+    file: "data/mgi/uc_only_query.txt"
 "scz_only":
+    file: "data/mgi/scz_query.txt"
+"scz_redux":
     file: "data/mgi/scz_query.txt"
 "ra_only":
     file: "data/mgi/ra_query.txt"

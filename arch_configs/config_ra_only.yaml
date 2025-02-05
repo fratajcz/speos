@@ -1,0 +1,36 @@
+name: ra_film_nohetio
+input:
+  tag: ra_only
+  adjacency: all
+  adjacency_blacklist: [intact, string, undirected, hetionet]
+  main_dir: /mnt/storage/speos/
+
+crossval:
+  mode: kfold         # None, kfold, holdoneout (not implemented)
+  n_folds: 10
+  positive_only: True
+
+model:
+  save_dir: /mnt/storage/speos/models/
+  plot_dir: /mnt/storage/speos/plots/
+  pre_mp:
+    n_layers: 2
+  mp:
+    n_layers: 2
+    type: film
+  post_mp:
+    n_layers: 2
+
+es:
+  patience: 20
+
+logging:
+  dir: /mnt/storage/speos/logs/
+
+inference:
+  save_dir: /mnt/storage/speos/results/
+  save_tsv: True
+
+pp:
+  save_dir: /mnt/storage/speos/results/
+  plot_dir: /mnt/storage/speos/plots/
