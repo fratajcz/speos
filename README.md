@@ -33,7 +33,7 @@ The following notebooks contain the necessary steps:
   - This notebook contains all analyses regarding the CMAP perturbation data. It will also generate figures 6, 7 and 8A, B and C.
 - `notebooks/tss_analysis_official.ipynb`
   - This notebook contains the analyses for the regulatory enrichment of core genes. It will also generate figures 8D and E.
-- `notebooks/scripts/gears/plot_genetic_interactions.ipynb`
+- `scripts/gears/plot_genetic_interactions.ipynb`
   - This notebook contains the analyses for the enrichment of core gene pairs among simulated strong interactions. It will also genetate Figures 9D-K. The table that is used to recreate our exact results is available on [Zenodo](https://zenodo.org/records/14035135).
  
 Additionally, some scripts might be necessary if you wish to create all the data yourself instead of only recreating it from our data.
